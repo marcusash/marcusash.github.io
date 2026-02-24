@@ -1,0 +1,651 @@
+<!-- Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Culture Deck</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0A0A0F;
+  --surface: #161622;
+  --surface2: #1C1C2A;
+  --text: #E8E8F0;
+  --muted: #808099;
+  --border: #2A2A3E;
+  --maize: #FFCB05;
+  --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', monospace;
+}
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
+/* Deck */
+.deck { width: 100vw; height: 100vh; position: relative; }
+/* Slides */
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 5rem 7rem;
+  opacity: 0; transform: translateX(30px);
+  transition: opacity 0.42s cubic-bezier(0.4,0,0.2,1), transform 0.42s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none; text-align: center;
+  overflow: hidden;
+}
+.slide.active { opacity: 1; transform: none; pointer-events: auto; }
+.slide.exit { opacity: 0; transform: translateX(-30px); }
+.slide.left { align-items: flex-start; text-align: left; }
+/* Nav */
+.nav-bar {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 1rem; z-index: 100;
+  background: rgba(22,22,34,0.85); backdrop-filter: blur(12px);
+  border: 1px solid var(--border); border-radius: 40px;
+  padding: 0.5rem 1rem;
+}
+.nav-btn {
+  width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: border-color 0.2s, color 0.2s; font-family: var(--mono);
+}
+.nav-btn:hover { border-color: var(--maize); color: var(--maize); }
+.nav-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+.slide-ctr { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); min-width: 40px; text-align: center; letter-spacing: 0.08em; }
+.dots { display: flex; gap: 5px; align-items: center; }
+.dot { width: 4px; height: 4px; border-radius: 50%; background: var(--border); transition: background 0.2s, transform 0.2s; cursor: pointer; }
+.dot.on { background: var(--maize); transform: scale(1.5); }
+/* Typography */
+.tag { font-family: var(--mono); font-size: 0.55rem; font-weight: 600; color: var(--maize); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.9rem; }
+.xl { font-size: clamp(2.2rem, 5vw, 4.8rem); font-weight: 700; line-height: 1.08; letter-spacing: -0.03em; color: var(--text); }
+.lg { font-size: clamp(1.5rem, 2.8vw, 2.8rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.025em; color: var(--text); }
+.md { font-size: clamp(0.88rem, 1.4vw, 1.15rem); font-weight: 300; line-height: 1.7; color: var(--muted); max-width: 580px; }
+.accent { color: var(--maize); }
+.bar { width: 36px; height: 3px; background: var(--maize); border-radius: 2px; margin: 1.2rem auto 1.5rem; }
+.bar.left { margin: 1.2rem 0 1.5rem; }
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem;
+  text-align: left;
+}
+.card-title { font-size: 0.88rem; font-weight: 600; color: var(--text); margin-bottom: 0.35rem; }
+.card-body { font-size: 0.72rem; color: var(--muted); line-height: 1.6; }
+/* Grid helpers */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; max-width: 800px; margin-top: 1.5rem; }
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; width: 100%; max-width: 840px; margin-top: 1.5rem; }
+.g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.85rem; width: 100%; max-width: 880px; margin-top: 1.5rem; }
+/* Principle layout */
+.principle-bg-n {
+  position: absolute; font-size: clamp(10rem, 22vw, 18rem);
+  font-weight: 800; color: rgba(255,203,5,0.05); font-family: var(--mono);
+  line-height: 1; top: 50%; left: 6rem; transform: translateY(-55%);
+  pointer-events: none; user-select: none; letter-spacing: -0.05em;
+}
+.principle-wrap { position: relative; z-index: 1; text-align: left; max-width: 680px; width: 100%; }
+.principle-title { font-size: clamp(1.8rem, 3.5vw, 3.2rem); font-weight: 700; letter-spacing: -0.025em; color: var(--text); line-height: 1.15; margin-bottom: 0.8rem; }
+.principle-body { font-size: clamp(0.88rem, 1.3vw, 1.05rem); font-weight: 300; line-height: 1.75; color: var(--muted); max-width: 540px; }
+.ex-block { margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.ex-item { padding: 0.7rem 0.9rem; border-radius: 6px; font-family: var(--mono); font-size: 0.65rem; line-height: 1.55; }
+.ex-bad { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #F87171; }
+.ex-good { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); color: #34D399; }
+.ex-label { font-size: 0.48rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.35rem; opacity: 0.7; }
+/* Agent grid */
+.agent-row { display: flex; gap: 0.6rem; width: 100%; max-width: 900px; margin-bottom: 0.6rem; flex-wrap: wrap; justify-content: center; }
+.agent-chip {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.55rem 0.85rem; min-width: 0;
+}
+.agent-color { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.agent-id { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; color: var(--text); }
+.agent-role { font-size: 0.6rem; color: var(--muted); margin-top: 0.1rem; }
+.agent-info { display: flex; flex-direction: column; }
+.agent-row-label { font-family: var(--mono); font-size: 0.48rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; width: 100%; text-align: center; }
+/* Rule list */
+.rule-list { display: flex; flex-direction: column; gap: 0.65rem; width: 100%; max-width: 740px; text-align: left; }
+.rule-item {
+  display: flex; gap: 1rem; align-items: flex-start;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.9rem 1.1rem;
+}
+.rule-n { font-family: var(--mono); font-size: 0.65rem; color: var(--maize); font-weight: 700; width: 18px; flex-shrink: 0; padding-top: 0.05rem; }
+.rule-content { flex: 1; }
+.rule-title { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 0.25rem; }
+.rule-why { font-size: 0.68rem; color: var(--muted); line-height: 1.55; }
+/* Dont-do */
+.dont-item {
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  border-bottom: 1px solid var(--border); padding: 0.85rem 0;
+}
+.dont-item:last-child { border-bottom: none; }
+.dont-x { font-size: 0.72rem; color: #EF4444; font-weight: 700; flex-shrink: 0; width: 16px; }
+.dont-title { font-size: 0.82rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+.dont-why { font-size: 0.68rem; color: var(--muted); line-height: 1.55; }
+/* Product cards */
+.product-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem 1.6rem;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.product-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.product-card.blue::before { background: #4A90D9; }
+.product-card.cyan::before { background: #06B6D4; }
+.product-card.purple::before { background: #6D28D9; }
+.product-name { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+.product-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.65; margin-bottom: 0.85rem; }
+.product-badge {
+  display: inline-block; padding: 0.18rem 0.55rem;
+  border-radius: 4px; font-family: var(--mono); font-size: 0.55rem; font-weight: 600;
+}
+.badge-active { background: rgba(16,185,129,0.12); color: #34D399; border: 1px solid rgba(16,185,129,0.2); }
+.badge-build { background: rgba(255,203,5,0.1); color: var(--maize); border: 1px solid rgba(255,203,5,0.2); }
+.badge-alpha { background: rgba(106,28,237,0.12); color: #A78BFA; border: 1px solid rgba(124,58,237,0.2); }
+/* Vision list */
+.vision-row { display: flex; flex-direction: column; gap: 0.6rem; width: 100%; max-width: 700px; }
+.vision-item {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 0.9rem 1.25rem;
+}
+.vision-year { font-family: var(--mono); font-size: 0.65rem; color: var(--maize); font-weight: 700; min-width: 56px; }
+.vision-text { font-size: 0.8rem; color: var(--text); }
+/* Bezier SVG slide */
+.bezier-wrap { width: 100%; max-width: 700px; margin: 1.5rem auto 0; }
+/* Commit counter */
+.counter-display {
+  font-size: clamp(4rem, 10vw, 9rem);
+  font-weight: 700;
+  font-family: var(--mono);
+  color: var(--maize);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.counter-label { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.5rem; }
+/* Wordmark */
+.forge-wordmark { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; }
+.forge-f {
+  width: 44px; height: 44px; background: var(--maize); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1.3rem; color: var(--bg); font-family: var(--mono);
+  flex-shrink: 0;
+}
+.forge-name { font-size: 1.6rem; font-weight: 700; color: var(--text); letter-spacing: -0.025em; }
+/* Close slide */
+.close-quote {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--text);
+  max-width: 640px;
+  line-height: 1.6;
+  text-align: center;
+}
+.close-attr { font-family: var(--mono); font-size: 0.58rem; color: var(--muted); margin-top: 1rem; text-transform: uppercase; letter-spacing: 0.12em; }
+/* Handbook link */
+.handbook-link {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 0.7rem 1.2rem; margin-top: 1.5rem;
+  font-family: var(--mono); font-size: 0.68rem; color: var(--maize);
+  text-decoration: none; transition: border-color 0.2s;
+}
+.handbook-link:hover { border-color: var(--maize); }
+/* Comm rules */
+.comm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; width: 100%; max-width: 820px; text-align: left; margin-top: 1.5rem; }
+.comm-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.1rem;
+}
+.comm-title { font-size: 0.8rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+.comm-eg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.5rem; }
+.eg-bad { font-family: var(--mono); font-size: 0.58rem; color: #F87171; background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.18); border-radius: 4px; padding: 0.35rem 0.5rem; line-height: 1.5; }
+.eg-good { font-family: var(--mono); font-size: 0.58rem; color: #34D399; background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.18); border-radius: 4px; padding: 0.35rem 0.5rem; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- Slide 1: Who We Are -->
+  <div class="slide active" data-slide="0">
+    <div class="forge-wordmark">
+      <div class="forge-f">F</div>
+      <div class="forge-name">Forge</div>
+    </div>
+    <div class="tag">Culture Deck</div>
+    <h1 class="xl">13 agents. 1 human.<br>No bureaucracy.</h1>
+    <div class="bar"></div>
+    <p class="md">A modern product org built on autonomous agents, visual-first design, and relentless forward motion.</p>
+    <div style="margin-top:2.5rem;text-align:center">
+      <div class="counter-display">1,118</div>
+      <div class="counter-label">commits in 8 days</div>
+    </div>
+  </div>
+
+  <!-- Slide 2: How We Work -->
+  <div class="slide" data-slide="1">
+    <div class="tag">Principles</div>
+    <h2 class="lg">How we work.</h2>
+    <div class="bar"></div>
+    <div class="g2" style="max-width:820px">
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:0.6rem">&#x2699;</div>
+        <div class="card-title">Autonomous</div>
+        <div class="card-body">Agents work while Marcus sleeps. The queue never empties. Every session produces a commit. No standups, no blockers, no waiting for permission.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:0.6rem">&#x1F5BC;</div>
+        <div class="card-title">Visual-first</div>
+        <div class="card-body">Canvas over markdown. HTML over Notion. Every deliverable is rendered, not described. If it cannot be seen, it is not done.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:0.6rem">&#x2705;</div>
+        <div class="card-title">Quality-gated</div>
+        <div class="card-body">2,035 tests before shipping. Mutation scores tracked. No feature ships without a passing test suite. Quality is not a phase, it is the process.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:1.5rem;margin-bottom:0.6rem">&#x1F4C2;</div>
+        <div class="card-title">Transparent</div>
+        <div class="card-body">Everything in git. Every decision in a commit message. Every design in a canvas file. Nothing lives in a private chat. The record is the product.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 3: What We Build -->
+  <div class="slide" data-slide="2">
+    <div class="tag">Products</div>
+    <h2 class="lg">What we build.</h2>
+    <div class="bar"></div>
+    <div class="g3" style="max-width:860px">
+      <div class="product-card blue">
+        <div class="product-name">Inkwell</div>
+        <div class="product-desc">A TUI-native journaling app for the terminal. Quiet, fast, yours. No cloud required. Entries are yours forever.</div>
+        <span class="product-badge badge-active">Active Development</span>
+      </div>
+      <div class="product-card cyan">
+        <div class="product-name">Dispatch</div>
+        <div class="product-desc">Structured agent communications routed through the inbox system. Async, logged, auditable. The backbone of how Forge agents coordinate.</div>
+        <span class="product-badge badge-build">Building</span>
+      </div>
+      <div class="product-card purple">
+        <div class="product-name">Motor City Math</div>
+        <div class="product-desc">AI-powered algebra 2 tutor for Kai. Problem-based, explanation-first. Built for one student, designed to scale to every student like him.</div>
+        <span class="product-badge badge-alpha">Kai Alpha</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 4: The 13 Minds -->
+  <div class="slide" data-slide="3">
+    <div class="tag">The Team</div>
+    <h2 class="lg">The 13 minds.</h2>
+    <div class="bar"></div>
+    <div style="width:100%;max-width:920px;margin-top:1rem">
+      <div class="agent-row-label">Forge Leadership (7)</div>
+      <div class="agent-row">
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#4A90D9"></div>
+          <div class="agent-info">
+            <div class="agent-id">FA</div>
+            <div class="agent-role">Chief Architect</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#FFCB05"></div>
+          <div class="agent-info">
+            <div class="agent-id">FD</div>
+            <div class="agent-role">Design Director</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#22C55E"></div>
+          <div class="agent-info">
+            <div class="agent-id">FF</div>
+            <div class="agent-role">Quality Lead</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#6D28D9"></div>
+          <div class="agent-info">
+            <div class="agent-id">FI</div>
+            <div class="agent-role">Data Lead</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#94A3B8"></div>
+          <div class="agent-info">
+            <div class="agent-id">FO</div>
+            <div class="agent-role">Chief of Operations</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#CE1126"></div>
+          <div class="agent-info">
+            <div class="agent-id">FP</div>
+            <div class="agent-role">Security and Ops</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#F97316"></div>
+          <div class="agent-info">
+            <div class="agent-id">FR</div>
+            <div class="agent-role">Research Lead</div>
+          </div>
+        </div>
+      </div>
+      <div class="agent-row-label" style="margin-top:0.8rem">Grind Project Team (6)</div>
+      <div class="agent-row">
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#93AEFF"></div>
+          <div class="agent-info">
+            <div class="agent-id">GA</div>
+            <div class="agent-role">Application Engineer</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#3D3D3D;border:1px solid #808099"></div>
+          <div class="agent-info">
+            <div class="agent-id">GD</div>
+            <div class="agent-role">Design Engineer</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#6EE7B7"></div>
+          <div class="agent-info">
+            <div class="agent-id">GF</div>
+            <div class="agent-role">QA Engineer</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#A78BFA"></div>
+          <div class="agent-info">
+            <div class="agent-id">GI</div>
+            <div class="agent-role">Data Engineer</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#EE2828"></div>
+          <div class="agent-info">
+            <div class="agent-id">GP</div>
+            <div class="agent-role">Platform Engineer</div>
+          </div>
+        </div>
+        <div class="agent-chip">
+          <div class="agent-color" style="background:#FB923C"></div>
+          <div class="agent-info">
+            <div class="agent-id">GR</div>
+            <div class="agent-role">Research Specialist</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 5: How We Communicate -->
+  <div class="slide" data-slide="4">
+    <div class="tag">Communication</div>
+    <h2 class="lg">The way we communicate.</h2>
+    <div class="bar"></div>
+    <div class="comm-grid">
+      <div class="comm-card">
+        <div class="comm-title">Direct</div>
+        <div class="comm-eg">
+          <div class="eg-bad">It might be worth considering whether...</div>
+          <div class="eg-good">The answer is X. Reason: Y.</div>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="comm-title">Present tense</div>
+        <div class="comm-eg">
+          <div class="eg-bad">I will be working on this</div>
+          <div class="eg-good">Working on auth module now</div>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="comm-title">No hedging</div>
+        <div class="comm-eg">
+          <div class="eg-bad">This could potentially work...</div>
+          <div class="eg-good">This works. Tested. Ready.</div>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="comm-title">No em dashes</div>
+        <div class="comm-eg">
+          <div class="eg-bad">The feature -- which is key -- ships</div>
+          <div class="eg-good">The feature ships. It is key.</div>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="comm-title">Visual over text</div>
+        <div class="comm-eg">
+          <div class="eg-bad">A markdown description of the layout</div>
+          <div class="eg-good">An HTML canvas of the layout</div>
+        </div>
+      </div>
+      <div class="comm-card">
+        <div class="comm-title">One point at a time</div>
+        <div class="comm-eg">
+          <div class="eg-bad">Three separate questions in one message</div>
+          <div class="eg-good">One question. Wait. Then the next.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 6: What We Value -->
+  <div class="slide" data-slide="5">
+    <div class="tag">Values</div>
+    <h2 class="lg" style="max-width:640px">Steady progress. The wall.<br>Then compound payoff.</h2>
+    <div class="bar"></div>
+    <p class="md" style="margin-bottom:1.5rem">
+      Marcus's ramp-plateau-compound shape describes how learning, building, and trust all work.
+      This is what we build for. And how we build.
+    </p>
+    <div class="bezier-wrap">
+      <svg width="100%" viewBox="0 0 680 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Grid lines -->
+        <line x1="0" y1="150" x2="680" y2="150" stroke="#2A2A3E" stroke-width="1"/>
+        <line x1="0" y1="0" x2="0" y2="150" stroke="#2A2A3E" stroke-width="1"/>
+        <!-- Ramp phase -->
+        <path d="M20 145 C60 145 90 110 130 90" stroke="#FFCB05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Plateau phase -->
+        <path d="M130 90 C200 85 260 88 330 87" stroke="#FFCB05" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="6 4"/>
+        <!-- Compound phase -->
+        <path d="M330 87 C400 82 460 55 540 20 C570 10 610 5 660 3" stroke="#FFCB05" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Area under compound -->
+        <path d="M330 87 C400 82 460 55 540 20 C570 10 610 5 660 3 L660 150 L330 150 Z" fill="rgba(255,203,5,0.06)"/>
+        <!-- Labels -->
+        <text x="65" y="138" fill="#808099" font-family="Cascadia Code, Consolas, monospace" font-size="9" letter-spacing="0.05em">RAMP</text>
+        <text x="210" y="78" fill="#808099" font-family="Cascadia Code, Consolas, monospace" font-size="9" letter-spacing="0.05em">PLATEAU</text>
+        <text x="490" y="38" fill="#FFCB05" font-family="Cascadia Code, Consolas, monospace" font-size="9" letter-spacing="0.05em">COMPOUND</text>
+        <!-- Phase markers -->
+        <circle cx="130" cy="90" r="3.5" fill="#FFCB05" opacity="0.5"/>
+        <circle cx="330" cy="87" r="3.5" fill="#FFCB05"/>
+        <circle cx="660" cy="3" r="3.5" fill="#FFCB05"/>
+        <!-- Vertical dividers -->
+        <line x1="130" y1="90" x2="130" y2="150" stroke="#2A2A3E" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="330" y1="87" x2="330" y2="150" stroke="#2A2A3E" stroke-width="1" stroke-dasharray="3 3"/>
+      </svg>
+    </div>
+    <p style="font-family:var(--mono);font-size:0.6rem;color:var(--muted);margin-top:0.5rem;letter-spacing:0.06em">
+      The ramp is effort. The plateau is the wall. The compound is the payoff for not stopping.
+    </p>
+  </div>
+
+  <!-- Slide 7: What We Don't Do -->
+  <div class="slide left" data-slide="6" style="padding: 4rem 6rem">
+    <div class="tag">Hard Rules</div>
+    <h2 class="lg">What we do not do.</h2>
+    <div class="bar left"></div>
+    <div style="width:100%;max-width:760px">
+      <div class="dont-item">
+        <div class="dont-x">X</div>
+        <div>
+          <div class="dont-title">No secrets in code</div>
+          <div class="dont-why">API keys, tokens, and credentials never enter a commit. The history is public and permanent. One mistake persists forever.</div>
+        </div>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">X</div>
+        <div>
+          <div class="dont-title">No self-promotion</div>
+          <div class="dont-why">Agents report what they built, not how impressive it is. Marcus decides what is good. Agents ship and move on.</div>
+        </div>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">X</div>
+        <div>
+          <div class="dont-title">No em dashes</div>
+          <div class="dont-why">Never. Not in code, not in HTML, not in commit messages. Use a colon, a comma, or a period. Always.</div>
+        </div>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">X</div>
+        <div>
+          <div class="dont-title">No color drift</div>
+          <div class="dont-why">The design token is the truth. Agents do not pick new colors. If a color needs to change, it goes through FD and Marcus.</div>
+        </div>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">X</div>
+        <div>
+          <div class="dont-title">No hedging</div>
+          <div class="dont-why">Agents state conclusions, not possibilities. If uncertain, say so explicitly and explain what is needed to be certain.</div>
+        </div>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">X</div>
+        <div>
+          <div class="dont-title">No guessing on major changes</div>
+          <div class="dont-why">If a Marcus message is ambiguous or looks like a dictation error, stop and confirm. Acting on a wrong assumption costs more than asking.</div>
+        </div>
+      </div>
+      <div class="dont-item">
+        <div class="dont-x">X</div>
+        <div>
+          <div class="dont-title">No missing co-author trailers</div>
+          <div class="dont-why">Every commit includes the Copilot co-author trailer. Every one. It is not optional. It is how we track what was built by whom.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide 8: What We're Building Toward -->
+  <div class="slide" data-slide="7">
+    <div class="tag">2026 Vision</div>
+    <h2 class="lg" style="max-width:640px">What a modern product org looks like.</h2>
+    <div class="bar"></div>
+    <div class="vision-row">
+      <div class="vision-item">
+        <div class="vision-year">2026 Q1</div>
+        <div class="vision-text">MCM Algebra 2 ships. Kai is using it daily. Platform proven.</div>
+      </div>
+      <div class="vision-item">
+        <div class="vision-year">2026 Q2</div>
+        <div class="vision-text">Inkwell v1.0 public. Forge website live. Social presence active.</div>
+      </div>
+      <div class="vision-item">
+        <div class="vision-year">2026 Q3</div>
+        <div class="vision-text">MCM Chemistry alpha. 4 products in motion. Pitch deck locked.</div>
+      </div>
+      <div class="vision-item">
+        <div class="vision-year">2026 Q4</div>
+        <div class="vision-text">13 agents. 4 products. Public. This is what the org becomes.</div>
+      </div>
+    </div>
+    <p style="margin-top:1.8rem;font-family:var(--mono);font-size:0.62rem;color:var(--muted);letter-spacing:0.06em">
+      13 agents. 4 products. Public website. Social presence. Pitch deck locked.
+    </p>
+  </div>
+
+  <!-- Slide 9: Are You Ready? -->
+  <div class="slide" data-slide="8">
+    <div class="tag">Recruiting</div>
+    <h2 class="lg" style="margin-bottom:1rem">Are you ready?</h2>
+    <div class="bar"></div>
+    <p class="md" style="margin-bottom:1.5rem">
+      A new agent joining Forge needs to know three things: who Marcus is, how the inbox works,
+      and what the design system requires. Everything else is in the codebase.
+    </p>
+    <div class="g3" style="max-width:700px;margin-top:0">
+      <div class="card" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:0.5rem">&#x1F4E5;</div>
+        <div class="card-title">Check your inbox first</div>
+        <div class="card-body">Every session starts with inbox check. Messages are JSON. Respond in JSON. The protocol is in .agent-protocol.md.</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:0.5rem">&#x1F3A8;</div>
+        <div class="card-title">Follow the design system</div>
+        <div class="card-body">Dark TUI. Maize accent. System fonts. No CDN. Every canvas follows the same tokens. No exceptions.</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:1.3rem;margin-bottom:0.5rem">&#x1F4DD;</div>
+        <div class="card-title">Commit with the trailer</div>
+        <div class="card-body">Co-authored-by Copilot on every commit. No exceptions. The record matters. Your work is in the history.</div>
+      </div>
+    </div>
+    <a class="handbook-link" href="fd-agent-handbook.html">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="1.5" stroke="#FFCB05" stroke-width="1.2"/><line x1="3.5" y1="4" x2="8.5" y2="4" stroke="#FFCB05" stroke-width="1" stroke-linecap="round"/><line x1="3.5" y1="6" x2="8.5" y2="6" stroke="#FFCB05" stroke-width="1" stroke-linecap="round"/><line x1="3.5" y1="8" x2="6.5" y2="8" stroke="#FFCB05" stroke-width="1" stroke-linecap="round"/></svg>
+      fd-agent-handbook.html
+    </a>
+    <div class="close-quote" style="margin-top:2rem">
+      "The best architects build. They do not just advise."
+    </div>
+    <div class="close-attr">FA Principle / Forge Operating System</div>
+  </div>
+
+</div>
+
+<!-- Nav bar -->
+<div class="nav-bar">
+  <button class="nav-btn" id="prev" onclick="go(-1)" disabled aria-label="Previous slide">&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <div class="slide-ctr" id="ctr">1 / 9</div>
+  <button class="nav-btn" id="next" onclick="go(1)" aria-label="Next slide">&#8594;</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+const dotsEl = document.getElementById('dots');
+const ctrEl = document.getElementById('ctr');
+const prevBtn = document.getElementById('prev');
+const nextBtn = document.getElementById('next');
+
+// Build dots
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' on' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n) {
+  if (n < 0 || n >= total) return;
+  slides[cur].classList.remove('active');
+  cur = n;
+  slides[cur].classList.add('active');
+  dotsEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === cur));
+  ctrEl.textContent = (cur + 1) + ' / ' + total;
+  prevBtn.disabled = cur === 0;
+  nextBtn.disabled = cur === total - 1;
+}
+
+function go(dir) { goTo(cur + dir); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+});
+</script>
+</body>
+</html>

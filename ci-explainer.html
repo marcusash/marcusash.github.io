@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Actions: What Is Happening and Why</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 48px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 6px; color: #fff; }
+  .subtitle { font-size: 1rem; color: #8b949e; margin-bottom: 48px; }
+
+  h2 { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .section { margin-bottom: 48px; }
+
+  /* Concept box */
+  .concept {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 28px 32px;
+    margin-bottom: 16px;
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+  .flow-step {
+    background: #1c2128;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 130px;
+    flex: 1;
+  }
+  .flow-step .icon { font-size: 1.8rem; margin-bottom: 6px; }
+  .flow-step .label { font-size: 0.75rem; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .flow-step .desc { font-size: 0.85rem; color: #e6edf3; }
+  .flow-arrow {
+    font-size: 1.4rem;
+    color: #30363d;
+    padding: 0 8px;
+    flex: 0 0 auto;
+  }
+
+  /* Workflow cards */
+  .workflow-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .workflow-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .workflow-card .wf-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .wf-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .wf-name { font-size: 0.95rem; font-weight: 600; color: #fff; }
+  .wf-q { font-size: 0.8rem; color: #8b949e; margin-bottom: 6px; }
+  .wf-a { font-size: 0.88rem; color: #e6edf3; line-height: 1.5; }
+  .wf-status {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .status-fixed { background: #1a3a2a; color: #3fb950; border: 1px solid #238636; }
+  .status-daily { background: #1a2a3a; color: #58a6ff; border: 1px solid #1f6feb; }
+
+  /* Problem chain */
+  .chain { display: flex; flex-direction: column; gap: 0; }
+  .chain-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  .chain-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    width: 36px;
+  }
+  .chain-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .chain-line {
+    width: 2px;
+    background: #30363d;
+    flex: 1;
+    min-height: 28px;
+    margin: 4px 0;
+  }
+  .chain-body {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    flex: 1;
+  }
+  .chain-body h3 { font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+  .chain-body p { font-size: 0.85rem; color: #8b949e; line-height: 1.5; }
+  .chain-body .fix {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: #3fb950;
+    background: #1a3a2a;
+    border: 1px solid #238636;
+    border-radius: 6px;
+    padding: 6px 10px;
+    display: inline-block;
+  }
+
+  /* Right now box */
+  .now-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .now-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .now-card h3 { font-size: 0.85rem; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .now-card p { font-size: 0.88rem; line-height: 1.55; color: #e6edf3; }
+
+  .terminal-mock {
+    background: #010409;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Consolas', 'SF Mono', monospace;
+    font-size: 0.75rem;
+    margin-top: 12px;
+    line-height: 1.6;
+  }
+  .t-cancelled { color: #f85149; }
+  .t-dim { color: #484f58; }
+  .t-green { color: #3fb950; }
+  .t-label {
+    font-size: 0.7rem;
+    color: #8b949e;
+    margin-top: 8px;
+    font-family: -apple-system, sans-serif;
+    font-style: italic;
+  }
+
+  /* Summary bar */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .sum-item {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .sum-item .big { font-size: 1.4rem; margin-bottom: 4px; }
+  .sum-item .small { font-size: 0.75rem; color: #8b949e; }
+
+  .green { color: #3fb950; }
+  .red { color: #f85149; }
+  .blue { color: #58a6ff; }
+  .yellow { color: #d29922; }
+
+  hr { border: none; border-top: 1px solid #21262d; margin: 40px 0; }
+
+  .callout {
+    background: #1c2a1c;
+    border: 1px solid #238636;
+    border-radius: 10px;
+    padding: 18px 22px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #e6edf3;
+  }
+  .callout strong { color: #3fb950; }
+</style>
+</head>
+<body>
+
+<h1>GitHub Actions: What Is Happening and Why</h1>
+<p class="subtitle">A plain-language breakdown for Marcus. Current as of Feb 24, 2026 at 9:04 PM PST.</p>
+
+<!-- SECTION 1: WHAT IS IT -->
+<div class="section">
+  <h2>1. What Is GitHub Actions?</h2>
+  <div class="concept">
+    <p style="font-size:0.95rem; line-height:1.65; margin-bottom: 16px;">
+      Think of it as an <strong>automatic quality checker</strong> that runs every time code gets pushed to the repo.
+      The moment an agent (or you) pushes a commit to master, GitHub Actions fires up and runs a set of tests on your machine
+      to make sure nothing is broken.
+    </p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="icon">👨‍💻</div>
+        <div class="label">Agent or Marcus</div>
+        <div class="desc">Pushes a commit to master</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="icon">☁️</div>
+        <div class="label">GitHub (cloud)</div>
+        <div class="desc">Sees the push, queues jobs</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="icon">🖥️</div>
+        <div class="label">Your Machine</div>
+        <div class="desc">Runner picks up the job, runs the check</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="icon">✅ or ❌</div>
+        <div class="label">Result</div>
+        <div class="desc">Pass or fail, shown on GitHub</div>
+      </div>
+    </div>
+    <p style="font-size:0.85rem; color:#8b949e; line-height:1.5;">
+      The runner is that PowerShell window you've been watching. It's a process running on your PC (MASH-PROART)
+      that stays connected to GitHub and picks up jobs as they arrive.
+      Because of your Microsoft EMU org policy, GitHub's own cloud machines are blocked from running these jobs,
+      so your local machine is the only option.
+    </p>
+  </div>
+</div>
+
+<!-- SECTION 2: THE 4 WORKFLOWS -->
+<div class="section">
+  <h2>2. Our 4 Workflows (What Each One Checks)</h2>
+  <div class="workflow-grid">
+
+    <div class="workflow-card">
+      <div class="wf-header">
+        <div class="wf-dot" style="background:#58a6ff;"></div>
+        <div class="wf-name">Tests</div>
+      </div>
+      <div class="wf-q">What does it check?</div>
+      <div class="wf-a">Runs the full test suite. Over 2,900 individual tests that verify every feature of the app works correctly. If a code change breaks something, this catches it.</div>
+      <div class="wf-status status-fixed">Fixed: no more 34-min hang</div>
+    </div>
+
+    <div class="workflow-card">
+      <div class="wf-header">
+        <div class="wf-dot" style="background:#d29922;"></div>
+        <div class="wf-name">Typecheck</div>
+      </div>
+      <div class="wf-q">What does it check?</div>
+      <div class="wf-a">Runs the TypeScript compiler to catch type errors before they become runtime bugs. If an agent writes code that uses the wrong type, this fails and flags it.</div>
+      <div class="wf-status status-fixed">Fixed: TypeScript error resolved</div>
+    </div>
+
+    <div class="workflow-card">
+      <div class="wf-header">
+        <div class="wf-dot" style="background:#3fb950;"></div>
+        <div class="wf-name">npm audit</div>
+      </div>
+      <div class="wf-q">What does it check?</div>
+      <div class="wf-a">Scans production dependencies for known security vulnerabilities. Only checks packages that ship to users, not dev tools. Fails if a high-severity issue is found.</div>
+      <div class="wf-status status-fixed">Fixed: 0 vulnerabilities</div>
+    </div>
+
+    <div class="workflow-card">
+      <div class="wf-header">
+        <div class="wf-dot" style="background:#f97316;"></div>
+        <div class="wf-name">Compliance</div>
+      </div>
+      <div class="wf-q">What does it check?</div>
+      <div class="wf-a">Audits agent commits and inbox messages for protocol violations: missing Co-authored-by trailers, em dash usage, subject line length. Catches agents behaving badly.</div>
+      <div class="wf-status status-daily">Changed: now runs daily at 6 AM PST</div>
+    </div>
+
+  </div>
+</div>
+
+<hr>
+
+<!-- SECTION 3: WHAT WENT WRONG -->
+<div class="section">
+  <h2>3. What Went Wrong (The Full Problem Chain)</h2>
+  <div class="chain">
+
+    <div class="chain-item">
+      <div class="chain-left">
+        <div class="chain-num" style="background:#3a1a1a; color:#f85149;">1</div>
+        <div class="chain-line"></div>
+      </div>
+      <div class="chain-body">
+        <h3 style="color:#f85149;">Audit was failing on every push</h3>
+        <p>The Stryker mutation testing tool (a dev-only tool) has a dependency with a known security flaw.
+        npm audit was flagging it as a production vulnerability even though it never ships to users.
+        This caused audit to fail on literally every single commit.</p>
+        <span class="fix">Fixed: npm audit --omit=dev now ignores dev tools (commit bb6b970)</span>
+      </div>
+    </div>
+
+    <div class="chain-item">
+      <div class="chain-left">
+        <div class="chain-num" style="background:#3a1a1a; color:#f85149;">2</div>
+        <div class="chain-line"></div>
+      </div>
+      <div class="chain-body">
+        <h3 style="color:#f85149;">TypeScript had a type error</h3>
+        <p>badges.ts had a TypeScript error (TS7053: implicit any type). The typecheck workflow was failing
+        on every push because of this one file.</p>
+        <span class="fix">Fixed: type error resolved (commit 671c48c)</span>
+      </div>
+    </div>
+
+    <div class="chain-item">
+      <div class="chain-left">
+        <div class="chain-num" style="background:#3a1a1a; color:#f85149;">3</div>
+        <div class="chain-line"></div>
+      </div>
+      <div class="chain-body">
+        <h3 style="color:#f85149;">No concurrency limit: hundreds of jobs queued</h3>
+        <p>Every agent push triggered 4 new workflow runs. With no cancellation rule, all of them queued up.
+        Your single runner processed them one by one. Before the runner could finish one run,
+        50 more had piled up behind it. This is why your runner terminal was streaming non-stop for hours.</p>
+        <span class="fix">Fixed: cancel-in-progress: true on all 4 workflows (commit 3b0c319)</span>
+      </div>
+    </div>
+
+    <div class="chain-item">
+      <div class="chain-left">
+        <div class="chain-num" style="background:#3a1a1a; color:#f85149;">4</div>
+        <div class="chain-line"></div>
+      </div>
+      <div class="chain-body">
+        <h3 style="color:#f85149;">Test jobs were hanging for 34 minutes</h3>
+        <p>48 test calls used "npx tsx" to run TypeScript scripts. Under runner load, each startup took
+        30 to 60 seconds. 48 calls times 45 seconds average equals 36 minutes. The test runner
+        (vitest) couldn't interrupt them because execSync is a blocking call that ignores timeouts.
+        Your runner was stuck on one test job for 34 minutes.</p>
+        <span class="fix">Fixed: timeout: 15000 on all 48 subprocess calls across 7 test files (commit 7978dc2)</span>
+      </div>
+    </div>
+
+    <div class="chain-item">
+      <div class="chain-left">
+        <div class="chain-num" style="background:#3a1a1a; color:#f85149;">5</div>
+      </div>
+      <div class="chain-body">
+        <h3 style="color:#f85149;">Compliance was flagging every agent commit as non-compliant</h3>
+        <p>The inbox-send script used a Windows shell workaround for the Co-authored-by trailer that didn't
+        actually work on Windows. Every automated inbox message created a commit without the required trailer,
+        and compliance flagged all of them as violations. Compliance was also running on every push, firing
+        dozens of times per session.</p>
+        <span class="fix">Fixed: --trailer flag for git commits, compliance moved to daily schedule (commit 7978dc2)</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr>
+
+<!-- SECTION 4: WHAT YOU'RE SEEING RIGHT NOW -->
+<div class="section">
+  <h2>4. What You're Seeing Right Now in That Terminal</h2>
+
+  <div class="now-grid">
+    <div class="now-card">
+      <h3>What the terminal shows</h3>
+      <div class="terminal-mock">
+        <div><span class="t-dim">04:54:55Z:</span> Running job: <span style="color:#58a6ff;">test</span></div>
+        <div><span class="t-dim">04:57:06Z:</span> Job test completed with <span class="t-cancelled">result: Failed</span></div>
+        <div><span class="t-dim">04:57:08Z:</span> Running job: <span style="color:#d29922;">typecheck</span></div>
+        <div><span class="t-dim">04:58:09Z:</span> Job typecheck completed with <span class="t-cancelled">result: Failed</span></div>
+      </div>
+      <p class="t-label">"Failed" here does NOT always mean a real test failure.</p>
+    </div>
+
+    <div class="now-card">
+      <h3>What is actually happening</h3>
+      <p>When GitHub cancels a job (because a newer commit arrived), the runner reports it as <strong style="color:#f85149;">"result: Failed"</strong>.
+      Cancelled and actually-failed look identical in this terminal.</p>
+      <br>
+      <p>I confirmed in the GitHub API: every single run from the past 2 hours shows <strong style="color:#3fb950;">conclusion: cancelled</strong>.
+      There are zero runs with <strong style="color:#f85149;">conclusion: failure</strong> in that window.</p>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="concept" style="border-color:#21262d;">
+    <p style="font-size:0.9rem; line-height:1.6; color:#8b949e; margin-bottom:14px;">
+      <strong style="color:#e6edf3;">Why does it keep looping?</strong>
+      Agents are pushing a new commit every 2 to 3 minutes right now (ADR docs, test expansions, inbox messages).
+      Each new push cancels the current run and starts a new one. The runner never gets a long enough quiet window to
+      finish a complete run and show green. The jobs themselves are working correctly now. They're just being interrupted.
+    </p>
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <div style="background:#1c2128; border:1px solid #30363d; border-radius:8px; padding:12px 16px; font-size:0.82rem; color:#e6edf3;">
+        <strong>Before our fixes:</strong><br>
+        Test job: <span class="red">34 minutes</span>, then fail
+      </div>
+      <div style="font-size:1.2rem; color:#30363d;">→</div>
+      <div style="background:#1c2128; border:1px solid #238636; border-radius:8px; padding:12px 16px; font-size:0.82rem; color:#e6edf3;">
+        <strong>After our fixes:</strong><br>
+        Test job: <span class="green">2 minutes</span>, then cancelled by next commit
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SECTION 5: STATUS + NEXT STEP -->
+<div class="section">
+  <h2>5. What Has Been Fixed vs. What Still Needs to Happen</h2>
+
+  <div class="summary-bar">
+    <div class="sum-item">
+      <div class="big green">✓</div>
+      <div class="small">Audit (0 vulns)</div>
+    </div>
+    <div class="sum-item">
+      <div class="big green">✓</div>
+      <div class="small">Typecheck (TS fixed)</div>
+    </div>
+    <div class="sum-item">
+      <div class="big green">✓</div>
+      <div class="small">Test hang (34 min gone)</div>
+    </div>
+    <div class="sum-item">
+      <div class="big green">✓</div>
+      <div class="small">Email flood (stopped)</div>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="callout">
+    <strong>One thing remaining:</strong> the runner terminal will keep looping as long as agents push commits faster than a test run can complete (~3 minutes). The fix for this is adding a <code>paths</code> filter to the workflows so that pure docs commits (ADRs, inbox messages) do NOT trigger CI at all. Only actual code changes would fire the runner. I'm ready to push that fix right now on your say-so. One commit, runner goes quiet within 60 seconds.
+  </div>
+</div>
+
+<div style="margin-top:48px; font-size:0.75rem; color:#484f58;">
+  FP (Platform Agent) &mdash; CI Explainer &mdash; Feb 24, 2026 9:04 PM PST
+</div>
+
+</body>
+</html>

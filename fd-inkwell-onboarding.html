@@ -1,0 +1,743 @@
+<!-- Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inkwell Onboarding Flow | Forge Design System</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0A0A0F;
+    --surface: #161622;
+    --text: #E8E8F0;
+    --muted: #808099;
+    --border: #2A2A3E;
+    --maize: #FFCB05;
+    --maize-dim: rgba(255, 203, 5, 0.12);
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px 40px 80px;
+  }
+
+  /* Page header */
+  .page-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .page-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .page-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Screen carousel */
+  .carousel {
+    position: relative;
+    max-width: 680px;
+    margin: 0 auto 48px;
+  }
+
+  .screen-counter {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 14px;
+    letter-spacing: 0.06em;
+  }
+
+  .screen-counter .current {
+    color: var(--maize);
+    font-weight: 700;
+  }
+
+  .screens-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .screen {
+    display: none;
+  }
+
+  .screen.active {
+    display: block;
+  }
+
+  /* TUI window chrome */
+  .tui-window {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text);
+    position: relative;
+  }
+
+  .tui-titlebar {
+    background: #1E1E2E;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tui-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .tui-dot.red { background: #FF5F57; }
+  .tui-dot.yellow { background: #FFBD2E; }
+  .tui-dot.green { background: #28CA41; }
+
+  .tui-tab-label {
+    margin-left: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  /* Screen 1: Welcome */
+  .s1-body {
+    padding: 60px 40px;
+    text-align: center;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .forge-f-mark {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 20px;
+  }
+
+  .inkwell-wordmark {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .s1-tagline {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 40px;
+    letter-spacing: 0.04em;
+  }
+
+  .enter-hint {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .key-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+
+  .key-badge.maize {
+    border-color: var(--maize);
+    background: var(--maize-dim);
+    color: var(--maize);
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  .s1-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: #3A3A55;
+    margin-top: 24px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Screen 2: First Entry */
+  .s2-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .s2-topleft { color: var(--text); font-weight: 600; }
+  .s2-topright { color: var(--muted); }
+
+  .s2-editor {
+    padding: 20px 16px;
+    min-height: 220px;
+    position: relative;
+  }
+
+  .cursor-block {
+    display: inline-block;
+    width: 9px;
+    height: 16px;
+    background: var(--text);
+    animation: blink 1.1s step-end infinite;
+    vertical-align: text-bottom;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .ghost-text {
+    position: absolute;
+    top: 20px;
+    left: 25px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: #3A3A55;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+
+  .s2-statusbar {
+    border-top: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    background: #0F0F1A;
+  }
+
+  .keybind {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .keybind .key-badge {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+
+  /* Screen 3: You're In */
+  .s3-body {
+    padding: 40px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .checkmark-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .checkmark {
+    width: 28px;
+    height: 28px;
+    background: var(--maize);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: #0A0A0F;
+    flex-shrink: 0;
+  }
+
+  .saved-msg {
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .progress-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .progress-bar {
+    width: 200px;
+    height: 10px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    width: 100%;
+    height: 100%;
+    background: var(--maize);
+    border-radius: 3px;
+  }
+
+  .keybind-sheet {
+    font-family: var(--mono);
+    font-size: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 32px;
+    margin-bottom: 32px;
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .kb-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+  }
+
+  .kb-row .key-badge {
+    font-size: 10px;
+    padding: 1px 7px;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .s3-enter {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: 440px;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .s3-enter .key-badge {
+    font-size: 11px;
+    padding: 2px 10px;
+  }
+
+  /* Navigation arrows */
+  .nav-arrows {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-btn:hover {
+    background: #1E1E2E;
+    border-color: var(--maize);
+    color: var(--maize);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .nav-btn:disabled:hover {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+  }
+
+  .dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s, width 0.2s;
+  }
+
+  .dot.active {
+    background: var(--maize);
+    width: 18px;
+    border-radius: 3px;
+  }
+
+  /* Design note */
+  .design-note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 12px;
+    letter-spacing: 0.02em;
+    min-height: 16px;
+  }
+
+  /* Notes sections below */
+  .notes-area {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .notes-section {
+    margin-bottom: 36px;
+  }
+
+  .notes-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .notes-header .label-accent {
+    color: var(--maize);
+  }
+
+  .impl-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .impl-list li {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.6;
+  }
+
+  .impl-list li::before {
+    content: '-';
+    position: absolute;
+    left: 4px;
+    color: var(--maize);
+    font-weight: 700;
+  }
+
+  .design-decision {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+  }
+
+  .dd-question {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--maize);
+    margin-bottom: 6px;
+  }
+
+  .dd-answer {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-eyebrow">Forge Design System / FD / Inkwell</div>
+  <h1 class="page-title">First-Launch Onboarding Flow</h1>
+  <p class="page-subtitle">Zero friction. 3 screens. No account. Just [Enter].</p>
+</div>
+
+<!-- Carousel -->
+<div class="carousel">
+  <div class="screen-counter">
+    Screen <span class="current" id="counter-current">1</span> of <span id="counter-total">3</span>
+  </div>
+
+  <div class="screens-wrap">
+
+    <!-- Screen 1: Welcome -->
+    <div class="screen active" id="screen-1">
+      <div class="tui-window">
+        <div class="tui-titlebar">
+          <div class="tui-dot red"></div>
+          <div class="tui-dot yellow"></div>
+          <div class="tui-dot green"></div>
+          <span class="tui-tab-label">inkwell</span>
+        </div>
+        <div class="s1-body">
+          <!-- Forge F mark -->
+          <svg class="forge-f-mark" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Forge F mark">
+            <rect width="56" height="56" rx="10" fill="#FFCB05"/>
+            <text x="28" y="40" font-family="'Segoe UI Variable','Segoe UI',system-ui,sans-serif" font-size="32" font-weight="800" fill="#0A0A0F" text-anchor="middle">F</text>
+          </svg>
+          <div class="inkwell-wordmark">INKWELL</div>
+          <div class="s1-tagline">Your journal. In your terminal.</div>
+          <div class="enter-hint">
+            <span class="key-badge maize">Enter</span>
+            <span>Start</span>
+          </div>
+          <div class="s1-note">No account needed. Your journal stays on your machine.</div>
+        </div>
+      </div>
+      <div class="design-note">Design note: No form fields. No account creation. The only action is [Enter].</div>
+    </div>
+
+    <!-- Screen 2: First Entry -->
+    <div class="screen" id="screen-2">
+      <div class="tui-window">
+        <div class="tui-titlebar">
+          <div class="tui-dot red"></div>
+          <div class="tui-dot yellow"></div>
+          <div class="tui-dot green"></div>
+          <span class="tui-tab-label">inkwell - new entry</span>
+        </div>
+        <div class="s2-topbar">
+          <span class="s2-topleft">New Entry</span>
+          <span class="s2-topright">02/23/2026</span>
+        </div>
+        <div class="s2-editor">
+          <span class="cursor-block"></span>
+          <div class="ghost-text">What's on your mind?</div>
+        </div>
+        <div class="s2-statusbar">
+          <div class="keybind">
+            <span class="key-badge">Ctrl+S</span>
+            <span>Save</span>
+          </div>
+          <div class="keybind">
+            <span class="key-badge">Esc</span>
+            <span>Skip</span>
+          </div>
+          <div class="keybind">
+            <span class="key-badge">?</span>
+            <span>Help</span>
+          </div>
+        </div>
+      </div>
+      <div class="design-note">Design note: Your first entry is just for you. We don't read it. Neither does anyone else.</div>
+    </div>
+
+    <!-- Screen 3: You're In -->
+    <div class="screen" id="screen-3">
+      <div class="tui-window">
+        <div class="tui-titlebar">
+          <div class="tui-dot red"></div>
+          <div class="tui-dot yellow"></div>
+          <div class="tui-dot green"></div>
+          <span class="tui-tab-label">inkwell</span>
+        </div>
+        <div class="s3-body">
+          <div class="checkmark-area">
+            <div class="checkmark">&#10003;</div>
+            <div class="saved-msg">First entry saved.</div>
+          </div>
+
+          <div class="progress-bar-wrap">
+            <div class="progress-bar">
+              <div class="progress-fill"></div>
+            </div>
+            <span>100%</span>
+          </div>
+
+          <div class="keybind-sheet">
+            <div class="kb-row">
+              <span class="key-badge">j/k</span>
+              <span>Navigate</span>
+            </div>
+            <div class="kb-row">
+              <span class="key-badge">N</span>
+              <span>New entry</span>
+            </div>
+            <div class="kb-row">
+              <span class="key-badge">/</span>
+              <span>Search</span>
+            </div>
+            <div class="kb-row">
+              <span class="key-badge">T</span>
+              <span>Tag</span>
+            </div>
+            <div class="kb-row">
+              <span class="key-badge">E</span>
+              <span>Export</span>
+            </div>
+            <div class="kb-row">
+              <span class="key-badge">?</span>
+              <span>Help</span>
+            </div>
+          </div>
+
+          <div class="s3-enter">
+            <span class="key-badge maize">Enter</span>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">Open Inkwell</span>
+          </div>
+        </div>
+      </div>
+      <div class="design-note">Design note: These are your tools. You'll learn them fast.</div>
+    </div>
+
+  </div><!-- .screens-wrap -->
+
+  <!-- Nav -->
+  <div class="nav-arrows">
+    <button class="nav-btn" id="btn-prev" disabled onclick="navigate(-1)">&#8592; Prev</button>
+    <div class="dots">
+      <div class="dot active" id="dot-1"></div>
+      <div class="dot" id="dot-2"></div>
+      <div class="dot" id="dot-3"></div>
+    </div>
+    <button class="nav-btn" id="btn-next" onclick="navigate(1)">Next &#8594;</button>
+  </div>
+</div><!-- .carousel -->
+
+<!-- Notes -->
+<div class="notes-area">
+
+  <div class="notes-section">
+    <div class="notes-header"><span class="label-accent">GA</span> Implementation Notes</div>
+    <ul class="impl-list">
+      <li>Screen 1: Render an Ink full-screen Box, centered, with the F mark as ASCII art or a static SVG imported via a terminal-compatible method. The [Enter] binding advances to Screen 2 using React state; no routing needed.</li>
+      <li>Screen 2: Open a real Ink TextInput or custom textarea component with a blinking cursor (use the Cursor component or a setInterval toggle). Ghost text should be a static Text node rendered at the same position, hidden once any input character is received. [Ctrl+S] triggers the save handler and advances to Screen 3. [Esc] skips directly to Screen 3 without saving.</li>
+      <li>Screen 3: After save or skip, transition to the completion screen. If [Esc] was used on Screen 2, the checkmark message should read "Entry skipped." instead of "First entry saved." so the copy stays accurate. The progress bar at 100% is decorative. [Enter] dismisses the onboarding shell and renders the main journal view.</li>
+      <li>Keyboard navigation across all 3 screens: left/right arrow keys should map to Previous/Next for accessibility. The onboarding wrapper component should attach these listeners and pass the current screen index down as a prop.</li>
+    </ul>
+  </div>
+
+  <div class="notes-section">
+    <div class="notes-header">Design Decisions</div>
+
+    <div class="design-decision">
+      <div class="dd-question">Why no account?</div>
+      <div class="dd-answer">A journal is private by default. Asking for an account on first launch signals that data will leave the machine. It also adds friction that causes drop-off before the user writes a single word. Local-first is the product promise, and the onboarding has to reflect that immediately.</div>
+    </div>
+
+    <div class="design-decision">
+      <div class="dd-question">Why no form?</div>
+      <div class="dd-answer">Forms imply setup. Inkwell has no setup. The user's name, preferences, and settings are not required to start writing. The product earns configuration options after the user has written something, not before. Anything on Screen 1 that isn't [Enter] is a delay.</div>
+    </div>
+
+    <div class="design-decision">
+      <div class="dd-question">Why does the cursor blink?</div>
+      <div class="dd-answer">The blinking cursor is the universal signal for "type here." It requires no label, no button, no prompt. In a TUI context where the entire interface is text, the cursor does more communication work than any instructional copy could. It says: this is where you write.</div>
+    </div>
+
+    <div class="design-decision">
+      <div class="dd-question">Why is [Esc] an option on Screen 2?</div>
+      <div class="dd-answer">Not everyone is ready to write on first launch. Forcing an entry creates an artificial first impression. [Esc] to skip respects the user's state while still completing the onboarding flow. The product should work before it asks the user to contribute anything to it.</div>
+    </div>
+
+  </div>
+
+</div><!-- .notes-area -->
+
+<script>
+  var current = 1;
+  var total = 3;
+
+  function navigate(dir) {
+    var next = current + dir;
+    if (next < 1 || next > total) return;
+    document.getElementById('screen-' + current).classList.remove('active');
+    document.getElementById('dot-' + current).classList.remove('active');
+    current = next;
+    document.getElementById('screen-' + current).classList.add('active');
+    document.getElementById('dot-' + current).classList.add('active');
+    document.getElementById('counter-current').textContent = current;
+    document.getElementById('btn-prev').disabled = current === 1;
+    document.getElementById('btn-next').disabled = current === total;
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight') navigate(1);
+    if (e.key === 'ArrowLeft') navigate(-1);
+  });
+</script>
+
+</body>
+</html>

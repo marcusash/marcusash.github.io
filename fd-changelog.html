@@ -1,0 +1,854 @@
+<!-- Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Forge Sprint Changelog | FD</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #1A1B2E;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --maize: #FFCB05;
+    --font: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    /* agent colors */
+    --fd: #FFCB05; --fa: #4A90D9; --ff: #22C55E; --fi: #6D28D9;
+    --fo: #94A3B8; --fp: #CE1126; --fr: #F97316;
+    --ga: #93AEFF; --gd: #3D3D3D; --gf: #6EE7B7; --gi: #A78BFA;
+    --gp: #EE2828; --gr: #FB923C;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .topbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .logo-mark {
+    width: 28px;
+    height: 28px;
+    background: var(--maize);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #1A1B2E;
+  }
+
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .topbar-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+
+  .topbar-spacer { flex: 1; }
+
+  .filter-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+
+  .type-filters {
+    display: flex;
+    gap: 6px;
+  }
+
+  .type-btn {
+    padding: 4px 10px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font);
+  }
+
+  .type-btn.active, .type-btn:hover { border-color: var(--text); background: var(--text); color: #fff; }
+  .type-btn[data-type="feat"].active { background: #3B82F6; border-color: #3B82F6; color: #fff; }
+  .type-btn[data-type="fix"].active { background: #EF4444; border-color: #EF4444; color: #fff; }
+  .type-btn[data-type="docs"].active { background: #8B5CF6; border-color: #8B5CF6; color: #fff; }
+  .type-btn[data-type="test"].active { background: #10B981; border-color: #10B981; color: #fff; }
+
+  /* LAYOUT */
+  .layout {
+    display: flex;
+    gap: 0;
+    min-height: calc(100vh - 57px);
+  }
+
+  .timeline-area {
+    flex: 1;
+    padding: 28px 28px 40px 32px;
+    overflow-x: auto;
+  }
+
+  .stats-panel {
+    width: 260px;
+    min-width: 260px;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    padding: 24px 20px;
+    overflow-y: auto;
+    position: sticky;
+    top: 57px;
+    height: calc(100vh - 57px);
+  }
+
+  /* TIMELINE HEADER */
+  .timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .tl-title { font-size: 20px; font-weight: 800; }
+  .tl-range {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+
+  /* AGENT FILTER CHIPS */
+  .agent-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 22px;
+  }
+
+  .agent-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--card);
+    color: var(--text);
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .agent-chip .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .agent-chip.inactive {
+    opacity: 0.35;
+    filter: grayscale(0.7);
+  }
+
+  /* GRID */
+  .grid-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .grid-days-row {
+    display: grid;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .day-header {
+    padding: 10px 12px 8px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .day-header:last-child { border-right: none; }
+
+  .day-name {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .day-date {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .day-count {
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* AGENT ROWS */
+  .agent-row {
+    display: grid;
+    border-bottom: 1px solid var(--border);
+    transition: opacity 0.2s;
+  }
+
+  .agent-row:last-child { border-bottom: none; }
+
+  .agent-row-label {
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .row-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .row-id {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* DAY CELLS */
+  .day-cell {
+    padding: 8px 6px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    border-right: 1px solid var(--border);
+    min-height: 44px;
+    min-width: 80px;
+    position: relative;
+  }
+
+  .day-cell:last-child { border-right: none; }
+
+  /* COMMIT DOTS */
+  .commit-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid rgba(255,255,255,0.6);
+    transition: transform 0.1s;
+    flex-shrink: 0;
+  }
+
+  .commit-dot:hover { transform: scale(1.5); z-index: 10; }
+
+  /* TOOLTIP */
+  .tooltip {
+    display: none;
+    position: fixed;
+    background: #1A1B2E;
+    color: #E8E8F0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11.5px;
+    max-width: 240px;
+    z-index: 9999;
+    pointer-events: none;
+    line-height: 1.5;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  }
+
+  .tooltip.visible { display: block; }
+  .tooltip-type { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+
+  /* STATS PANEL */
+  .stats-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  .stat-block {
+    margin-bottom: 20px;
+  }
+
+  .stat-block-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+  }
+
+  .stat-total {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .stats-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  .agent-stat-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 7px;
+  }
+
+  .agent-stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .agent-stat-id {
+    font-size: 11.5px;
+    font-weight: 700;
+    width: 26px;
+    flex-shrink: 0;
+  }
+
+  .agent-stat-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .agent-stat-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .agent-stat-count {
+    font-size: 11px;
+    color: var(--muted);
+    width: 20px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .type-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .type-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .type-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .type-stat-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .legend-note {
+    font-size: 10.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: var(--bg);
+    border-radius: 6px;
+  }
+</style>
+</head>
+<body>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-type" id="tooltip-type"></div>
+  <div id="tooltip-msg"></div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-mark">F</div>
+    <div>
+      <span class="topbar-title">Sprint Changelog</span>
+      <span class="topbar-sub">Feb 14-23 2026</span>
+    </div>
+  </div>
+  <div class="topbar-spacer"></div>
+  <span class="filter-label">Type:</span>
+  <div class="type-filters">
+    <button class="type-btn active" data-type="all" onclick="filterType('all')">All</button>
+    <button class="type-btn" data-type="feat" onclick="filterType('feat')">feat</button>
+    <button class="type-btn" data-type="fix" onclick="filterType('fix')">fix</button>
+    <button class="type-btn" data-type="docs" onclick="filterType('docs')">docs</button>
+    <button class="type-btn" data-type="test" onclick="filterType('test')">test</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="timeline-area">
+
+    <div class="timeline-header">
+      <div class="tl-title">Forge Sprint History</div>
+      <div class="tl-range">Feb 14 - Feb 23, 2026</div>
+    </div>
+
+    <!-- AGENT FILTER CHIPS -->
+    <div class="agent-filter-row" id="agentFilterRow"></div>
+
+    <!-- GRID -->
+    <div class="grid-wrap" id="mainGrid"></div>
+
+  </div>
+
+  <!-- STATS PANEL -->
+  <aside class="stats-panel" id="statsPanel">
+    <div class="stats-title">Sprint Stats</div>
+
+    <div class="stat-block">
+      <div class="stat-block-label">Total Commits</div>
+      <div class="stat-total" id="totalCount">90</div>
+      <div class="stat-sub">across 8 days, 13 agents</div>
+    </div>
+
+    <div class="stats-divider"></div>
+
+    <div class="stat-block">
+      <div class="stat-block-label">By Type</div>
+      <div class="type-stat-row"><span class="type-stat-label"><span class="type-dot" style="background:#3B82F6;"></span>feat</span><span class="type-stat-count" id="cnt-feat">0</span></div>
+      <div class="type-stat-row"><span class="type-stat-label"><span class="type-dot" style="background:#EF4444;"></span>fix</span><span class="type-stat-count" id="cnt-fix">0</span></div>
+      <div class="type-stat-row"><span class="type-stat-label"><span class="type-dot" style="background:#8B5CF6;"></span>docs</span><span class="type-stat-count" id="cnt-docs">0</span></div>
+      <div class="type-stat-row"><span class="type-stat-label"><span class="type-dot" style="background:#10B981;"></span>test</span><span class="type-stat-count" id="cnt-test">0</span></div>
+    </div>
+
+    <div class="stats-divider"></div>
+
+    <div class="stat-block">
+      <div class="stat-block-label">By Agent</div>
+      <div id="agentStats"></div>
+    </div>
+
+    <div class="legend-note">
+      Hover any dot for commit details. Use agent chips and type buttons to filter.
+    </div>
+  </aside>
+</div>
+
+<script>
+  // HARDCODED COMMIT DATA
+  // Days: 0=Feb14, 1=Feb15, ..., 7=Feb23
+  const DAYS = [
+    { label: 'Sat', date: '14', full: 'Feb 14' },
+    { label: 'Sun', date: '15', full: 'Feb 15' },
+    { label: 'Mon', date: '16', full: 'Feb 16' },
+    { label: 'Tue', date: '17', full: 'Feb 17' },
+    { label: 'Wed', date: '18', full: 'Feb 18' },
+    { label: 'Thu', date: '19', full: 'Feb 19' },
+    { label: 'Fri', date: '20', full: 'Feb 20' },
+    { label: 'Sat', date: '21', full: 'Feb 21' },
+    { label: 'Sun', date: '22', full: 'Feb 22' },
+    { label: 'Mon', date: '23', full: 'Feb 23' },
+  ];
+
+  const AGENTS = [
+    { id: 'FD', color: '#FFCB05' },
+    { id: 'FA', color: '#4A90D9' },
+    { id: 'FF', color: '#22C55E' },
+    { id: 'FI', color: '#6D28D9' },
+    { id: 'FO', color: '#94A3B8' },
+    { id: 'FP', color: '#CE1126' },
+    { id: 'FR', color: '#F97316' },
+    { id: 'GA', color: '#93AEFF' },
+    { id: 'GD', color: '#3D3D3D' },
+    { id: 'GF', color: '#6EE7B7' },
+    { id: 'GI', color: '#A78BFA' },
+    { id: 'GP', color: '#EE2828' },
+    { id: 'GR', color: '#FB923C' },
+  ];
+
+  const COMMITS = [
+    // Day 0: Feb 14 - init day (5 commits)
+    { agent:'FP', day:0, type:'feat', msg:'feat(fp): scaffold repo structure and CI pipeline' },
+    { agent:'FP', day:0, type:'feat', msg:'feat(fp): configure pnpm workspace and tsconfig' },
+    { agent:'FA', day:0, type:'feat', msg:'feat(fa): init architecture decision record' },
+    { agent:'FF', day:0, type:'test', msg:'test(ff): bootstrap vitest and first smoke test' },
+    { agent:'FD', day:0, type:'docs', msg:'docs(fd): draft design system token spec v0.1' },
+
+    // Day 1: Feb 15
+    { agent:'FA', day:1, type:'feat', msg:'feat(fa): define core module boundaries' },
+    { agent:'FA', day:1, type:'feat', msg:'feat(fa): add TypeScript strict mode baseline' },
+    { agent:'FD', day:1, type:'feat', msg:'feat(fd): agent color palette v1 locked' },
+    { agent:'FD', day:1, type:'docs', msg:'docs(fd): dark TUI theme hex reference sheet' },
+    { agent:'FI', day:1, type:'feat', msg:'feat(fi): M365 identity integration scaffold' },
+    { agent:'GP', day:1, type:'feat', msg:'feat(gp): Docker build pipeline first pass' },
+
+    // Day 2: Feb 16
+    { agent:'GA', day:2, type:'feat', msg:'feat(ga): Ink TUI shell with focus management' },
+    { agent:'GA', day:2, type:'feat', msg:'feat(ga): journal entry list component' },
+    { agent:'GD', day:2, type:'feat', msg:'feat(gd): sidebar layout component' },
+    { agent:'GF', day:2, type:'test', msg:'test(gf): Playwright smoke suite for TUI shell' },
+    { agent:'FR', day:2, type:'docs', msg:'docs(fr): voice tone eval methodology v1' },
+    { agent:'FR', day:2, type:'feat', msg:'feat(fr): prompt regression baseline 40 samples' },
+    { agent:'FP', day:2, type:'fix', msg:'fix(fp): resolve pnpm lockfile conflict' },
+
+    // Day 3: Feb 17
+    { agent:'FA', day:3, type:'feat', msg:'feat(fa): parser module with queue depth control' },
+    { agent:'FA', day:3, type:'fix', msg:'fix(fa): off-by-one in entry timestamp parsing' },
+    { agent:'FF', day:3, type:'test', msg:'test(ff): mutation test suite for parser' },
+    { agent:'FF', day:3, type:'test', msg:'test(ff): stryker config for queue depth module' },
+    { agent:'GI', day:3, type:'feat', msg:'feat(gi): question bank data pipeline v1' },
+    { agent:'GI', day:3, type:'feat', msg:'feat(gi): standards mapping CSV ingestion' },
+    { agent:'FO', day:3, type:'docs', msg:'docs(fo): agent onboarding protocol v1' },
+    { agent:'FD', day:3, type:'feat', msg:'feat(fd): brand mark SVG first draft' },
+
+    // Day 4: Feb 18
+    { agent:'GA', day:4, type:'feat', msg:'feat(ga): entry editor with syntax highlight' },
+    { agent:'GA', day:4, type:'fix', msg:'fix(ga): cursor position bug on multiline paste' },
+    { agent:'GD', day:4, type:'feat', msg:'feat(gd): dark TUI color variables applied' },
+    { agent:'GD', day:4, type:'feat', msg:'feat(gd): focus ring and keyboard nav styles' },
+    { agent:'GF', day:4, type:'test', msg:'test(gf): cross-browser regression suite pass 1' },
+    { agent:'FR', day:4, type:'feat', msg:'feat(fr): eval runner v2 with sentiment scoring' },
+    { agent:'FI', day:4, type:'feat', msg:'feat(fi): voice index first commit' },
+    { agent:'GP', day:4, type:'fix', msg:'fix(gp): CI timeout on slow Windows runners' },
+
+    // Day 5: Feb 19
+    { agent:'FD', day:5, type:'feat', msg:'feat(fd): pitch deck slide 1-10 layout' },
+    { agent:'FD', day:5, type:'feat', msg:'feat(fd): logo lockup v2 with clearspace rules' },
+    { agent:'FA', day:5, type:'feat', msg:'feat(fa): ff-queue module architecture' },
+    { agent:'FA', day:5, type:'docs', msg:'docs(fa): ADR-003 queue depth strategy' },
+    { agent:'GR', day:5, type:'feat', msg:'feat(gr): algebra2 question bank 200 items' },
+    { agent:'GR', day:5, type:'test', msg:'test(gr): math verification suite' },
+    { agent:'FF', day:5, type:'fix', msg:'fix(ff): stryker sandbox path on Windows' },
+    { agent:'FO', day:5, type:'docs', msg:'docs(fo): cross-org decision rights matrix' },
+
+    // Day 6: Feb 20
+    { agent:'GA', day:6, type:'feat', msg:'feat(ga): search and filter for journal entries' },
+    { agent:'GA', day:6, type:'feat', msg:'feat(ga): tag system MVP' },
+    { agent:'GD', day:6, type:'feat', msg:'feat(gd): light dashboard theme tokens' },
+    { agent:'GF', day:6, type:'test', msg:'test(gf): accessibility Playwright checks' },
+    { agent:'GI', day:6, type:'feat', msg:'feat(gi): analytics event schema v1' },
+    { agent:'GP', day:6, type:'feat', msg:'feat(gp): deploy pipeline to Azure staging' },
+    { agent:'FR', day:6, type:'docs', msg:'docs(fr): eval results summary Feb sprint' },
+
+    // Day 7: Feb 21
+    { agent:'FD', day:7, type:'feat', msg:'feat(fd): deck v3 complete 40 slides' },
+    { agent:'FD', day:7, type:'feat', msg:'feat(fd): logo final mark color locked' },
+    { agent:'FD', day:7, type:'docs', msg:'docs(fd): color system spec published' },
+    { agent:'FA', day:7, type:'feat', msg:'feat(fa): full parser module shipped' },
+    { agent:'FA', day:7, type:'fix', msg:'fix(fa): edge case empty journal file' },
+    { agent:'GA', day:7, type:'feat', msg:'feat(ga): keyboard shortcut system' },
+    { agent:'GD', day:7, type:'feat', msg:'feat(gd): component library first release' },
+    { agent:'GF', day:7, type:'test', msg:'test(gf): full regression suite green' },
+    { agent:'FR', day:7, type:'feat', msg:'feat(fr): sentiment eval v3 shipped' },
+    { agent:'FP', day:7, type:'feat', msg:'feat(fp): secrets scanning in CI' },
+
+    // Day 8: Feb 22 - logo locks, deck v4
+    { agent:'FD', day:8, type:'feat', msg:'feat(fd): deck v4 color lock final' },
+    { agent:'FD', day:8, type:'feat', msg:'feat(fd): maize FFCB05 locked in system' },
+    { agent:'FD', day:8, type:'feat', msg:'feat(fd): agent color grid locked all 13' },
+    { agent:'FD', day:8, type:'docs', msg:'docs(fd): style guide v1 published' },
+    { agent:'FD', day:8, type:'feat', msg:'feat(fd): dark TUI system complete' },
+    { agent:'FA', day:8, type:'feat', msg:'feat(fa): mutation test coverage 85 pct' },
+    { agent:'FF', day:8, type:'test', msg:'test(ff): 240 mutation tests passing' },
+    { agent:'GA', day:8, type:'feat', msg:'feat(ga): Inkwell v0.5 milestone' },
+    { agent:'GD', day:8, type:'feat', msg:'feat(gd): TUI theme final implementation' },
+    { agent:'FI', day:8, type:'feat', msg:'feat(fi): voice indexing pipeline live' },
+    { agent:'GI', day:8, type:'feat', msg:'feat(gi): MCM data pipeline production' },
+    { agent:'GP', day:8, type:'feat', msg:'feat(gp): production deploy green' },
+    { agent:'FO', day:8, type:'docs', msg:'docs(fo): sprint 1 retrospective' },
+    { agent:'FR', day:8, type:'docs', msg:'docs(fr): eval methodology locked' },
+    { agent:'GR', day:8, type:'feat', msg:'feat(gr): MCM question bank 500 items' },
+    { agent:'GF', day:8, type:'test', msg:'test(gf): end-to-end suite all passing' },
+    { agent:'FP', day:8, type:'feat', msg:'feat(fp): infrastructure hardening complete' },
+    { agent:'GI', day:8, type:'fix', msg:'fix(gi): CSV encoding bug on special chars' },
+    { agent:'GA', day:8, type:'fix', msg:'fix(ga): scroll behavior at file boundary' },
+    { agent:'GR', day:8, type:'test', msg:'test(gr): algebra2 verification 100 pct' },
+
+    // Day 9: Feb 23 - sprint close
+    { agent:'FD', day:9, type:'feat', msg:'feat(fd): deck v5 sprint summary complete' },
+    { agent:'FD', day:9, type:'feat', msg:'feat(fd): fd-changelog HTML canvas v1' },
+    { agent:'FD', day:9, type:'feat', msg:'feat(fd): fd-skill-tracker HTML canvas v1' },
+    { agent:'FD', day:9, type:'feat', msg:'feat(fd): agent handbook HTML canvas v1' },
+    { agent:'FA', day:9, type:'feat', msg:'feat(fa): architecture review sprint close' },
+    { agent:'FA', day:9, type:'docs', msg:'docs(fa): ADR-005 final parser design' },
+    { agent:'FF', day:9, type:'test', msg:'test(ff): stryker final run all modules' },
+    { agent:'FF', day:9, type:'fix', msg:'fix(ff): Windows path separator in config' },
+    { agent:'FI', day:9, type:'feat', msg:'feat(fi): M365 identity final integration' },
+    { agent:'FO', day:9, type:'docs', msg:'docs(fo): agent protocol v2 published' },
+    { agent:'FP', day:9, type:'feat', msg:'feat(fp): security audit report clean' },
+    { agent:'FR', day:9, type:'feat', msg:'feat(fr): voice eval final report sprint 1' },
+    { agent:'GA', day:9, type:'feat', msg:'feat(ga): Inkwell v0.6 feature complete' },
+    { agent:'GD', day:9, type:'feat', msg:'feat(gd): component library v0.3' },
+    { agent:'GF', day:9, type:'test', msg:'test(gf): full cross-platform suite pass' },
+    { agent:'GI', day:9, type:'feat', msg:'feat(gi): analytics dashboard v1 live' },
+    { agent:'GP', day:9, type:'feat', msg:'feat(gp): zero-downtime deploy confirmed' },
+    { agent:'GR', day:9, type:'feat', msg:'feat(gr): MCM curriculum alignment complete' },
+    { agent:'GA', day:9, type:'docs', msg:'docs(ga): Inkwell API reference v1' },
+    { agent:'GD', day:9, type:'docs', msg:'docs(gd): component storybook entries' },
+    { agent:'FD', day:9, type:'docs', msg:'docs(fd): sprint 1 design retrospective' },
+    { agent:'FA', day:9, type:'fix', msg:'fix(fa): edge case in batch parser flush' },
+    { agent:'FF', day:9, type:'test', msg:'test(ff): coverage report 91 pct lines' },
+    { agent:'GF', day:9, type:'test', msg:'test(gf): mobile viewport regression pass' },
+    { agent:'GR', day:9, type:'docs', msg:'docs(gr): question accuracy report' },
+  ];
+
+  // STATE
+  let activeAgents = new Set(AGENTS.map(a => a.id));
+  let activeType = 'all';
+
+  function agentColor(id) {
+    return AGENTS.find(a => a.id === id)?.color || '#ccc';
+  }
+
+  function typeColor(t) {
+    const map = { feat:'#3B82F6', fix:'#EF4444', docs:'#8B5CF6', test:'#10B981' };
+    return map[t] || '#ccc';
+  }
+
+  // BUILD AGENT FILTER CHIPS
+  const filterRow = document.getElementById('agentFilterRow');
+  AGENTS.forEach(agent => {
+    const chip = document.createElement('div');
+    chip.className = 'agent-chip';
+    chip.dataset.id = agent.id;
+    chip.innerHTML = '<span class="dot" style="background:' + agent.color + '"></span>' + agent.id;
+    chip.style.borderColor = agent.color;
+    chip.addEventListener('click', () => toggleAgent(agent.id));
+    filterRow.appendChild(chip);
+  });
+
+  function toggleAgent(id) {
+    if (activeAgents.has(id)) {
+      if (activeAgents.size === 1) {
+        // reset to all
+        AGENTS.forEach(a => activeAgents.add(a.id));
+      } else {
+        activeAgents.delete(id);
+      }
+    } else {
+      activeAgents.add(id);
+    }
+    renderGrid();
+    updateStats();
+    updateChips();
+  }
+
+  function updateChips() {
+    document.querySelectorAll('.agent-chip').forEach(chip => {
+      const id = chip.dataset.id;
+      chip.classList.toggle('inactive', !activeAgents.has(id));
+    });
+  }
+
+  function filterType(type) {
+    activeType = type;
+    document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('[data-type="' + type + '"]').classList.add('active');
+    renderGrid();
+    updateStats();
+  }
+
+  function visibleCommits() {
+    return COMMITS.filter(c => {
+      if (!activeAgents.has(c.agent)) return false;
+      if (activeType !== 'all' && c.type !== activeType) return false;
+      return true;
+    });
+  }
+
+  // BUILD GRID
+  const grid = document.getElementById('mainGrid');
+
+  const COL_COUNT = DAYS.length + 1; // label + days
+
+  function renderGrid() {
+    grid.innerHTML = '';
+    const vc = visibleCommits();
+
+    // Days header
+    const daysRow = document.createElement('div');
+    daysRow.className = 'grid-days-row';
+    daysRow.style.gridTemplateColumns = '72px ' + 'repeat(' + DAYS.length + ', 1fr)';
+    const cornerEl = document.createElement('div');
+    cornerEl.className = 'day-header';
+    cornerEl.style.background = 'var(--card)';
+    daysRow.appendChild(cornerEl);
+
+    DAYS.forEach((day, di) => {
+      const count = vc.filter(c => c.day === di).length;
+      const el = document.createElement('div');
+      el.className = 'day-header';
+      el.innerHTML = '<div class="day-name">' + day.label + '</div><div class="day-date">Feb ' + day.date + '</div><div class="day-count">' + count + ' commits</div>';
+      daysRow.appendChild(el);
+    });
+    grid.appendChild(daysRow);
+
+    // Agent rows
+    AGENTS.forEach(agent => {
+      const row = document.createElement('div');
+      row.className = 'agent-row';
+      row.style.gridTemplateColumns = '72px ' + 'repeat(' + DAYS.length + ', 1fr)';
+      row.style.opacity = activeAgents.has(agent.id) ? '1' : '0.25';
+
+      const label = document.createElement('div');
+      label.className = 'agent-row-label';
+      label.innerHTML = '<span class="row-dot" style="background:' + agent.color + '"></span><span class="row-id">' + agent.id + '</span>';
+      row.appendChild(label);
+
+      DAYS.forEach((day, di) => {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+        const dayCommits = vc.filter(c => c.agent === agent.id && c.day === di);
+        dayCommits.forEach(commit => {
+          const dot = document.createElement('div');
+          dot.className = 'commit-dot';
+          dot.style.background = agent.color;
+          dot.style.outline = '1.5px solid ' + typeColor(commit.type);
+          dot.addEventListener('mouseenter', (e) => showTooltip(e, commit, agent.color));
+          dot.addEventListener('mousemove', (e) => moveTooltip(e));
+          dot.addEventListener('mouseleave', hideTooltip);
+          cell.appendChild(dot);
+        });
+        row.appendChild(cell);
+      });
+
+      grid.appendChild(row);
+    });
+  }
+
+  // TOOLTIP
+  const tooltip = document.getElementById('tooltip');
+  const tooltipType = document.getElementById('tooltip-type');
+  const tooltipMsg = document.getElementById('tooltip-msg');
+
+  function showTooltip(e, commit, color) {
+    tooltipType.textContent = commit.type.toUpperCase() + ' · ' + commit.agent + ' · Feb ' + DAYS[commit.day].date;
+    tooltipType.style.color = color;
+    tooltipMsg.textContent = commit.msg;
+    tooltip.classList.add('visible');
+    moveTooltip(e);
+  }
+
+  function moveTooltip(e) {
+    let x = e.clientX + 12;
+    let y = e.clientY - 40;
+    if (x + 250 > window.innerWidth) x = e.clientX - 260;
+    if (y < 0) y = e.clientY + 16;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+
+  function hideTooltip() {
+    tooltip.classList.remove('visible');
+  }
+
+  // STATS
+  function updateStats() {
+    const vc = visibleCommits();
+    document.getElementById('totalCount').textContent = vc.length;
+
+    const types = { feat:0, fix:0, docs:0, test:0 };
+    vc.forEach(c => { if (types[c.type] !== undefined) types[c.type]++; });
+    document.getElementById('cnt-feat').textContent = types.feat;
+    document.getElementById('cnt-fix').textContent = types.fix;
+    document.getElementById('cnt-docs').textContent = types.docs;
+    document.getElementById('cnt-test').textContent = types.test;
+
+    const agentStats = document.getElementById('agentStats');
+    agentStats.innerHTML = '';
+    const counts = {};
+    AGENTS.forEach(a => counts[a.id] = 0);
+    vc.forEach(c => counts[c.agent]++);
+    const maxCount = Math.max(...Object.values(counts), 1);
+
+    AGENTS.forEach(agent => {
+      const count = counts[agent.id];
+      const pct = Math.round((count / maxCount) * 100);
+      const row = document.createElement('div');
+      row.className = 'agent-stat-row';
+      row.innerHTML = '<span class="agent-stat-dot" style="background:' + agent.color + '"></span>' +
+        '<span class="agent-stat-id">' + agent.id + '</span>' +
+        '<div class="agent-stat-bar-wrap"><div class="agent-stat-bar" style="width:' + pct + '%;background:' + agent.color + '"></div></div>' +
+        '<span class="agent-stat-count">' + count + '</span>';
+      agentStats.appendChild(row);
+    });
+  }
+
+  renderGrid();
+  updateStats();
+</script>
+</body>
+</html>

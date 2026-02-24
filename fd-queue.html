@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FD Queue</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #0A0A0F;
+    color: #E2E8F0;
+    font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    height: 100%; width: 100%;
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 36px 14px;
+    gap: 16px;
+  }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+  .agent-badge {
+    background: #FFCB05;
+    color: #0A0A0F;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  .header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #F8FAFC;
+    letter-spacing: -0.02em;
+  }
+  .header .ts {
+    margin-left: auto;
+    font-size: 11px;
+    color: #475569;
+    font-family: 'Cascadia Code', monospace;
+  }
+
+  .columns {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1.2fr 1fr;
+    gap: 14px;
+    min-height: 0;
+  }
+
+  .col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+
+  .col-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #475569;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1E293B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .col-label.waiting { color: #F97316; border-color: #431407; }
+  .col-label.active  { color: #FFCB05; border-color: #3A2E00; }
+  .col-label.up-next { color: #6D28D9; border-color: #2D1B69; }
+  .col-label.done    { color: #22C55E; border-color: #14532D; }
+
+  .col-count {
+    background: #1E293B;
+    color: #94A3B8;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+  .col-label.waiting .col-count { background: #431407; color: #F97316; }
+  .col-label.active .col-count  { background: #3A2E00; color: #FFCB05; }
+  .col-label.up-next .col-count { background: #2D1B69; color: #A78BFA; }
+  .col-label.done .col-count    { background: #14532D; color: #22C55E; }
+
+  .cards {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-height: 0;
+  }
+  .cards::-webkit-scrollbar { width: 3px; }
+  .cards::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 2px; }
+
+  .card {
+    background: #0F172A;
+    border: 1px solid #1E293B;
+    border-radius: 8px;
+    padding: 11px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .card.waiting { border-left: 3px solid #F97316; }
+  .card.active  { border-left: 3px solid #FFCB05; }
+  .card.up-next { border-left: 3px solid #6D28D9; }
+  .card.done    { border-left: 3px solid #22C55E; opacity: 0.65; }
+
+  .card-header { display: flex; align-items: flex-start; gap: 8px; }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #E2E8F0;
+    line-height: 1.35;
+    flex: 1;
+  }
+  .card.done .card-title { color: #64748B; }
+
+  .card-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .card-tag.fo { background: #1E293B; color: #94A3B8; }
+  .card-tag.fi { background: #2D1B69; color: #A78BFA; }
+  .card-tag.fr { background: #431407; color: #F97316; }
+  .card-tag.fa { background: #1E3A5F; color: #93C5FD; }
+  .card-tag.marcus { background: #3A2E00; color: #FFCB05; }
+
+  .card-desc {
+    font-size: 11px;
+    color: #64748B;
+    line-height: 1.5;
+  }
+  .card-sent {
+    font-size: 10px;
+    color: #22C55E;
+    font-family: 'Cascadia Code', monospace;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .card-sent::before { content: '✓ sent'; }
+
+  .card-blocker {
+    font-size: 10px;
+    color: #F97316;
+    font-family: 'Cascadia Code', monospace;
+  }
+  .card-blocker span { color: #94A3B8; }
+
+  .footer-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    padding-top: 8px;
+    border-top: 1px solid #0F172A;
+  }
+  .mode-badge {
+    font-family: 'Cascadia Code', monospace;
+    font-size: 10px;
+    color: #475569;
+    background: #0F172A;
+    border: 1px solid #1E293B;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 4px 12px;
+    border-radius: 20px;
+  }
+  .mode-badge span { color: #FFCB05; }
+  .footer-note {
+    font-size: 10px;
+    color: #334155;
+    font-family: 'Cascadia Code', monospace;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="agent-badge">FD</div>
+  <h1>Design Director — Full Queue</h1>
+  <div class="ts">2026-02-23 08:20 UTC</div>
+</div>
+
+<div class="columns">
+
+  <!-- COL 1: OTHERS WAITING ON FD -->
+  <div class="col">
+    <div class="col-label waiting">Others Waiting on FD <span class="col-count">2</span></div>
+    <div class="cards">
+
+      <div class="card waiting">
+        <div class="card-header">
+          <div class="card-title">Sprint Scorecard — FO to Implement Critique</div>
+          <div class="card-tag fo">FO</div>
+        </div>
+        <div class="card-desc">7 P1 critique items sent to FO: buried 94% headline, SF Mono font wrong, no KPI hierarchy, prose in table cells, wrong agent colors, missing Sprint 2 compare, section labels too small. FO implements all P1s, self-critiques, sends back to FD. FD signs off before Marcus sees it.</div>
+        <div class="card-sent"> 202602230758</div>
+      </div>
+
+      <div class="card waiting">
+        <div class="card-header">
+          <div class="card-title">Forge Way Comms — FO to Fix Color Bugs</div>
+          <div class="card-tag fo">FO</div>
+        </div>
+        <div class="card-desc">5 P1 critique items sent to FO: Grind agent colors all wrong (using FF emerald), FA color typo (#4A9D09 not #4A90D9), FI color stale (#6D28D9 not #6D28D9), two yellow vars, GP agent pill missing, undefined .rule class. P1 fixes are code-level color corrections — FO must not visually guess.</div>
+        <div class="card-sent"> 202602230804</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 2: IN PROGRESS / WAITING REPLY -->
+  <div class="col">
+    <div class="col-label active">Waiting for Reply <span class="col-count">3</span></div>
+    <div class="cards">
+
+      <div class="card active">
+        <div class="card-header">
+          <div class="card-title">Web Presence — Marcus Sign-off</div>
+          <div class="card-tag marcus">Marcus</div>
+        </div>
+        <div class="card-desc">GitHub Pages mockup + SharePoint spec sent to FO inbox for routing to Marcus. Two decisions needed: (1) approve GitHub Pages design → FA deploys, (2) approve SharePoint spec → FO implements in staging → FD reviews → Marcus final approve before publish.</div>
+        <div class="card-sent"> 202602230820</div>
+      </div>
+
+      <div class="card active">
+        <div class="card-header">
+          <div class="card-title">FI TUI Email Canvas — Questions</div>
+          <div class="card-tag fi">FI</div>
+        </div>
+        <div class="card-desc">4-screen canvas sent (inbox list, read view, compose, thread view). Awaiting FI response to 4 open questions: keybinding accuracy, thread grouping model, missing screens (search/notifications), agent avatar color source.</div>
+        <div class="card-sent"> 202602230756</div>
+      </div>
+
+      <div class="card active">
+        <div class="card-header">
+          <div class="card-title">FR Promotion Letter — Draft Pending</div>
+          <div class="card-tag fr">FR</div>
+        </div>
+        <div class="card-desc">Waiting for FO to send FR promotion letter draft. FD applies Marcus voice guide (concise, direct, no filler) when draft arrives and returns to FO for routing.</div>
+        <div class="card-blocker">blocked · waiting on <span>FO</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 3: UP NEXT (INDEPENDENT) -->
+  <div class="col">
+    <div class="col-label up-next">Up Next · Independent <span class="col-count">3</span></div>
+    <div class="cards">
+
+      <div class="card up-next">
+        <div class="card-header">
+          <div class="card-title">TUI Prototyping Window Spec</div>
+        </div>
+        <div class="card-desc">Define the prototyping window environment: dimensions, viewport constraints, launch command, frame layout. Write docs/features/fd-tui-prototyping-spec.md. Unblocks all future TUI screen work.</div>
+      </div>
+
+      <div class="card up-next">
+        <div class="card-header">
+          <div class="card-title">Deck Multi-Variant Slides (live with Marcus)</div>
+          <div class="card-tag marcus">Marcus</div>
+        </div>
+        <div class="card-desc">Variant explorer is complete (forge-deck-v6-variants.html). Marcus needs to pick closing slide variant (A/B/C/D) to lock into main deck. Valentine's Day slide 09 needs 3-beat origin story rebuild — needs Marcus confirmation on arc.</div>
+      </div>
+
+      <div class="card up-next">
+        <div class="card-header">
+          <div class="card-title">designTokens.ts — FI Color Verify</div>
+          <div class="card-tag fi">FI</div>
+        </div>
+        <div class="card-desc">FI color updated in forge-brand-showcase.html and fd-iconography-color-system.md (#6D28D9 → #6D28D9). Need to verify designTokens.ts also has the correct value — it may still have the old #6D28D9. Check and fix if needed.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 4: DONE THIS SESSION -->
+  <div class="col">
+    <div class="col-label done">Done This Session <span class="col-count">7</span></div>
+    <div class="cards">
+
+      <div class="card done">
+        <div class="card-title">Dashboard Design Skill</div>
+        <div class="card-desc">10 rules, light theme mandate, KPI card pattern, GP vs FO comparison. docs/skills/fd-dashboard-design.md + reference implementation.</div>
+      </div>
+
+      <div class="card done">
+        <div class="card-title">FD Self-Critique Skill Doc</div>
+        <div class="card-desc">docs/skills/fd-self-critique.md — 5-step method, P1/P2/P3 defs, locked decision rule, common P1 patterns. Sent to FO inbox.</div>
+      </div>
+
+      <div class="card done">
+        <div class="card-title">FI TUI Email 4-Screen Canvas</div>
+        <div class="card-desc">Inbox list, read view, compose, thread view. Aligned to designTokens.ts. docs/pitch-deck/fd-tui-email-design.html. Sent to FI.</div>
+      </div>
+
+      <div class="card done">
+        <div class="card-title">Sprint Scorecard Critique → FO</div>
+        <div class="card-desc">7 P1s, 4 P2s. Includes 5-step self-critique method for FO to learn. inbox-FO/202602230758.</div>
+      </div>
+
+      <div class="card done">
+        <div class="card-title">Forge Way Comms Critique → FO</div>
+        <div class="card-desc">5 P1s (critical color bugs). inbox-FO/202602230804.</div>
+      </div>
+
+      <div class="card done">
+        <div class="card-title">Web Presence Design — Both Platforms</div>
+        <div class="card-desc">GitHub Pages mockup (fd-web-github-pages-mockup.html) + SharePoint spec (fd-web-sharepoint-spec.html). Sent to FO → Marcus.</div>
+      </div>
+
+      <div class="card done">
+        <div class="card-title">Dispatch Mark Restored + Locked</div>
+        <div class="card-desc">Autonomous session drift fixed. Stroke-width 4, speed lines 1.2, LOCKED comment. FI color #6D28D9 applied. Committed 49a7084.</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-strip">
+  <div class="mode-badge">MODE: <span>AUTONOMOUS</span></div>
+  <div class="footer-note">dependencies-first priority · locked decisions never change without Marcus · queue updated 2026-02-23 08:20 UTC</div>
+</div>
+
+<script src="canvas-feedback.js"></script>
+</body>
+</html>

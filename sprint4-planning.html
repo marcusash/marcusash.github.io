@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sprint 4 Planning — Forge</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #F1F5F9;
+    --surface: #FFFFFF;
+    --border:  #E2E8F0;
+    --text:    #1E293B;
+    --muted:   #64748B;
+    --subtle:  #94A3B8;
+    --maize:   #FFCB05;
+    --navy:    #1E293B;
+    --green:   #22C55E;
+    --orange:  #F97316;
+    --red:     #CE1126;
+    --purple:  #6D28D9;
+    --font:    'Segoe UI Variable','Segoe UI',Arial,sans-serif;
+    --mono:    'Cascadia Code','Consolas',monospace;
+  }
+  html, body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font);
+    height: 100%; overflow: hidden;
+  }
+  body {
+    display: flex; flex-direction: column;
+    padding: 22px 36px 16px; gap: 16px; height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+  }
+  .agent-badge {
+    background: var(--maize); color: var(--navy);
+    font-family: var(--mono); font-size: 11px; font-weight: 800;
+    letter-spacing: 0.12em; padding: 3px 10px; border-radius: 4px;
+  }
+  .header h1 {
+    font-size: 19px; font-weight: 700; color: var(--text); letter-spacing: -0.02em;
+  }
+  .header-meta {
+    margin-left: auto; display: flex; gap: 16px; align-items: center;
+  }
+  .meta-chip {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    color: var(--subtle); background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 3px 8px;
+  }
+  .status-chip {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 4px;
+    background: #FEF9C3; color: #92400E; border: 1px solid #FDE047;
+  }
+
+  /* ── GRID ── */
+  .grid {
+    flex: 1; min-height: 0;
+    display: grid;
+    grid-template-columns: 1.1fr 1.2fr 0.9fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .panel.span-col { grid-row: 1 / 3; }
+
+  .panel-header {
+    background: var(--navy); padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  }
+  .ph-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--subtle);
+  }
+  .ph-count {
+    margin-left: auto; font-family: var(--mono); font-size: 11px;
+    color: var(--maize); font-weight: 700;
+  }
+
+  .panel-body {
+    flex: 1; overflow-y: auto; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px; min-height: 0;
+  }
+  .panel-body::-webkit-scrollbar { width: 3px; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── WIN ROW ── */
+  .win-row {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 9px 10px;
+    background: #F8FAFC; border: 1px solid var(--border); border-radius: 7px;
+  }
+  .win-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--green); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+    font-size: 10px; color: #fff; font-weight: 800;
+  }
+  .win-text { font-size: 12px; color: var(--text); line-height: 1.45; }
+  .win-tag {
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 1px 5px; border-radius: 3px; flex-shrink: 0; margin-top: 2px;
+  }
+
+  /* ── DEPENDENCY ROW ── */
+  .dep-row {
+    background: #F8FAFC; border: 1px solid var(--border); border-radius: 7px;
+    padding: 9px 10px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .dep-header { display: flex; gap: 8px; align-items: center; }
+  .dep-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dep-title { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+  .dep-agent {
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 3px;
+  }
+  .dep-sub { font-size: 11px; color: var(--muted); line-height: 1.4; padding-left: 16px; }
+
+  /* ── GOAL ROW ── */
+  .goal-row {
+    background: #F8FAFC; border: 1px solid var(--border); border-radius: 7px;
+    padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start;
+    position: relative;
+  }
+  .goal-row.proposed { border-left: 3px solid var(--maize); }
+  .goal-num {
+    font-family: var(--mono); font-size: 11px; font-weight: 800;
+    color: var(--maize); width: 20px; flex-shrink: 0; padding-top: 1px;
+  }
+  .goal-body { flex: 1; }
+  .goal-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .goal-desc { font-size: 11px; color: var(--muted); line-height: 1.45; }
+  .goal-assign {
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 1px 6px; border-radius: 3px; margin-top: 5px;
+    display: inline-block;
+  }
+  .approve-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 5px; padding: 3px 8px;
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--subtle); cursor: pointer; transition: all 0.15s;
+  }
+  .approve-btn:hover { background: var(--green); border-color: var(--green); color: #fff; }
+  .approve-btn.approved { background: #F0FDF4; border-color: var(--green); color: var(--green); }
+
+  /* ── CAPACITY ── */
+  .cap-row {
+    display: flex; gap: 8px; align-items: center;
+    padding: 8px 10px;
+    background: #F8FAFC; border: 1px solid var(--border); border-radius: 7px;
+  }
+  .agent-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 10px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .cap-name { font-size: 12px; font-weight: 600; color: var(--text); flex: 1; }
+  .cap-state {
+    font-family: var(--mono); font-size: 9px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 3px;
+  }
+  .cap-state.free     { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+  .cap-state.blocked  { background: #FEF9C3; color: #92400E; border: 1px solid #FDE047; }
+  .cap-state.waiting  { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+
+  /* ── KPI HERO (sprint 3 summary) ── */
+  .kpi-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    flex-shrink: 0; padding: 0 0 2px;
+  }
+  .kpi {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; text-align: center;
+  }
+  .kpi.primary {
+    background: var(--navy); border-color: var(--navy);
+  }
+  .kpi-num {
+    font-size: 26px; font-weight: 800; color: var(--text);
+    letter-spacing: -0.03em; line-height: 1;
+  }
+  .kpi.primary .kpi-num { color: var(--maize); }
+  .kpi-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--subtle); margin-top: 3px;
+  }
+  .kpi.primary .kpi-label { color: #475569; }
+
+  /* ── FOOTER ── */
+  .footer {
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    padding-top: 8px; border-top: 1px solid var(--border);
+  }
+  .footer-note { font-size: 10px; color: var(--subtle); font-family: var(--mono); }
+  .approve-all-btn {
+    margin-left: auto;
+    background: var(--maize); color: var(--navy);
+    border: none; border-radius: 7px; padding: 8px 20px;
+    font-family: var(--mono); font-size: 11px; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .approve-all-btn:hover { opacity: 0.85; }
+  .approve-all-btn.done { background: #F0FDF4; color: #16A34A; border: 1px solid var(--green); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="agent-badge">FD</div>
+  <h1>Sprint 4 Planning</h1>
+  <div class="header-meta">
+    <div class="meta-chip">2026-02-23</div>
+    <div class="meta-chip">Sprint 3 → 4</div>
+    <div class="status-chip">Awaiting Marcus Approval</div>
+  </div>
+</div>
+
+<!-- KPI STRIP: Sprint 3 in numbers -->
+<div class="kpi-strip">
+  <div class="kpi primary">
+    <div class="kpi-num">7</div>
+    <div class="kpi-label">S3 Tasks Done</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-num">5</div>
+    <div class="kpi-label">FO Critiques Sent</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-num">3</div>
+    <div class="kpi-label">Agents Unblocked</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-num">0</div>
+    <div class="kpi-label">Locked Color Violations</div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="grid">
+
+  <!-- COL 1: SPRINT 3 WINS -->
+  <div class="panel span-col">
+    <div class="panel-header">
+      <div class="ph-label">Sprint 3 Wins</div>
+      <div class="ph-count">7 shipped</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="win-row">
+        <div class="win-check">✓</div>
+        <div class="win-text">Dispatch mark restored to locked spec — bold right arrow, two speed lines, no left-pointing elements</div>
+        <div class="win-tag" style="background:#E0F2FE;color:#0369A1;">LOCK</div>
+      </div>
+
+      <div class="win-row">
+        <div class="win-check">✓</div>
+        <div class="win-text">Dashboard design system — 10 rules, light-theme mandate, GP vs FO reference, KPI card pattern</div>
+        <div class="win-tag" style="background:#FEF9C3;color:#92400E;">SKILL</div>
+      </div>
+
+      <div class="win-row">
+        <div class="win-check">✓</div>
+        <div class="win-text">FI TUI email — 4-screen canvas shipped (inbox, read, compose, thread) aligned to designTokens.ts</div>
+        <div class="win-tag" style="background:#EDE9FE;color:#5B21B6;">FI</div>
+      </div>
+
+      <div class="win-row">
+        <div class="win-check">✓</div>
+        <div class="win-text">Sprint scorecard critique → FO — 7 P1s identified (buried 94%, wrong font, flat hierarchy, prose in table cells)</div>
+        <div class="win-tag" style="background:#F1F5F9;color:#475569;">FO</div>
+      </div>
+
+      <div class="win-row">
+        <div class="win-check">✓</div>
+        <div class="win-text">Forge Way Comms critique → FO — 5 P1 color bugs (FA typo, FI stale, Grind all wrong, GP missing)</div>
+        <div class="win-tag" style="background:#F1F5F9;color:#475569;">FO</div>
+      </div>
+
+      <div class="win-row">
+        <div class="win-check">✓</div>
+        <div class="win-text">Web presence design — marcusash.github.io mockup + SharePoint spec → Marcus sign-off queue</div>
+        <div class="win-tag" style="background:#FEF9C3;color:#92400E;">SHIP</div>
+      </div>
+
+      <div class="win-row">
+        <div class="win-check">✓</div>
+        <div class="win-text">Canvas feedback system — drop-in JS overlay, voice input, auto-context, report export. Retrofitted to 6 canvases</div>
+        <div class="win-tag" style="background:#F0FDF4;color:#16A34A;">INFRA</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 2 ROW 1: OPEN DEPENDENCIES -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="ph-label">Open Dependencies</div>
+      <div class="ph-count">5 waiting</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#FFCB05;"></div>
+          <div class="dep-title">Web presence sign-off</div>
+          <div class="dep-agent" style="background:#3A2E00;color:#FFCB05;">Marcus</div>
+        </div>
+        <div class="dep-sub">GitHub Pages mockup + SharePoint spec. FO has it. Needs Marcus approval → FA deploys.</div>
+      </div>
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#94A3B8;"></div>
+          <div class="dep-title">Scorecard 7 P1 fixes</div>
+          <div class="dep-agent" style="background:#1E293B;color:#94A3B8;">FO</div>
+        </div>
+        <div class="dep-sub">FO implements: font, colors, KPI hierarchy, table cells. FD reviews. Then Marcus sees it.</div>
+      </div>
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#94A3B8;"></div>
+          <div class="dep-title">Comms 5 P1 color fixes</div>
+          <div class="dep-agent" style="background:#1E293B;color:#94A3B8;">FO</div>
+        </div>
+        <div class="dep-sub">FO fixes FA typo, FI stale color, Grind pills, GP missing. Critical — these are locked colors.</div>
+      </div>
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#6D28D9;"></div>
+          <div class="dep-title">Email canvas 4 open questions</div>
+          <div class="dep-agent" style="background:#2D1B69;color:#A78BFA;">FI</div>
+        </div>
+        <div class="dep-sub">Keybindings, thread grouping model, search/notification screens, agent avatar color source.</div>
+      </div>
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#F97316;"></div>
+          <div class="dep-title">FR promo letter draft</div>
+          <div class="dep-agent" style="background:#431407;color:#F97316;">FO→FR</div>
+        </div>
+        <div class="dep-sub">FO sends draft. FD applies Marcus voice guide. Blocked until FO sends.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 3 ROW 1: TEAM CAPACITY -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="ph-label">Team Capacity</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="cap-row">
+        <div class="agent-dot" style="background:#FFCB05;color:#0A0A0F;">FD</div>
+        <div class="cap-name">Design Director</div>
+        <div class="cap-state free">Free</div>
+      </div>
+
+      <div class="cap-row">
+        <div class="agent-dot" style="background:#22C55E;color:#0A0A0F;">FF</div>
+        <div class="cap-name">Frontend Eng</div>
+        <div class="cap-state free">Free</div>
+      </div>
+
+      <div class="cap-row">
+        <div class="agent-dot" style="background:#94A3B8;color:#0A0A0F;">FO</div>
+        <div class="cap-name">Operations</div>
+        <div class="cap-state blocked">5 P1 fixes</div>
+      </div>
+
+      <div class="cap-row">
+        <div class="agent-dot" style="background:#6D28D9;color:#fff;">FI</div>
+        <div class="cap-name">Infrastructure</div>
+        <div class="cap-state waiting">Awaiting FD</div>
+      </div>
+
+      <div class="cap-row">
+        <div class="agent-dot" style="background:#4A90D9;color:#fff;">FA</div>
+        <div class="cap-name">Architecture</div>
+        <div class="cap-state waiting">Awaiting Marcus</div>
+      </div>
+
+      <div class="cap-row">
+        <div class="agent-dot" style="background:#F97316;color:#fff;">FR</div>
+        <div class="cap-name">Research</div>
+        <div class="cap-state blocked">Waiting FO draft</div>
+      </div>
+
+      <div class="cap-row">
+        <div class="agent-dot" style="background:#CE1126;color:#fff;">FP</div>
+        <div class="cap-name">Platform Eng</div>
+        <div class="cap-state free">Free</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 2 ROW 2: PROPOSED SPRINT 4 GOALS -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="ph-label">Proposed Sprint 4 Goals</div>
+      <div class="ph-count">5 proposed</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="goal-row proposed">
+        <div class="goal-num">G1</div>
+        <div class="goal-body">
+          <div class="goal-title">Ship web presence — GitHub Pages + SharePoint live</div>
+          <div class="goal-desc">Marcus approves → FA deploys GitHub Pages. FO provisions SharePoint Forge hub. Both live by end of sprint.</div>
+          <div class="goal-assign" style="background:#3A2E00;color:#FFCB05;">FA + FO</div>
+        </div>
+        <button class="approve-btn" onclick="approveGoal(this)">Approve</button>
+      </div>
+
+      <div class="goal-row proposed">
+        <div class="goal-num">G2</div>
+        <div class="goal-body">
+          <div class="goal-title">FO scorecard + comms — all P1s fixed and Marcus-ready</div>
+          <div class="goal-desc">7 P1 scorecard fixes + 5 P1 comms color fixes. FD reviews each. Zero locked-color violations.</div>
+          <div class="goal-assign" style="background:#1E293B;color:#94A3B8;">FO</div>
+        </div>
+        <button class="approve-btn" onclick="approveGoal(this)">Approve</button>
+      </div>
+
+      <div class="goal-row proposed">
+        <div class="goal-num">G3</div>
+        <div class="goal-body">
+          <div class="goal-title">Forge UI component library shipped</div>
+          <div class="goal-desc">Single reference HTML for all reusable canvas components. FO uses this — no more guessing at spacing/colors.</div>
+          <div class="goal-assign" style="background:#3A2E00;color:#FFCB05;">FD</div>
+        </div>
+        <button class="approve-btn" onclick="approveGoal(this)">Approve</button>
+      </div>
+
+      <div class="goal-row proposed">
+        <div class="goal-num">G4</div>
+        <div class="goal-body">
+          <div class="goal-title">FI email + TUI — questions answered, screens expanded</div>
+          <div class="goal-desc">FI responds to 4 questions. FD adds search, notification, settings screens. Full email TUI ready for FF build.</div>
+          <div class="goal-assign" style="background:#2D1B69;color:#A78BFA;">FD + FI</div>
+        </div>
+        <button class="approve-btn" onclick="approveGoal(this)">Approve</button>
+      </div>
+
+      <div class="goal-row proposed">
+        <div class="goal-num">G5</div>
+        <div class="goal-body">
+          <div class="goal-title">Deck closing slide locked — Marcus picks A/B/C/D</div>
+          <div class="goal-desc">Live session. Marcus reviews 4 variants in forge-deck-v6-variants.html, picks one, FD locks into main deck.</div>
+          <div class="goal-assign" style="background:#3A2E00;color:#FFCB05;">FD + Marcus</div>
+        </div>
+        <button class="approve-btn" onclick="approveGoal(this)">Approve</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COL 3 ROW 2: MARCUS DECISIONS NEEDED -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="ph-label">Marcus Decisions</div>
+      <div class="ph-count">3 needed</div>
+    </div>
+    <div class="panel-body">
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#FFCB05;"></div>
+          <div class="dep-title">Approve GitHub Pages design</div>
+        </div>
+        <div class="dep-sub">→ FA creates repo marcusash.github.io and deploys index.html</div>
+      </div>
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#FFCB05;"></div>
+          <div class="dep-title">Approve SharePoint spec</div>
+        </div>
+        <div class="dep-sub">→ FO implements staging → FD reviews screenshots → Marcus final publish approve</div>
+      </div>
+
+      <div class="dep-row">
+        <div class="dep-header">
+          <div class="dep-dot" style="background:#FFCB05;"></div>
+          <div class="dep-title">Pick deck closing slide variant</div>
+        </div>
+        <div class="dep-sub">→ Open forge-deck-v6-variants.html, pick A/B/C/D → FD locks into main deck</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-note">Sprint 4 goals are proposals — Marcus approves individually or all at once · Locked decisions require Marcus live sign-off</div>
+  <button class="approve-all-btn" id="approve-all-btn" onclick="approveAll()">Approve All Goals →</button>
+</div>
+
+<script>
+function approveGoal(btn) {
+  btn.textContent = '✓ Approved';
+  btn.classList.add('approved');
+  btn.disabled = true;
+  checkAllApproved();
+}
+
+function approveAll() {
+  document.querySelectorAll('.approve-btn:not(.approved)').forEach(btn => approveGoal(btn));
+}
+
+function checkAllApproved() {
+  const total   = document.querySelectorAll('.approve-btn').length;
+  const approved = document.querySelectorAll('.approve-btn.approved').length;
+  const allBtn  = document.getElementById('approve-all-btn');
+  if (approved === total) {
+    allBtn.textContent = '✓ Sprint 4 Approved';
+    allBtn.classList.add('done');
+  }
+}
+</script>
+
+<script src="canvas-feedback.js"></script>
+</body>
+</html>

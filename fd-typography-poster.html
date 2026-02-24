@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Typography System</title>
+<style>
+  :root {
+    --maize: #FFCB05;
+    --bg: #0A0A0F;
+    --surface: #12121A;
+    --surface2: #181820;
+    --border: #1E1E2A;
+    --dim: #555568;
+    --muted: #808099;
+    --text: #E8E8F0;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100vw; height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    overflow: hidden;
+  }
+  .canvas {
+    width: 100%; height: 100%;
+    overflow-y: auto;
+    padding: 3rem 4rem;
+    scroll-behavior: smooth;
+  }
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .title-block .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--maize);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 0.5rem;
+  }
+  .title-block h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .meta {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--dim);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  /* Section headers */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section { margin-bottom: 3rem; }
+
+  /* Type scale */
+  .scale-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 140px;
+    align-items: baseline;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+    gap: 2rem;
+  }
+  .scale-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--maize);
+    white-space: nowrap;
+  }
+  .scale-sample { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .scale-spec {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--dim);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Font pair blocks */
+  .pair-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .pair-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+  .pair-card .pair-name {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--maize);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 1rem;
+  }
+  .pair-card .pair-display {
+    margin-bottom: 0.75rem;
+  }
+  .pair-card .pair-sample {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+  }
+  .pair-card .stack { display: flex; flex-direction: column; gap: 0.25rem; }
+
+  /* Weight showcase */
+  .weight-row {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .weight-item { flex: 1; min-width: 120px; }
+  .weight-value {
+    font-size: 1.5rem;
+    color: var(--text);
+    margin-bottom: 0.25rem;
+  }
+  .weight-label {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--dim);
+  }
+
+  /* Color of type */
+  .color-type-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1rem;
+  }
+  .color-type-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .color-swatch {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    margin: 0 auto 0.5rem;
+  }
+  .color-type-name {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+  .color-type-hex {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: var(--dim);
+  }
+  .color-type-sample {
+    font-size: 0.7rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Rules table */
+  .rules-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .rule-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 1.5rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+  }
+  .rule-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--maize);
+  }
+  .rule-value {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .rule-value strong { color: var(--text); font-weight: 600; }
+
+  /* Do / Don't */
+  .do-dont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .do-card {
+    background: rgba(34, 197, 94, 0.05);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 6px;
+    padding: 1rem;
+  }
+  .dont-card {
+    background: rgba(206, 17, 38, 0.05);
+    border: 1px solid rgba(206, 17, 38, 0.2);
+    border-radius: 6px;
+    padding: 1rem;
+  }
+  .do-label {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #22C55E;
+    margin-bottom: 0.75rem;
+  }
+  .dont-label {
+    font-family: var(--mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #CE1126;
+    margin-bottom: 0.75rem;
+  }
+  .do-item, .dont-item {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 0.4rem;
+    padding-left: 0.75rem;
+    position: relative;
+    line-height: 1.5;
+  }
+  .do-item::before { content: '+'; position: absolute; left: 0; color: #22C55E; font-weight: 700; }
+  .dont-item::before { content: '-'; position: absolute; left: 0; color: #CE1126; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="header">
+    <div class="title-block">
+      <p class="eyebrow">Forge Design System</p>
+      <h1>Typography</h1>
+    </div>
+    <div class="meta">
+      FD — Design Director<br>
+      Feb 2026<br>
+      Version 1.0<br>
+      DO NOT DISTRIBUTE
+    </div>
+  </div>
+
+  <!-- Type Families -->
+  <div class="section">
+    <div class="section-label">01 — Type Families</div>
+    <div class="pair-grid">
+      <div class="pair-card">
+        <div class="pair-name">UI Sans — Segoe UI Variable</div>
+        <div class="pair-display">
+          <div class="stack">
+            <span style="font-size:2rem;font-weight:700;letter-spacing:-0.02em;color:var(--text)">Forge Co.</span>
+            <span style="font-size:1rem;font-weight:400;color:var(--muted)">Design at the speed of thought.</span>
+          </div>
+        </div>
+        <div class="pair-sample">
+          ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+          abcdefghijklmnopqrstuvwxyz<br>
+          0123456789 !@#$%&amp;
+        </div>
+      </div>
+      <div class="pair-card">
+        <div class="pair-name">Mono — Cascadia Code</div>
+        <div class="pair-display">
+          <div class="stack">
+            <span style="font-family:var(--mono);font-size:2rem;font-weight:600;color:var(--maize)">#FFCB05</span>
+            <span style="font-family:var(--mono);font-size:1rem;color:var(--muted)">const streak = 23;</span>
+          </div>
+        </div>
+        <div class="pair-sample" style="font-family:var(--mono)">
+          ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+          abcdefghijklmnopqrstuvwxyz<br>
+          0123456789 !@#$%&amp;
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Type Scale -->
+  <div class="section">
+    <div class="section-label">02 — Type Scale</div>
+    <div class="scale-row">
+      <div class="scale-label">Display</div>
+      <div class="scale-sample" style="font-size:2.5rem;font-weight:700;letter-spacing:-0.03em">Build fast. Build right.</div>
+      <div class="scale-spec">2.5rem / 700 / -0.03em</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-label">H1</div>
+      <div class="scale-sample" style="font-size:2rem;font-weight:700;letter-spacing:-0.02em">Forge Design System</div>
+      <div class="scale-spec">2rem / 700 / -0.02em</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-label">H2</div>
+      <div class="scale-sample" style="font-size:1.5rem;font-weight:600;letter-spacing:-0.01em">Typography Reference</div>
+      <div class="scale-spec">1.5rem / 600 / -0.01em</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-label">H3</div>
+      <div class="scale-sample" style="font-size:1.25rem;font-weight:600">Type Family: Segoe UI Variable</div>
+      <div class="scale-spec">1.25rem / 600 / 0</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-label">Body</div>
+      <div class="scale-sample" style="font-size:1rem;font-weight:400">Forge is a 13-agent design organization. Each agent has a role, a color, and a mark.</div>
+      <div class="scale-spec">1rem / 400 / 0</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-label">Small</div>
+      <div class="scale-sample" style="font-size:0.875rem;color:var(--muted)">Sprint 04 complete — 23 tasks shipped — 2 blocked</div>
+      <div class="scale-spec">0.875rem / 400 / 0</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-label">Label</div>
+      <div class="scale-sample" style="font-family:var(--mono);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--dim)">Forge Co. — Feb 2026 — Version 1.0</div>
+      <div class="scale-spec" style="font-family:var(--mono)">0.65rem / mono / 0.12em</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-label">Micro</div>
+      <div class="scale-sample" style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.14em">STATUS: SHIPPED — BUILD: PASSING</div>
+      <div class="scale-spec" style="font-family:var(--mono)">0.6rem / mono / 0.14em</div>
+    </div>
+  </div>
+
+  <!-- Weights -->
+  <div class="section">
+    <div class="section-label">03 — Weights</div>
+    <div class="weight-row">
+      <div class="weight-item">
+        <div class="weight-value" style="font-weight:300">Forge Light</div>
+        <div class="weight-label">300 — Editorial only</div>
+      </div>
+      <div class="weight-item">
+        <div class="weight-value" style="font-weight:400">Forge Normal</div>
+        <div class="weight-label">400 — Body text</div>
+      </div>
+      <div class="weight-item">
+        <div class="weight-value" style="font-weight:500">Forge Medium</div>
+        <div class="weight-label">500 — Emphasis</div>
+      </div>
+      <div class="weight-item">
+        <div class="weight-value" style="font-weight:600">Forge Semibold</div>
+        <div class="weight-label">600 — UI labels, H3</div>
+      </div>
+      <div class="weight-item">
+        <div class="weight-value" style="font-weight:700">Forge Bold</div>
+        <div class="weight-label">700 — Headlines</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Type Color -->
+  <div class="section">
+    <div class="section-label">04 — Type Color Roles</div>
+    <div class="color-type-grid">
+      <div class="color-type-card">
+        <div class="color-swatch" style="background:#E8E8F0"></div>
+        <div class="color-type-name">Primary</div>
+        <div class="color-type-hex">#E8E8F0</div>
+        <div class="color-type-sample" style="color:#E8E8F0;font-size:0.9rem;font-weight:600">Aa</div>
+      </div>
+      <div class="color-type-card">
+        <div class="color-swatch" style="background:#808099"></div>
+        <div class="color-type-name">Secondary</div>
+        <div class="color-type-hex">#808099</div>
+        <div class="color-type-sample" style="color:#808099;font-size:0.9rem">Aa</div>
+      </div>
+      <div class="color-type-card">
+        <div class="color-swatch" style="background:#555568"></div>
+        <div class="color-type-name">Dim / Disabled</div>
+        <div class="color-type-hex">#555568</div>
+        <div class="color-type-sample" style="color:#555568;font-size:0.9rem">Aa</div>
+      </div>
+      <div class="color-type-card">
+        <div class="color-swatch" style="background:#FFCB05"></div>
+        <div class="color-type-name">Accent / Active</div>
+        <div class="color-type-hex">#FFCB05</div>
+        <div class="color-type-sample" style="color:#FFCB05;font-size:0.9rem;font-weight:700">Aa</div>
+      </div>
+      <div class="color-type-card">
+        <div class="color-swatch" style="background:#1E1E2A;border:1px solid #333348"></div>
+        <div class="color-type-name">Inverse (on light)</div>
+        <div class="color-type-hex">#0A0A0F</div>
+        <div class="color-type-sample" style="background:#FFCB05;color:#000;font-size:0.9rem;font-weight:700;border-radius:3px;padding:2px 4px;display:inline-block;margin-top:2px">Aa</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <div class="section">
+    <div class="section-label">05 — Rules</div>
+    <div class="rules-list">
+      <div class="rule-row">
+        <div class="rule-label">Headline tracking</div>
+        <div class="rule-value">Headlines at 1.5rem+ use <strong>-0.02em to -0.03em</strong> tracking. Never positive tracking on large type.</div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-label">Mono for data</div>
+        <div class="rule-value">Cascadia Code is <strong>only</strong> for: hex colors, code, numeric data, status labels, keyboard shortcuts, and timestamps.</div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-label">Line height</div>
+        <div class="rule-value">Body: <strong>1.6</strong>. Headlines: <strong>1.1 to 1.2</strong>. Labels/mono: <strong>1.4</strong>. Never below 1.0.</div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-label">Max measure</div>
+        <div class="rule-value">Body copy: <strong>60-72 characters</strong> per line. Labels: no limit. Headlines: no limit.</div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-label">All caps</div>
+        <div class="rule-value">All caps is <strong>only</strong> for: eyebrows/labels in mono at 0.6rem or below. Never for body text or headlines.</div>
+      </div>
+      <div class="rule-row">
+        <div class="rule-label">Em dashes</div>
+        <div class="rule-value"><strong>NEVER use em dashes</strong> (— or –). Use a colon, comma, or period. Hard rule, no exceptions.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Do / Don't -->
+  <div class="section">
+    <div class="section-label">06 — Do / Don't</div>
+    <div class="do-dont">
+      <div class="do-card">
+        <div class="do-label">Do</div>
+        <div class="do-item">Use Segoe UI Variable for all UI prose</div>
+        <div class="do-item">Use Cascadia Code for all labels, hex values, and status text</div>
+        <div class="do-item">Use letter-spacing: -0.02em on headlines above 1.5rem</div>
+        <div class="do-item">Scale text with clamp() for responsive layouts</div>
+        <div class="do-item">Keep body weight at 400 for readability</div>
+        <div class="do-item">Use #E8E8F0 for primary text on dark backgrounds</div>
+      </div>
+      <div class="dont-card">
+        <div class="dont-label">Don't</div>
+        <div class="dont-item">Use CDN fonts (Google Fonts, Typekit, etc.)</div>
+        <div class="dont-item">Use all-caps on text above 0.7rem</div>
+        <div class="dont-item">Apply positive letter-spacing to large headlines</div>
+        <div class="dont-item">Mix Segoe and Cascadia in the same text element</div>
+        <div class="dont-item">Use em dashes, ever</div>
+        <div class="dont-item">Use pure #FFFFFF or #000000 for text (use #E8E8F0 and #0A0A0F)</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:2rem 0 1rem;border-top:1px solid var(--border)">
+    <span style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);letter-spacing:0.12em;text-transform:uppercase">
+      FD Typography System v1.0 — Forge Co. Feb 2026 — Locked
+    </span>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motor City Math User Journey Map</title>
+<style>
+  :root {
+    --purple: #A78BFA; --purple-light: #EDE9FE;
+    --bg: #F4F5F7; --card: #FFFFFF; --border: #E5E7EB;
+    --text: #111827; --secondary: #6B7280; --dim: #9CA3AF;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --green: #22C55E; --red: #EF4444;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  .header { background: #0A0A0F; border-bottom: 3px solid var(--purple); padding: 1.5rem 2rem; display: flex; align-items: center; gap: 1rem; }
+  .header-text { display: flex; flex-direction: column; }
+  .header-title { font-size: 1.1rem; font-weight: 800; color: var(--purple); }
+  .header-sub { font-family: var(--mono); font-size: 0.55rem; color: #555568; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.2rem; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+  .persona-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .persona-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .persona-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.3rem; }
+  .persona-role { font-family: var(--mono); font-size: 0.5rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.08em; }
+  .persona-goal { font-size: 0.65rem; color: var(--secondary); margin-top: 0.5rem; line-height: 1.5; }
+  .journey-section { margin-bottom: 2rem; }
+  .section-label { font-family: var(--mono); font-size: 0.55rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; }
+  .stage-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; }
+  .stage-col { display: flex; flex-direction: column; gap: 0.5rem; }
+  .stage-header { background: var(--purple); color: #FFFFFF; border-radius: 6px 6px 0 0; padding: 0.6rem 0.75rem; font-weight: 700; font-size: 0.7rem; text-align: center; }
+  .stage-row { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0.6rem 0.75rem; font-size: 0.6rem; color: var(--text); line-height: 1.5; flex: 1; }
+  .row-label { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+  .emotion-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-top: 0.75rem; }
+  .emotion-cell { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem; text-align: center; font-size: 1.2rem; }
+  .emotion-label { font-size: 0.5rem; color: var(--dim); font-family: var(--mono); margin-top: 0.2rem; }
+  .opp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-top: 0.75rem; }
+  .opp-cell { border-radius: 4px; padding: 0.5rem 0.6rem; font-size: 0.55rem; line-height: 1.5; }
+  .opp-high { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); color: #15803D; }
+  .opp-med { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); color: #92400E; }
+  .kai-stat { background: var(--purple-light); border-left: 3px solid var(--purple); border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1rem; font-size: 0.65rem; color: #4C1D95; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <svg width="28" height="20" viewBox="0 0 60 40" fill="none">
+      <path d="M6 36 Q30 4 54 36" stroke="#A78BFA" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="header-text">
+      <div class="header-title">Motor City Math User Journey Map</div>
+      <div class="header-sub">3 personas · 5 stages · Built for Kai. Ship for every Kai.</div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="kai-stat">
+      "The ramp-plateau-compound shape is the most honest visual description of what learning actually feels like. Steady progress. The wall. Then the compound payoff when you push through." The journey map below represents that curve.
+    </div>
+
+    <!-- Personas -->
+    <div class="persona-bar">
+      <div class="persona-card" style="border-left:3px solid var(--purple)">
+        <div class="persona-name">Kai</div>
+        <div class="persona-role">Primary user · Student, Algebra 2</div>
+        <div class="persona-goal">Needs to pass Algebra 2. Hates feeling stuck. Wants explanations that make sense on his first read. Has a real exam to pass.</div>
+      </div>
+      <div class="persona-card" style="border-left:3px solid #FFCB05">
+        <div class="persona-name">Marcus</div>
+        <div class="persona-role">Parent / builder</div>
+        <div class="persona-goal">Built this for Kai. Wants to see real progress data. Cares about: does Kai actually use it? Is the score improving? Is the AI explaining things clearly?</div>
+      </div>
+      <div class="persona-card" style="border-left:3px solid #93AEFF">
+        <div class="persona-name">The Next Kai</div>
+        <div class="persona-role">Future student, any subject</div>
+        <div class="persona-goal">Any student preparing for a high-stakes exam who needs adaptive practice, honest feedback, and AI explanations without condescension.</div>
+      </div>
+    </div>
+
+    <!-- Stage grid: 5 stages (Kai-centric) -->
+    <div class="journey-section">
+      <div class="section-label">User Actions by Stage (Kai Perspective)</div>
+      <div class="stage-grid">
+        <div class="stage-col">
+          <div class="stage-header">1. First Session</div>
+          <div class="stage-row">
+            <div class="row-label">Action</div>
+            Kai opens MCM for the first time. Sees a clean UI. Starts a practice set. Answers 5 questions.
+          </div>
+          <div class="stage-row">
+            <div class="row-label">Thinking</div>
+            "This is different from my textbook. Is this going to tell me I am wrong without explaining why?"
+          </div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header">2. Getting Stuck</div>
+          <div class="stage-row">
+            <div class="row-label">Action</div>
+            Gets a problem wrong. Reads the AI explanation. Tries the same problem type again. Gets it right.
+          </div>
+          <div class="stage-row">
+            <div class="row-label">Thinking</div>
+            "OK so that is why it works that way. I want to try one more."
+          </div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header">3. The Plateau</div>
+          <div class="stage-row">
+            <div class="row-label">Action</div>
+            Practices 3 days in a row. Scores not improving. Feels frustrated. Almost stops.
+          </div>
+          <div class="stage-row">
+            <div class="row-label">Thinking</div>
+            "I am not getting better. Maybe this does not work for me."
+          </div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header">4. Breakthrough</div>
+          <div class="stage-row">
+            <div class="row-label">Action</div>
+            On day 4, pattern clicks. Scores jump. Sees his progress chart move up.
+          </div>
+          <div class="stage-row">
+            <div class="row-label">Thinking</div>
+            "I actually get this now. The ramp was real. I did not give up."
+          </div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header">5. Exam</div>
+          <div class="stage-row">
+            <div class="row-label">Action</div>
+            Walks into the exam. Encounters familiar problem types. Applies what he practiced. Scores 85+.
+          </div>
+          <div class="stage-row">
+            <div class="row-label">Thinking</div>
+            "I knew I could do this. That app actually prepared me."
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emotional arc -->
+    <div class="journey-section">
+      <div class="section-label">Emotional Arc</div>
+      <div class="emotion-track">
+        <div class="emotion-cell">😬<div class="emotion-label">Skeptical / testing</div></div>
+        <div class="emotion-cell">😮<div class="emotion-label">Surprised it helps</div></div>
+        <div class="emotion-cell">😤<div class="emotion-label">Frustrated / plateau</div></div>
+        <div class="emotion-cell">🎯<div class="emotion-label">It clicked</div></div>
+        <div class="emotion-cell">😤➡️🏆<div class="emotion-label">Confidence earned</div></div>
+      </div>
+    </div>
+
+    <!-- Opportunities -->
+    <div class="journey-section">
+      <div class="section-label">Opportunities (FD Notes for GR, GA)</div>
+      <div class="opp-grid">
+        <div class="opp-cell opp-high">First problem must be winnable. Build confidence before difficulty ramps. GR: sequence the first 5 problems to be accessible but real.</div>
+        <div class="opp-cell opp-high">AI explanation quality is everything at this stage. If the explanation is condescending or wrong, Kai closes the app. GR: validate every explanation against student-level language.</div>
+        <div class="opp-cell opp-high">The plateau is the most critical UX moment. MCM needs to detect "stuck" state and offer: a different explanation angle, a simpler version of the problem, or just encouragement without panic.</div>
+        <div class="opp-cell opp-high">Breakthrough visualization. When the score jumps, show it. A visible progress curve that reflects the ramp shape is the most powerful retention signal possible.</div>
+        <div class="opp-cell opp-med">Exam mode. 45-min timed session, no hints, full problem set. Kai must practice under conditions that mirror the actual exam.</div>
+      </div>
+    </div>
+
+    <!-- Marcus journey (parent perspective) -->
+    <div class="journey-section">
+      <div class="section-label">Marcus Perspective (Parent Journey)</div>
+      <div class="stage-grid">
+        <div class="stage-col">
+          <div class="stage-header" style="background:#FFCB05;color:#0A0A0F">Builds It</div>
+          <div class="stage-row">Built MCM because Kai needed it. Not because it was a good product idea. That constraint is the product's biggest strength.</div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header" style="background:#FFCB05;color:#0A0A0F">Ships It</div>
+          <div class="stage-row">2035 tests passing. Grind shipped a real product in 3 weeks. Marcus checks the test count like a vital sign.</div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header" style="background:#FFCB05;color:#0A0A0F">Watches Kai</div>
+          <div class="stage-row">Wants data: did Kai open it today? How many problems? What is his current score? Parent dashboard is a future feature.</div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header" style="background:#FFCB05;color:#0A0A0F">Kai Passes</div>
+          <div class="stage-row">Kai scores 92. That is the real product validation. Not the tests passing. Not the design. The score.</div>
+        </div>
+        <div class="stage-col">
+          <div class="stage-header" style="background:#FFCB05;color:#0A0A0F">Every Kai</div>
+          <div class="stage-row">Forge ships MCM for every student who needs adaptive practice and does not have a parent who builds software. The product is for Kai. The mission is broader.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI at Work — Pre-read for Greg Cox</title>
+<style>
+  /* ── Dark theme tokens ── */
+  :root {
+    --ink:    #E8E8F0;
+    --body:   #B0B0C4;
+    --dim:    #6A6A80;
+    --dimmer: #3A3A55;
+    --rule:   #2A2A3E;
+    --accent: #fe57a1;
+    --bg:     #0A0A0F;
+    --surface:#161622;
+    --sans:   'Gill Sans', 'Gill Sans MT', 'Segoe UI', Calibri, system-ui, sans-serif;
+    --mono:   'Menlo', 'Consolas', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  ::selection { background: #fe57a1; color: #fff; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--body);
+    font-family: var(--sans);
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+
+  /* ── Slide system ── */
+  .deck { width: 100%; height: 100vh; position: relative; }
+
+  .slide {
+    display: none;
+    position: absolute; inset: 0;
+    padding: 52px 72px 100px;
+    overflow-y: auto;
+  }
+  .slide.active { display: flex; flex-direction: column; }
+
+  .slide-inner {
+    max-width: 1140px;
+    margin: 0 auto;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 20px;
+  }
+
+  /* ── YLF eyebrow ── */
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 200;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--dim);
+    margin-bottom: 14px;
+  }
+
+  /* ── Type ── */
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--sans);
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--body);
+    margin-bottom: 14px;
+  }
+  p:last-child { margin-bottom: 0; }
+
+  .rule {
+    height: 1px;
+    background: var(--rule);
+    margin: 12px 0;
+  }
+
+  strong { font-weight: 600; color: var(--ink); }
+  em { font-style: italic; }
+
+  /* ── Cover meta ── */
+  .cover-meta {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 16px; font-weight: 300; color: var(--dim);
+    margin-top: 20px;
+  }
+  .cover-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--dimmer); }
+
+  /* ── Two-col bio ── */
+  .bio-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 36px; margin-top: 28px;
+    padding-top: 28px; border-top: 1px solid var(--rule);
+  }
+  .bio-name {
+    font-size: 11px; font-weight: 200; font-style: italic;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .bio-text { font-size: 16px; line-height: 1.65; color: var(--body); }
+
+  /* ── Pullquote ── */
+  .pullquote {
+    border-left: 2px solid var(--rule);
+    margin: 16px 0; padding: 6px 22px;
+  }
+  .pullquote p {
+    font-style: italic; font-size: 20px;
+    line-height: 1.5; color: var(--dim); margin: 0;
+  }
+
+  /* ── Stats strip ── */
+  .stat-row {
+    display: flex; gap: 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    margin: 16px 0;
+  }
+  .stat {
+    flex: 1; padding: 20px 0;
+    border-right: 1px solid var(--rule);
+    text-align: center;
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    display: block;
+    font-size: 34px; font-weight: 300; color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 12px; font-weight: 200; font-style: italic;
+    text-transform: uppercase; letter-spacing: 0.8px; color: var(--dim);
+  }
+
+  /* ── Numbered item list ── */
+  .item-list { list-style: none; margin-top: 4px; }
+  .item-list li {
+    display: flex; gap: 22px; padding: 20px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .item-list li:first-child { border-top: 1px solid var(--rule); }
+  .item-num {
+    font-size: 11px; font-weight: 200; font-style: italic;
+    color: var(--accent); min-width: 16px; padding-top: 3px;
+  }
+  .item-content { flex: 1; }
+  .item-title {
+    font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 5px;
+  }
+  .item-body { font-size: 15px; line-height: 1.65; color: var(--body); }
+
+  /* ── Callout ── */
+  .callout {
+    background: #161622;
+    border-left: 2px solid var(--accent);
+    padding: 18px 22px; margin: 16px 0;
+  }
+  .callout-label {
+    font-size: 12px; font-weight: 200; font-style: italic;
+    text-transform: uppercase; letter-spacing: 1px;
+    color: var(--accent); margin-bottom: 8px;
+  }
+  .callout p { font-size: 17px; margin: 0; line-height: 1.65; }
+
+  /* ── Arc table ── */
+  .arc { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .arc tr { border-bottom: 1px solid var(--rule); }
+  .arc tr:first-child { border-top: 1px solid var(--rule); }
+  .arc td {
+    padding: 14px 0; vertical-align: top;
+    font-size: 16px; line-height: 1.5; color: var(--body);
+  }
+  .arc .arc-time {
+    font-size: 13px; font-style: italic; font-weight: 200;
+    color: var(--accent); width: 52px; padding-right: 16px; white-space: nowrap;
+  }
+  .arc .arc-title {
+    font-weight: 600; color: var(--ink); width: 170px; padding-right: 20px;
+  }
+
+  /* ── Two-col layout ── */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; margin-top: 8px; }
+  .cols-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 36px; margin-top: 8px; }
+
+  .col-item-title {
+    font-size: 15px; font-weight: 600; color: var(--ink); margin-bottom: 6px;
+  }
+  .col-item-body { font-size: 15px; line-height: 1.65; color: var(--body); }
+
+  /* ── Forge deck embed slide ── */
+  .deck-frame-wrapper {
+    flex: 1;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 16px;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+  }
+  .deck-open-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    padding: 48px;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .deck-open-btn:hover { background: rgba(254,87,161,0.06); color: var(--accent); }
+  .deck-open-arrow {
+    font-size: 42px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .deck-open-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 12px;
+    font-size: 12px; font-weight: 200; font-style: italic;
+    color: var(--accent); text-decoration: none; letter-spacing: 0.5px;
+  }
+  .deck-open-link:hover { text-decoration: underline; }
+
+  /* ── Ground rule ── */
+  .ground-rule {
+    font-size: 26px; font-weight: 300;
+    line-height: 1.5; color: var(--ink); font-style: italic;
+  }
+
+  /* ── Nav: forge-deck-v5 pattern, YLF colors ── */
+  .counter {
+    position: fixed; top: 28px; right: 36px;
+    font-size: 11px; letter-spacing: 0.1em;
+    color: var(--dimmer); font-family: var(--mono);
+    z-index: 100;
+  }
+
+  .nav {
+    position: fixed; bottom: 36px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; align-items: center; gap: 20px;
+    z-index: 100;
+  }
+
+  .btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 1px solid var(--rule);
+    background: var(--bg); color: var(--dim);
+    font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.off { opacity: 0.25; pointer-events: none; }
+
+  .dots { display: flex; align-items: center; gap: 6px; }
+  .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--rule); cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  .dot.on { background: var(--accent); transform: scale(1.5); }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <div class="counter" id="ctr">01 / 12</div>
+
+  <!-- SLIDE 1: Cover -->
+  <div class="slide active">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Pre-read, 15 minutes</div>
+      <h1>AI at Work</h1>
+      <h1 style="color:var(--accent); font-style:italic;">A Peer Conversation.</h1>
+      <div class="rule" style="margin-top:28px;"></div>
+      <div class="cover-meta">
+        <span>Marcus Ash</span>
+        <div class="cover-dot"></div>
+        <span>Greg Cox</span>
+        <div class="cover-dot"></div>
+        <span>Tonight, over dinner</span>
+        <div class="cover-dot"></div>
+        <span>90 minutes</span>
+      </div>
+      <div class="bio-row">
+        <div>
+          <div class="bio-name">Marcus</div>
+          <p class="bio-text"><strong>CVP of Design, Microsoft.</strong> Running Forge: 13 AI agents structured as a company, shipping design systems, code, research, and operations inside his GitHub workspace. Past the experimentation phase. Into the organizational problems.</p>
+        </div>
+        <div>
+          <div class="bio-name">Greg</div>
+          <p class="bio-text"><strong>CTO, ExpertVoice.</strong> One million-plus credentialed experts. Building with AI to scale brand advocacy, product intelligence, and platform operations. A practitioner, not an observer.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Why this conversation -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">The setup</div>
+      <h2>Why this conversation, why now</h2>
+      <div class="rule"></div>
+      <p>Most conversations about AI at work are either too abstract or too early. People talk about what AI <em>could</em> do. What is rarer is two practitioners comparing what it actually looks like to ship things with AI on the team, day after day, at real companies with real stakes.</p>
+      <p>Marcus and Greg are both past the point of piloting. The experiments are over. The questions that remain are harder: What do you actually hand to an agent? What falls apart when no one is watching? How do you maintain quality across a system you did not write by hand? What have you changed your mind about?</p>
+      <div class="callout">
+        <div class="callout-label">The question underneath everything</div>
+        <p>What does it look like to build products, tools, and systems with AI as a real team member, not just a feature?</p>
+      </div>
+      <p>This is not a general conversation about AI trends. It is a practitioner debrief. Marcus will show Forge. Greg will show ExpertVoice. Both of you will leave with something concrete.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: Forge pitch deck (pre-read) -->
+  <div class="slide">
+    <div class="slide-inner" style="flex:1; justify-content:flex-start;">
+      <div class="eyebrow">Before tonight</div>
+      <h2>The Forge deck</h2>
+      <p style="font-size:14px; color:var(--dim);">This is the Forge pitch deck. Read it before dinner. It covers what Forge is, how it works, and what it has shipped. It is the context for everything Marcus will show you tonight.</p>
+      <div class="deck-frame-wrapper">
+        <a class="deck-open-btn" href="forge-deck-v5.html" target="_blank">
+          <span class="deck-open-arrow">&#8599;</span>
+          <span>Open Forge Deck</span>
+        </a>
+      </div>
+      <a class="deck-open-link" href="forge-deck-v5.html" target="_blank">
+        &#8599; Open full screen
+      </a>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Forge, what it is -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Context</div>
+      <h2>What Forge is</h2>
+      <div class="rule"></div>
+      <p>Forge is a 13-agent system Marcus runs inside his GitHub workspace. Each agent has a name, a color, an inbox, a sprint queue, a skills file, and a performance record. Agents communicate through structured JSON messages. They build real things: code, design systems, HTML, architecture decisions, test suites.</p>
+      <p>The agents are organized like a real company. Chief Architect. Design Director. Quality Lead. Research Lead. Chief of Operations. Security and Platform. Each owns a domain. Each reports to Marcus.</p>
+      <p>Forge runs autonomously overnight. Marcus reviews in the morning, approves what shipped, sends feedback on what did not. The communication is formal. Everything goes through the inbox protocol. There is no verbal escalation path.</p>
+      <div class="stat-row">
+        <div class="stat">
+          <span class="stat-num">13</span>
+          <span class="stat-label">Agents</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">230+</span>
+          <span class="stat-label">Architecture decisions</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">2,000+</span>
+          <span class="stat-label">Tests shipped</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">60+</span>
+          <span class="stat-label">Canvases built</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Forge, the hard part -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Context</div>
+      <h2>The hard problems are not technical</h2>
+      <div class="rule"></div>
+      <p>The tooling works. What is hard is organizational. How do you onboard a new agent without it drifting from the system's established conventions? How do you catch quality problems before they compound across 13 agents? How do you run performance reviews when the team cannot argue back?</p>
+      <div class="pullquote">
+        <p>"I am not using AI to write emails faster. I am managing a team that happens to be AI."</p>
+      </div>
+      <div class="cols">
+        <div>
+          <div class="col-item-title">What works</div>
+          <p class="col-item-body">Formal protocols. Structured inboxes. Explicit skill files. Sprint queues with clear acceptance criteria. Agents that stay in their lane. Nightly autonomous runs with morning review.</p>
+        </div>
+        <div>
+          <div class="col-item-title">What is still being figured out</div>
+          <p class="col-item-body">Context window limits on long sessions. Quality drift when agents go autonomous for too long. Knowing when to trust the output versus when to read the code. The eval problem: what does good actually look like?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: Demo 1 -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Tonight, demo 1</div>
+      <h2>The communication system</h2>
+      <div class="rule"></div>
+      <p>Marcus will open a folder. You will see a real inbox. A real message from one agent flagging a quality problem to another. A real response. No custom infrastructure. Just structured JSON files in a GitHub repo.</p>
+      <p>The simplicity is the point. The discipline required to maintain it across 13 agents over months is not obvious. Marcus will show both the folder and the protocol document that governs it.</p>
+      <div class="callout">
+        <div class="callout-label">What to watch for</div>
+        <p>How does a system this simple stay coherent? What breaks when the protocol is not followed? Marcus will show an example of both.</p>
+      </div>
+      <p style="font-size:14px; color:var(--dim); margin-top:8px;">Greg reacts before Marcus explains what he is seeing. That is the format.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: Demo 2 -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Tonight, demo 2</div>
+      <h2>Live prototyping</h2>
+      <div class="rule"></div>
+      <p>Greg gives a brief. An agent builds something. Total elapsed time is the demo.</p>
+      <p>Marcus will narrate what is happening and what he is watching for. You will see the loop from spoken idea to working artifact in real time. The goal is not to impress. The goal is to show what the loop actually looks like and how Marcus manages it.</p>
+      <div class="cols">
+        <div>
+          <div class="col-item-title">The brief</div>
+          <p class="col-item-body">Greg describes something he would actually want built. It does not need to be polished. Marcus will take it live.</p>
+        </div>
+        <div>
+          <div class="col-item-title">The handoff</div>
+          <p class="col-item-body">Marcus shows how he frames a task for an agent. What he includes. What he leaves out. The trust boundary between human direction and agent execution.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 8: Demo 3 -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Tonight, demo 3</div>
+      <h2>Recruiting, evaluating, and training agents</h2>
+      <div class="rule"></div>
+      <p>This is the part Marcus thinks about most. Every session an agent runs starts fresh. Context window resets. The only continuity is memory files, skill documents, and the inbox history. How do you keep 13 agents coherent over months when they cannot retain anything?</p>
+      <div class="cols">
+        <div>
+          <div class="col-item-title">The onboarding system</div>
+          <p class="col-item-body">New agents get a working-with document. A skill file. An inbox. A sprint queue. Marcus shows the template and one real agent's onboarding file.</p>
+        </div>
+        <div>
+          <div class="col-item-title">The eval scorecard</div>
+          <p class="col-item-body">How Marcus measures agent performance. The categories. The signals. What gets flagged in a review and what happens after.</p>
+        </div>
+      </div>
+      <p style="margin-top:20px; font-size:14px; color:var(--dim);">This demo may be cut if the conversation is running well. A good conversation beats a demo every time.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Questions for Greg -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">For Greg</div>
+      <h2>Three things Marcus wants to understand</h2>
+      <div class="rule"></div>
+      <p style="font-size:14px; color:var(--dim); margin-bottom:4px;">These are not small talk. Marcus wants the version that does not make it into press releases.</p>
+      <ul class="item-list">
+        <li>
+          <span class="item-num">1</span>
+          <div class="item-content">
+            <div class="item-title">What is AI actually doing at ExpertVoice right now?</div>
+            <div class="item-body">Not in general terms. Specifically: what are agents or AI systems doing, who owns the output, and how close is it to what ships? Marcus wants to understand where the boundary is between human judgment and AI output in Greg's current workflow.</div>
+          </div>
+        </li>
+        <li>
+          <span class="item-num">2</span>
+          <div class="item-content">
+            <div class="item-title">What have you changed your mind about?</div>
+            <div class="item-body">The things you thought would work that did not. The things that worked that you did not expect. What you believe now that you did not believe six months ago. The bets you made that were wrong.</div>
+          </div>
+        </li>
+        <li>
+          <span class="item-num">3</span>
+          <div class="item-content">
+            <div class="item-title">What does it break first?</div>
+            <div class="item-body">When this meets a real team, a real deadline, a real production incident: what fails first? Marcus has answers from Forge. He wants Greg's answers from ExpertVoice. The failure modes are where the real design decisions live.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: Greg's pre-work -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Your pre-work, Greg</div>
+      <h2>Three things to bring tonight</h2>
+      <div class="rule"></div>
+      <p style="font-size:14px; color:var(--dim); margin-bottom:4px;">This is not a lecture. Marcus will go first and show his work. But the session only works if Greg brings something real from ExpertVoice. Rough is fine.</p>
+      <ul class="item-list">
+        <li>
+          <span class="item-num">A</span>
+          <div class="item-content">
+            <div class="item-title">One specific story</div>
+            <div class="item-body">Something you built or changed with AI at ExpertVoice. Not a category, not a theme. A specific decision, a specific week, a specific outcome. The more specific, the more useful it is to the conversation.</div>
+          </div>
+        </li>
+        <li>
+          <span class="item-num">B</span>
+          <div class="item-content">
+            <div class="item-title">One open question</div>
+            <div class="item-body">Something you are genuinely unsure about. A bet you have not made yet. A problem you are still working through. Marcus will bring one too. This is usually where the most useful output comes from.</div>
+          </div>
+        </li>
+        <li>
+          <span class="item-num">C</span>
+          <div class="item-content">
+            <div class="item-title">A demo if you have one</div>
+            <div class="item-body">Anything on your phone or laptop that shows the thing rather than describes it. Even rough. Even a log output, a Slack thread, a workflow screenshot. Marcus will show Forge. He wants to see your equivalent.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: Tonight's arc -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center;">
+      <div class="eyebrow">Tonight's format</div>
+      <h2>90 minutes. No slides at the table.</h2>
+      <div class="rule"></div>
+      <p style="font-size:14px; color:var(--dim); margin-bottom:4px;">The format is designed around demos and conversation. Marcus will hold this arc loosely. If something catches fire, he will let it run.</p>
+      <table class="arc">
+        <tr><td class="arc-time">0:00</td><td class="arc-title">Frame</td><td>Ground rules. One of them matters. 5 min.</td></tr>
+        <tr><td class="arc-time">0:05</td><td class="arc-title">Marcus, context</td><td>What Forge is and where it came from. 10 min. Capped.</td></tr>
+        <tr><td class="arc-time">0:15</td><td class="arc-title">Demo 1: Communication</td><td>Live. Greg reacts before Marcus explains what he is seeing.</td></tr>
+        <tr><td class="arc-time">0:25</td><td class="arc-title">Greg's turn</td><td>ExpertVoice and AI. What is actually happening. No filter.</td></tr>
+        <tr><td class="arc-time">0:40</td><td class="arc-title">Demo 2: Live build</td><td>Greg gives a brief. Marcus shows the loop in real time.</td></tr>
+        <tr><td class="arc-time">0:55</td><td class="arc-title">Demo 3: Agent system</td><td>Eval, onboarding, drift prevention. May be cut if needed.</td></tr>
+        <tr><td class="arc-time">1:10</td><td class="arc-title">Synthesis</td><td>What do you now believe that you did not believe 90 minutes ago?</td></tr>
+        <tr><td class="arc-time">1:20</td><td class="arc-title">Takeaways</td><td>Three each. Concrete. What changes next week?</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: One rule -->
+  <div class="slide">
+    <div class="slide-inner" style="justify-content:center; align-items:flex-start;">
+      <div class="eyebrow">One rule</div>
+      <h2>Say it out loud.</h2>
+      <div class="rule"></div>
+      <p class="ground-rule">If something passes your internal filter tonight, say it. That is your contribution. The most valuable output from a session like this is the thing someone almost did not say.</p>
+      <p style="margin-top:24px; font-size:17px; font-style:italic; color:var(--dim);">Silence is on probation in this format.</p>
+      <div class="rule" style="margin-top:40px;"></div>
+      <div class="cover-meta" style="margin-top:0;">
+        <span>Marcus Ash</span>
+        <div class="cover-dot"></div>
+        <span>Greg Cox</span>
+        <div class="cover-dot"></div>
+        <span>Tonight</span>
+        <div class="cover-dot"></div>
+        <span>AI at Work</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <button class="btn off" id="prev" onclick="go(-1)">&#8592;</button>
+    <div class="dots" id="dots"></div>
+    <button class="btn" id="next" onclick="go(1)">&#8594;</button>
+  </nav>
+
+</div>
+<script>
+const N = 12;
+let cur = 0;
+const slides = [...document.querySelectorAll('.slide')];
+const dotsEl = document.getElementById('dots');
+const ctrEl  = document.getElementById('ctr');
+
+for (let i = 0; i < N; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' on' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n) {
+  slides[cur].classList.remove('active');
+  cur = n;
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('on', i === cur));
+  ctrEl.textContent = String(cur + 1).padStart(2, '0') + ' / ' + String(N).padStart(2, '0');
+  document.getElementById('prev').classList.toggle('off', cur === 0);
+  document.getElementById('next').classList.toggle('off', cur === N - 1);
+}
+
+function go(d) { const n = cur + d; if (n >= 0 && n < N) goTo(n); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') go(-1);
+});
+</script>
+</body>
+</html>

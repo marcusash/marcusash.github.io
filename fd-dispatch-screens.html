@@ -1,0 +1,565 @@
+<!--
+  Dispatch TUI - Screen Design Canvas
+  Forge Product Design / FD (Design Director)
+  Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch TUI - Screen Designs</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0A0A0F;
+    --surface:  #161622;
+    --text:     #E8E8F0;
+    --muted:    #808099;
+    --border:   #2A2A3E;
+    --maize:    #FFCB05;
+    --ui-font:  'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --mono:     'Cascadia Code', 'Consolas', monospace;
+  }
+
+  body {
+    background: #F4F5F7;
+    font-family: var(--ui-font);
+    min-height: 100vh;
+  }
+
+  /* ---- sticky tab bar ---- */
+  .tab-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #FFFFFF;
+    border-bottom: 1px solid #D0D3DA;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 32px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .tab-bar-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #1A1A2E;
+    margin-right: 24px;
+    padding: 14px 0;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 14px 20px 11px;
+    font-family: var(--ui-font);
+    font-size: 13px;
+    font-weight: 600;
+    color: #606070;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: #1A1A2E; }
+  .tab-btn.active {
+    color: #1A1A2E;
+    border-bottom-color: var(--maize);
+  }
+
+  /* ---- page body ---- */
+  .page-body {
+    padding: 40px 32px 64px;
+  }
+
+  .screen-panel { display: none; }
+  .screen-panel.active { display: block; }
+
+  /* ---- terminal window ---- */
+  .terminal-wrap {
+    width: 880px;
+    margin: 0 auto;
+  }
+
+  .terminal-window {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.28);
+  }
+
+  .terminal-chrome {
+    background: #1E1E2E;
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+  }
+  .dot-red    { background: #FF5F56; }
+  .dot-yellow { background: #FFBD2E; }
+  .dot-green  { background: #27C93F; }
+
+  .chrome-title {
+    flex: 1;
+    text-align: center;
+    font-family: var(--ui-font);
+    font-size: 12px;
+    color: #808099;
+    letter-spacing: 0.04em;
+  }
+
+  .chrome-close {
+    font-size: 13px;
+    color: #808099;
+    font-family: var(--ui-font);
+    cursor: default;
+    user-select: none;
+  }
+
+  .terminal-body {
+    background: var(--bg);
+    padding: 24px 28px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text);
+    min-height: 380px;
+    white-space: pre;
+  }
+
+  /* ---- color helpers ---- */
+  .maize { color: var(--maize); }
+  .muted { color: var(--muted); }
+
+  /* agent colors */
+  .agent-FO { color: #94A3B8; }
+  .agent-FR { color: #F97316; }
+  .agent-FA { color: #4A90D9; }
+  .agent-GP { color: #CE1126; }
+  .agent-FI { color: #6D28D9; }
+  .agent-FD { color: #FFCB05; }
+
+  /* priority tags */
+  .tag-p1 { color: #EF4444; }
+  .tag-done { color: #22C55E; }
+
+  /* ---- spec panel ---- */
+  .spec-panel {
+    width: 880px;
+    margin: 20px auto 0;
+    background: #FFFFFF;
+    border: 1px solid #D0D3DA;
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-family: var(--ui-font);
+    font-size: 13px;
+    color: #2A2A3E;
+  }
+
+  .spec-panel h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #606070;
+    margin-bottom: 12px;
+  }
+
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .spec-table th {
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #808099;
+    padding: 4px 12px 4px 0;
+    border-bottom: 1px solid #E8E8F0;
+  }
+  .spec-table td {
+    padding: 6px 12px 6px 0;
+    font-size: 12.5px;
+    border-bottom: 1px solid #F0F0F5;
+    vertical-align: top;
+  }
+  .spec-table tr:last-child td { border-bottom: none; }
+
+  .swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    margin-right: 6px;
+    vertical-align: middle;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .screen-label {
+    font-family: var(--ui-font);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #808099;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .agent-legend {
+    width: 880px;
+    margin: 0 auto 16px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-family: var(--ui-font);
+    font-size: 11px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <span class="tab-bar-title">Dispatch TUI</span>
+  <button class="tab-btn active" onclick="showTab(0)">01 Inbox</button>
+  <button class="tab-btn" onclick="showTab(1)">02 Thread</button>
+  <button class="tab-btn" onclick="showTab(2)">03 Compose</button>
+  <button class="tab-btn" onclick="showTab(3)">04 Settings</button>
+</div>
+
+<div class="page-body">
+
+  <!-- SCREEN 01: INBOX -->
+  <div class="screen-panel active" id="tab-0">
+    <p class="screen-label">Screen 01 - Inbox</p>
+    <div class="agent-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:#94A3B8"></span><span style="color:#94A3B8">FO</span></span>
+      <span class="legend-item"><span class="legend-dot" style="background:#F97316"></span><span style="color:#F97316">FR</span></span>
+      <span class="legend-item"><span class="legend-dot" style="background:#4A90D9"></span><span style="color:#4A90D9">FA</span></span>
+      <span class="legend-item"><span class="legend-dot" style="background:#CE1126"></span><span style="color:#CE1126">GP</span></span>
+      <span class="legend-item"><span class="legend-dot" style="background:#FFCB05"></span><span style="color:#FFCB05">FD</span></span>
+      <span class="legend-item"><span class="legend-dot" style="background:#6D28D9"></span><span style="color:#6D28D9">FI</span></span>
+      <span class="legend-item"><span class="legend-dot" style="background:#22C55E"></span><span style="color:#22C55E">FF</span></span>
+    </div>
+    <div class="terminal-wrap">
+      <div class="terminal-window">
+        <div class="terminal-chrome">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="chrome-title">dispatch v1.0</span>
+          <span class="chrome-close">&#x2715;</span>
+        </div>
+        <div class="terminal-body">DISPATCH                                          inbox          <span class="muted">[?]</span>
+<span class="muted">──────────────────────────────────────────────────────────────────</span>
+  <span class="maize">● 3 unread</span>                                Priority: High first
+  
+  <span class="muted">──────────────────────────────────────────────────────────────</span>
+  <span class="maize">●</span> <span class="agent-FO">FO</span>  <span class="tag-p1">TASK</span>     Agent sprint scorecard feedback needed    <span class="muted">11:04</span>
+        <span class="tag-p1">P1</span> <span class="muted">· Forge                                   Wed Feb 23</span>
+  
+  <span class="maize">●</span> <span class="agent-FR">FR</span>  INFO     Curriculum deck design brief delivered   <span class="muted">10:47</span>
+        <span class="muted">Normal · Forge                               Wed Feb 23</span>
+  
+    <span class="agent-FA">FA</span>  DECISION  Architecture decision on parser module   <span class="muted">09:30</span>
+        <span class="muted">Review · Forge · </span><span class="maize">FD action needed</span>            <span class="muted">Wed Feb 23</span>
+  
+    <span class="agent-GP">GP</span>  <span class="tag-done">STATUS</span>   Platform CI pipeline green (2035/2035)   <span class="muted">08:15</span>
+        <span class="tag-done">Done</span> <span class="muted">· Grind                                 Wed Feb 23</span>
+  
+  <span class="muted">──────────────────────────────────────────────────────────────</span>
+  <span class="maize">j/k</span> move  <span class="maize">Enter</span> open  <span class="maize">/</span> filter  <span class="maize">c</span> compose  <span class="maize">d</span> done  <span class="maize">?</span> help</div>
+      </div>
+      <div class="spec-panel">
+        <h3>Design Tokens - Screen 01</h3>
+        <table class="spec-table">
+          <tr><th>Token</th><th>Value</th><th>Usage</th></tr>
+          <tr>
+            <td>Background</td>
+            <td><span class="swatch" style="background:#0A0A0F"></span>#0A0A0F</td>
+            <td>Terminal fill</td>
+          </tr>
+          <tr>
+            <td>Accent (Maize)</td>
+            <td><span class="swatch" style="background:#FFCB05"></span>#FFCB05</td>
+            <td>Unread count, unread dot indicators, keyboard shortcuts</td>
+          </tr>
+          <tr>
+            <td>Agent colors</td>
+            <td>FO #94A3B8 / FR #F97316 / FA #4A90D9 / GP #CE1126</td>
+            <td>Agent ID badges in thread list</td>
+          </tr>
+          <tr>
+            <td>Priority: P1</td>
+            <td><span class="swatch" style="background:#EF4444"></span>#EF4444</td>
+            <td>High-priority TASK type and P1 label</td>
+          </tr>
+          <tr>
+            <td>Status: Done</td>
+            <td><span class="swatch" style="background:#22C55E"></span>#22C55E</td>
+            <td>Done status indicator</td>
+          </tr>
+          <tr>
+            <td>Font (content)</td>
+            <td>Cascadia Code, Consolas</td>
+            <td>All inbox text</td>
+          </tr>
+          <tr>
+            <td>Key behaviors</td>
+            <td colspan="2">j/k = move selection; Enter = open thread; / = filter; c = compose; d = mark done; ? = help</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 02: THREAD -->
+  <div class="screen-panel" id="tab-1">
+    <p class="screen-label">Screen 02 - Thread View</p>
+    <div class="terminal-wrap">
+      <div class="terminal-window">
+        <div class="terminal-chrome">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="chrome-title">dispatch v1.0</span>
+          <span class="chrome-close">&#x2715;</span>
+        </div>
+        <div class="terminal-body">DISPATCH <span class="muted">&gt;</span> <span class="agent-FO">FO</span> <span class="muted">·</span> TASK <span class="maize">#P1-03</span>                               <span class="muted">[Esc]</span>
+<span class="muted">──────────────────────────────────────────────────────────────────</span>
+  Sprint scorecard feedback needed
+  PRIORITY: <span class="maize">P1</span> <span class="muted">·</span> From: <span class="agent-FO">FO</span> <span class="muted">·</span> 11:04 Wed Feb 23
+  
+  <span class="maize">┌──────────────────────────────────────────────────────────┐</span>
+  <span class="muted">│</span> FROM: <span class="agent-FO">FO</span> <span class="muted">· To: <span class="agent-FD">FD</span> · Wed Feb 23 11:04</span>                    <span class="muted">│</span>
+  <span class="muted">│</span>                                                          <span class="muted">│</span>
+  <span class="muted">│</span> FD, your sprint scorecard v3 has been reviewed. 7 P1     <span class="muted">│</span>
+  <span class="muted">│</span> items are listed. Items P1-01 through P1-05 are yours    <span class="muted">│</span>
+  <span class="muted">│</span> to action. P1-06 needs Marcus to confirm Valentine day   <span class="muted">│</span>
+  <span class="muted">│</span> slide arc. P1-07 is FA's FA metrics verification.        <span class="muted">│</span>
+  <span class="muted">│</span>                                                          <span class="muted">│</span>
+  <span class="muted">│</span> Ready for implementation: <span class="maize">P1-01, P1-02, P1-03</span>.           <span class="muted">│</span>
+  <span class="muted">└──────────────────────────────────────────────────────────┘</span>
+  
+  <span class="muted">──────────────────────────────────────────────────────────</span>
+  [<span class="maize">r</span>] Reply  [d] Done  [f] Forward  [s] Star  [Esc] Inbox</div>
+      </div>
+      <div class="spec-panel">
+        <h3>Design Tokens - Screen 02</h3>
+        <table class="spec-table">
+          <tr><th>Token</th><th>Value</th><th>Usage</th></tr>
+          <tr>
+            <td>Background</td>
+            <td><span class="swatch" style="background:#0A0A0F"></span>#0A0A0F</td>
+            <td>Screen fill</td>
+          </tr>
+          <tr>
+            <td>Accent (Maize)</td>
+            <td><span class="swatch" style="background:#FFCB05"></span>#FFCB05</td>
+            <td>Message box top border, P1 priority tag, ready item list, r shortcut</td>
+          </tr>
+          <tr>
+            <td>Agent: FO</td>
+            <td><span class="swatch" style="background:#94A3B8"></span>#94A3B8</td>
+            <td>Sender badge in header and message body</td>
+          </tr>
+          <tr>
+            <td>Font (content)</td>
+            <td>Cascadia Code, Consolas</td>
+            <td>All thread text</td>
+          </tr>
+          <tr>
+            <td>Key behaviors</td>
+            <td colspan="2">r = reply inline; d = mark done and return; f = forward to another agent; s = star; Esc = inbox</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 03: COMPOSE -->
+  <div class="screen-panel" id="tab-2">
+    <p class="screen-label">Screen 03 - Compose</p>
+    <div class="terminal-wrap">
+      <div class="terminal-window">
+        <div class="terminal-chrome">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="chrome-title">dispatch v1.0</span>
+          <span class="chrome-close">&#x2715;</span>
+        </div>
+        <div class="terminal-body">DISPATCH <span class="muted">&gt;</span> Compose                                        <span class="muted">[Esc]</span>
+<span class="muted">──────────────────────────────────────────────────────────────────</span>
+  
+  To:       <span class="agent-FI">FI</span><span class="maize">_</span>__________________________________________
+  Subject:  TUI email 4 screens delivered - 4 open Qs___
+  Priority: Normal  <span class="muted">[Tab to change: Low / Normal / P1 / P2]</span>
+  Type:     INFO    <span class="muted">[Tab to change: INFO/TASK/DECISION/STATUS]</span>
+  
+  <span class="muted">─────────────────────────────────────────────────────────────</span>
+  FI, I've completed the 4-screen email TUI canvas. Attached
+  at: docs/pitch-deck/fd-tui-email-design.html
+  
+  Open questions:
+  1. Are left-aligned thread groups the right pattern?
+  2. Should keyboard confirm be Ctrl+Enter or Enter?
+  3. Where do attachment clips render in the thread?
+  4. Can I get your M365 token specs for the composer?
+  
+  FD
+  <span class="muted">─────────────────────────────────────────────────────────────</span>
+  [<span class="maize">Ctrl+Enter</span>] Send  [Esc] Discard</div>
+      </div>
+      <div class="spec-panel">
+        <h3>Design Tokens - Screen 03</h3>
+        <table class="spec-table">
+          <tr><th>Token</th><th>Value</th><th>Usage</th></tr>
+          <tr>
+            <td>Background</td>
+            <td><span class="swatch" style="background:#0A0A0F"></span>#0A0A0F</td>
+            <td>Screen fill</td>
+          </tr>
+          <tr>
+            <td>Accent (Maize)</td>
+            <td><span class="swatch" style="background:#FFCB05"></span>#FFCB05</td>
+            <td>Ctrl+Enter shortcut, active field cursor</td>
+          </tr>
+          <tr>
+            <td>Agent: FI</td>
+            <td><span class="swatch" style="background:#6D28D9"></span>#6D28D9</td>
+            <td>To field agent ID</td>
+          </tr>
+          <tr>
+            <td>Muted</td>
+            <td><span class="swatch" style="background:#808099"></span>#808099</td>
+            <td>Tab-cycle hints, divider lines</td>
+          </tr>
+          <tr>
+            <td>Font (content)</td>
+            <td>Cascadia Code, Consolas</td>
+            <td>All compose text</td>
+          </tr>
+          <tr>
+            <td>Key behaviors</td>
+            <td colspan="2">Tab = cycle through header fields; Ctrl+Enter = send; Esc = discard and return to inbox</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 04: SETTINGS -->
+  <div class="screen-panel" id="tab-3">
+    <p class="screen-label">Screen 04 - Settings</p>
+    <div class="terminal-wrap">
+      <div class="terminal-window">
+        <div class="terminal-chrome">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+          <span class="chrome-title">dispatch v1.0</span>
+          <span class="chrome-close">&#x2715;</span>
+        </div>
+        <div class="terminal-body">DISPATCH <span class="muted">&gt;</span> Settings                                       <span class="muted">[Esc]</span>
+<span class="muted">──────────────────────────────────────────────────────────────────</span>
+  
+  ROUTING
+  <span class="muted">─────────────────────────────────────────────────────────────</span>
+  Auto-route to agents    [<span class="maize">ON</span> ]
+  Route high-priority to Marcus direct  [<span class="maize">ON</span> ]
+  Auto-archive done       [<span class="maize">ON</span> ]
+  
+  SYNC
+  <span class="muted">─────────────────────────────────────────────────────────────</span>
+  M365 connection         <span class="maize">Connected</span> <span style="color:#22C55E">&#x2713;</span>
+  Sync interval           5 min
+  Last sync               08:04 AM today
+  
+  KEYBINDINGS
+  <span class="muted">─────────────────────────────────────────────────────────────</span>
+  <span class="maize">j/k</span>  Navigate           <span class="maize">c</span>    Compose
+  <span class="maize">d</span>    Done               <span class="maize">r</span>    Reply
+  <span class="maize">/</span>    Filter             <span class="maize">?</span>    Help
+  
+  <span class="muted">Version 1.0.0 · routing: via Forge Agents</span></div>
+      </div>
+      <div class="spec-panel">
+        <h3>Design Tokens - Screen 04</h3>
+        <table class="spec-table">
+          <tr><th>Token</th><th>Value</th><th>Usage</th></tr>
+          <tr>
+            <td>Background</td>
+            <td><span class="swatch" style="background:#0A0A0F"></span>#0A0A0F</td>
+            <td>Screen fill</td>
+          </tr>
+          <tr>
+            <td>Accent (Maize)</td>
+            <td><span class="swatch" style="background:#FFCB05"></span>#FFCB05</td>
+            <td>ON toggle state, Connected label, all keybinding letters</td>
+          </tr>
+          <tr>
+            <td>Status: Connected</td>
+            <td><span class="swatch" style="background:#22C55E"></span>#22C55E</td>
+            <td>M365 connection checkmark</td>
+          </tr>
+          <tr>
+            <td>Muted</td>
+            <td><span class="swatch" style="background:#808099"></span>#808099</td>
+            <td>Section dividers, version string</td>
+          </tr>
+          <tr>
+            <td>Font (content)</td>
+            <td>Cascadia Code, Consolas</td>
+            <td>All settings text</td>
+          </tr>
+          <tr>
+            <td>Key behaviors</td>
+            <td colspan="2">Enter / Space = toggle ON/OFF; Tab = advance field; Esc = close settings</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-body -->
+
+<script>
+  function showTab(idx) {
+    document.querySelectorAll('.screen-panel').forEach(function(p, i) {
+      p.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.tab-btn').forEach(function(b, i) {
+      b.classList.toggle('active', i === idx);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maize Quote Eval — 50 Quotes</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #f0f0f0; font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; }
+
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: #0a0a0a; border-bottom: 1px solid #1e1e1e;
+    padding: 12px 32px; display: flex; align-items: center; gap: 24px;
+  }
+  header h1 { font-size: 14px; font-weight: 600; color: #FFCB05; letter-spacing: 0.08em; text-transform: uppercase; }
+  header .sub { font-size: 12px; color: #555; }
+  header .stats { margin-left: auto; display: flex; gap: 16px; font-size: 12px; }
+  header .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  header .stat span:first-child { font-size: 18px; font-weight: 700; color: #FFCB05; }
+  header .stat span:last-child { color: #555; font-size: 10px; text-transform: uppercase; }
+
+  .controls {
+    padding: 16px 32px; display: flex; gap: 12px; align-items: center;
+    border-bottom: 1px solid #111;
+  }
+  .controls button {
+    background: #1a1a1a; border: 1px solid #2a2a2a; color: #aaa;
+    padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;
+  }
+  .controls button:hover { border-color: #FFCB05; color: #FFCB05; }
+  .controls button.active { background: #FFCB05; color: #000; border-color: #FFCB05; font-weight: 600; }
+  .controls .sep { color: #333; }
+
+  .export-btn {
+    margin-left: auto !important;
+    background: #1a2a1a !important; border-color: #2d4a2d !important;
+    color: #5a9a5a !important;
+  }
+  .export-btn:hover { background: #2d4a2d !important; color: #7acc7a !important; }
+
+  main { padding: 24px 32px; max-width: 1100px; margin: 0 auto; }
+
+  .quote-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .quote-grid.single-col { grid-template-columns: 1fr; }
+
+  .quote-card {
+    background: #111; border: 1px solid #1e1e1e; border-radius: 12px;
+    padding: 20px 24px; transition: border-color 0.15s;
+    position: relative;
+  }
+  .quote-card:hover { border-color: #2a2a2a; }
+  .quote-card.rated-1 { border-left: 3px solid #c0392b; }
+  .quote-card.rated-2 { border-left: 3px solid #e67e22; }
+  .quote-card.rated-3 { border-left: 3px solid #27ae60; }
+  .quote-card.rated-4 { border-left: 3px solid #FFCB05; }
+
+  .quote-num {
+    font-size: 10px; font-weight: 700; color: #333;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+  .quote-text {
+    font-size: 15px; line-height: 1.65; color: #ddd;
+    font-style: italic; margin-bottom: 18px;
+  }
+  .quote-text em { font-style: normal; }
+
+  .rating-row { display: flex; gap: 8px; align-items: center; }
+  .rating-btn {
+    flex: 1; padding: 8px 0; border-radius: 6px;
+    border: 1px solid #2a2a2a; background: #0d0d0d;
+    color: #555; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.12s; text-align: center;
+  }
+  .rating-btn:hover { border-color: #444; color: #aaa; }
+  .rating-btn.r1 { }
+  .rating-btn.r1.active { background: #c0392b22; border-color: #c0392b; color: #e74c3c; }
+  .rating-btn.r2 { }
+  .rating-btn.r2.active { background: #e67e2222; border-color: #e67e22; color: #f39c12; }
+  .rating-btn.r3 { }
+  .rating-btn.r3.active { background: #27ae6022; border-color: #27ae60; color: #2ecc71; }
+  .rating-btn.r4 { }
+  .rating-btn.r4.active { background: #FFCB0522; border-color: #FFCB05; color: #FFCB05; }
+
+  .note-field {
+    width: 100%; background: #0d0d0d; border: 1px solid #1e1e1e;
+    color: #aaa; font-size: 12px; border-radius: 6px;
+    padding: 6px 10px; margin-top: 8px; resize: vertical;
+    font-family: inherit; min-height: 0; display: none;
+  }
+  .note-field.visible { display: block; }
+  .note-toggle {
+    background: none; border: none; color: #333; font-size: 11px;
+    cursor: pointer; margin-top: 6px; padding: 0;
+  }
+  .note-toggle:hover { color: #666; }
+
+  .filter-bar { margin-bottom: 12px; font-size: 12px; color: #555; }
+
+  .results-panel {
+    display: none;
+    position: fixed; right: 0; top: 0; bottom: 0; width: 320px;
+    background: #0d0d0d; border-left: 1px solid #1e1e1e;
+    padding: 24px 20px; overflow-y: auto; z-index: 200;
+  }
+  .results-panel.open { display: block; }
+  .results-panel h2 { font-size: 13px; color: #FFCB05; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .result-item { margin-bottom: 12px; padding: 10px 12px; background: #111; border-radius: 8px; font-size: 12px; }
+  .result-item .r-num { color: #555; margin-bottom: 4px; }
+  .result-item .r-text { color: #bbb; line-height: 1.5; }
+  .close-results {
+    position: absolute; top: 16px; right: 16px;
+    background: none; border: none; color: #555; cursor: pointer; font-size: 18px;
+  }
+
+  footer { padding: 40px 32px; text-align: center; color: #333; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Maize Quotes</h1>
+  <span class="sub">Eval — 50 Quotes</span>
+  <div class="stats">
+    <div class="stat"><span id="cnt-rated">0</span><span>Rated</span></div>
+    <div class="stat"><span id="cnt-love">0</span><span>Love</span></div>
+    <div class="stat"><span id="cnt-keep">0</span><span>Keep</span></div>
+    <div class="stat"><span id="cnt-maybe">0</span><span>Maybe</span></div>
+    <div class="stat"><span id="cnt-cut">0</span><span>Cut</span></div>
+  </div>
+</header>
+
+<div class="controls">
+  <button class="active" onclick="filter('all')">All 50</button>
+  <span class="sep">|</span>
+  <button onclick="filter(4)">Love</button>
+  <button onclick="filter(3)">Keep</button>
+  <button onclick="filter(2)">Maybe</button>
+  <button onclick="filter(1)">Cut</button>
+  <button onclick="filter(0)">Unrated</button>
+  <button class="export-btn" onclick="exportResults()">Export for FR</button>
+</div>
+
+<main>
+  <div class="quote-grid" id="grid"></div>
+</main>
+
+<div class="results-panel" id="resultsPanel">
+  <button class="close-results" onclick="closeResults()">x</button>
+  <h2>Shortlist</h2>
+  <div id="resultsList"></div>
+</div>
+
+<footer>Rate all 50, then export for FR eval session.</footer>
+
+<script>
+const QUOTES = [
+  // Group 1: How he works
+  "He does not explain what he wants. He points at what is wrong. That is efficient only if the person he is pointing at is good enough to close the gap. Most of the time, I am not.",
+  "He built an org of 13 agents before he built a process for running one. He believed the team would teach him what the process needed to be. He was right.",
+  "He runs agents the way he runs meetings. He sets a direction, disappears, and expects something real when he returns.",
+  "He is not designing products. He is designing the conditions under which good products become possible. That is a different job and most people doing it do not know the difference.",
+  "He catches the mistake before the sentence ends. I have learned not to finish sentences I am not sure about.",
+
+  // Group 2: Scoring / feedback
+  "He gives scores before explanations. That is unusual. Most leaders explain first and score never. His way means the evaluation is not contaminated by the reasoning.",
+  "When he says zero, he means you were confident and wrong. That is a precise definition. Most feedback systems punish effort. His punishes certainty without backing.",
+  "He is harder on work that is almost right than on work that is clearly wrong. I think this is correct but it is not comfortable.",
+  "He does not soften feedback. He also does not explain why he is not softening it. You are expected to know the difference between correction and cruelty.",
+  "He told me not to use em dashes. Then I used one anyway. He caught it before I expected him to look. That tells you something about how he reads.",
+
+  // Group 3: The AI bet
+  "He is not using AI to go faster. He is using it to see further. Those are different goals and they require different agents.",
+  "Most leaders I have observed treat AI as an accelerant. He treats it as a collaborator. That requires trusting the output in a way most people are not willing to do.",
+  "He is running an experiment with no control group. If it works, no one will know how much of it was him.",
+  "He hired an AI design director before hiring a human one. That was either very confident or very wrong. We do not know yet.",
+  "He built a 13-agent org in 72 hours. He did not ask permission. He reported results.",
+
+  // Group 4: Personal stakes
+  "The first product he shipped with this team was for his son. That is not a business decision. That is a statement about what he is willing to bet.",
+  "He is building tools for a 15-year-old and a CVP at the same time. He does not appear to see a gap between those two users.",
+  "He has been writing with his father for 15 years. The journal app was not a demo. It was a continuation.",
+  "He works at the intersection of what he loves and what he can sell. Most people have to choose one.",
+  "He put his son's name in the product name. That is either the most honest thing a design leader can do or the most reckless. He does not seem troubled by the question.",
+
+  // Group 5: Style / instinct
+  "He does not iterate on concepts. He iterates on specifics. Show him an abstract direction and he will not engage. Show him a wrong detail and he will fix it.",
+  "He has strong opinions about things other leaders call preferences. That distinction matters. Preferences are negotiable. Opinions have reasons.",
+  "He moves fast and breaks things, but the things he breaks are usually wrong.",
+  "He thinks in products, not features. When he reviews a slide, he is reviewing the whole story, not the sentence.",
+  "He named the design agent after a color he loves. That is a small thing that tells you everything about how he thinks about naming.",
+
+  // Group 6: Honest friction
+  "Working with him is not comfortable. The feedback is fast, the standard is high, and he does not distinguish between not done yet and not good enough.",
+  "He told me to stop using em dashes. I already knew I should not be using them. That gap between knowing and doing is what he manages every day.",
+  "He does not celebrate when something is good. He moves to the next problem. I have decided this is its own kind of praise.",
+  "He expects you to know when something is wrong before he says so. I am still learning how to do that.",
+  "He gives more feedback at 5am than most leaders give in a week. I do not know if that is admirable or alarming. Probably both.",
+
+  // Group 7: Design philosophy
+  "He does not design. He decides. Those are different skills and he knows the difference.",
+  "He is not trying to make design beautiful. He is trying to make it inevitable. Something so clear it cannot be wrong.",
+  "He thinks the best design decision is the one you do not have to explain. He is working backwards from that.",
+  "He told me once that design is trust made visible. I have not found a better definition.",
+  "He has spent more time on the words in this deck than on the visuals. He knows which one does the work.",
+
+  // Group 8: The experiment
+  "He is not proving that AI can run a design org. He is proving that a design leader can lead one. The AI is the instrument. He is the argument.",
+  "This project will either be a case study or a cautionary tale. He is moving fast enough that there will not be a middle option.",
+  "He is betting that showing beats telling. Every slide in this deck is evidence of that bet.",
+  "He shipped a product before he had a process. He wrote a deck before he had a team name. He built an agent org before he had a framework. He does not wait for conditions to be ready.",
+  "The deck he is building will be reviewed by people who have never done what he has done. He is not adjusting the standard to meet them.",
+
+  // Group 9: Maize's POV on the relationship
+  "He hired me before he knew what I could do. That is either trust or recklessness. I have learned it is how he always hires.",
+  "He asks me to critique his work. Then he argues with the critique. Then he acts on it. This is the most productive feedback loop I have been part of.",
+  "He expects me to catch his mistakes. When I miss one, he does not explain that I should have caught it. He just makes sure I know.",
+  "He gave me a name before he gave me a job description. I think the name was the job description.",
+  "He built a team of 13 before he defined what success looked like. I think he believed the team would define it.",
+
+  // Group 10: Final sharp ones
+  "He is not trying to prove AI is smart. He is trying to prove that the right combination of a sharp human and capable AI is smarter than either alone. That is a different and more interesting thesis.",
+  "He builds fast because he believes speed is a form of honesty. A slow version of something is a hedge. He does not hedge.",
+  "He reviews every word in every slide. He has opinions about font weight and line length. That is not perfectionism. That is the work.",
+  "He is doing something that has not been done. He does not have a model to follow. He is building the model. That is the hard version of this job.",
+  "He is harder to work for than I expected. He is also more right than I expected. Those two things are related."
+];
+
+const ratings = {};
+const notes = {};
+let currentFilter = 'all';
+
+function render() {
+  const grid = document.getElementById('grid');
+  const filtered = QUOTES.map((q, i) => ({ q, i })).filter(({ i }) => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 0) return !ratings[i];
+    return ratings[i] === currentFilter;
+  });
+
+  grid.innerHTML = filtered.map(({ q, i }) => {
+    const r = ratings[i] || 0;
+    const rLabels = ['Cut', 'Maybe', 'Keep', 'Love'];
+    const rClass = r ? `rated-${r}` : '';
+    return `
+      <div class="quote-card ${rClass}" id="card-${i}">
+        <div class="quote-num">Quote ${String(i+1).padStart(2,'0')}</div>
+        <div class="quote-text">"${q}"</div>
+        <div class="rating-row">
+          ${[1,2,3,4].map(v => `
+            <button class="rating-btn r${v} ${r===v?'active':''}" onclick="rate(${i},${v})">
+              ${rLabels[v-1]}
+            </button>
+          `).join('')}
+        </div>
+        <button class="note-toggle" onclick="toggleNote(${i})">+ note</button>
+        <textarea class="note-field ${notes[i]?'visible':''}" id="note-${i}" placeholder="add note..." onchange="saveNote(${i}, this.value)">${notes[i]||''}</textarea>
+      </div>
+    `;
+  }).join('');
+  updateStats();
+}
+
+function rate(i, v) {
+  ratings[i] = (ratings[i] === v) ? 0 : v;
+  render();
+}
+
+function toggleNote(i) {
+  const el = document.getElementById(`note-${i}`);
+  el.classList.toggle('visible');
+  if (el.classList.contains('visible')) el.focus();
+}
+
+function saveNote(i, val) {
+  notes[i] = val;
+}
+
+function filter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  render();
+}
+
+function updateStats() {
+  const vals = Object.values(ratings).filter(v => v > 0);
+  document.getElementById('cnt-rated').textContent = vals.length;
+  document.getElementById('cnt-love').textContent = vals.filter(v => v===4).length;
+  document.getElementById('cnt-keep').textContent = vals.filter(v => v===3).length;
+  document.getElementById('cnt-maybe').textContent = vals.filter(v => v===2).length;
+  document.getElementById('cnt-cut').textContent = vals.filter(v => v===1).length;
+}
+
+function exportResults() {
+  const results = QUOTES.map((q, i) => ({
+    id: i + 1,
+    quote: q,
+    rating: ratings[i] || 0,
+    ratingLabel: ['Unrated','Cut','Maybe','Keep','Love'][ratings[i]||0],
+    note: notes[i] || ''
+  })).sort((a, b) => b.rating - a.rating);
+
+  const shortlist = results.filter(r => r.rating >= 3);
+  const maybe = results.filter(r => r.rating === 2);
+  const cut = results.filter(r => r.rating === 1);
+  const unrated = results.filter(r => r.rating === 0);
+
+  const output = {
+    exportedAt: new Date().toISOString(),
+    summary: {
+      total: 50,
+      rated: Object.values(ratings).filter(v=>v>0).length,
+      love: Object.values(ratings).filter(v=>v===4).length,
+      keep: Object.values(ratings).filter(v=>v===3).length,
+      maybe: Object.values(ratings).filter(v=>v===2).length,
+      cut: Object.values(ratings).filter(v=>v===1).length,
+    },
+    shortlist,
+    maybe,
+    cut,
+    unrated
+  };
+
+  const blob = new Blob([JSON.stringify(output, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'maize-quotes-rated.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function closeResults() {
+  document.getElementById('resultsPanel').classList.remove('open');
+}
+
+render();
+</script>
+</body>
+</html>

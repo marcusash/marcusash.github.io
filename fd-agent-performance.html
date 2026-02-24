@@ -1,0 +1,713 @@
+<!--
+  fd-agent-performance.html
+  Forge Agent Performance Dashboard -- Sprint 5
+  Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forge Agent Performance -- Sprint 5</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+      background: #F4F5F7;
+      color: #1A1B2E;
+      min-height: 100vh;
+      padding: 28px 32px 48px;
+    }
+
+    /* ---- Header ---- */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .page-title span {
+      color: #FFCB05;
+    }
+    .page-subtitle {
+      font-size: 13px;
+      color: #64748B;
+      margin-top: 3px;
+    }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748B;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22C55E;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ---- KPI Strip ---- */
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 20px 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: #FFCB05;
+    }
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #64748B;
+      margin-bottom: 8px;
+    }
+    .kpi-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1A1B2E;
+      line-height: 1;
+    }
+    .kpi-meta {
+      font-size: 12px;
+      color: #64748B;
+      margin-top: 6px;
+    }
+
+    /* ---- Agent Grid ---- */
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #64748B;
+      margin-bottom: 14px;
+    }
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .agent-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: box-shadow 0.18s;
+    }
+    .agent-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    }
+    .agent-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .agent-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .agent-id {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1A1B2E;
+    }
+    .agent-role {
+      font-size: 11px;
+      color: #64748B;
+      line-height: 1.3;
+    }
+    .agent-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .metric-item {}
+    .metric-key {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748B;
+      margin-bottom: 2px;
+    }
+    .metric-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1A1B2E;
+    }
+    .metric-val.small {
+      font-size: 14px;
+    }
+    .agent-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 12px;
+      border-top: 1px solid #E2E8F0;
+    }
+    .status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .status-active   { background: #DCFCE7; color: #15803D; }
+    .status-idle     { background: #F1F5F9; color: #64748B; }
+    .status-blocked  { background: #FEE2E2; color: #DC2626; }
+
+    .grade-badge {
+      font-size: 13px;
+      font-weight: 700;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .grade-a { background: #DCFCE7; color: #15803D; }
+    .grade-b { background: #FEF9C3; color: #854D0E; }
+    .grade-c { background: #FEE2E2; color: #DC2626; }
+    .grade-na { background: #F1F5F9; color: #64748B; }
+
+    .last-activity {
+      font-size: 11px;
+      color: #64748B;
+    }
+
+    /* ---- Sprint Summary ---- */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .summary-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .summary-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #64748B;
+      margin-bottom: 6px;
+    }
+    .summary-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1A1B2E;
+    }
+    .summary-sub {
+      font-size: 12px;
+      color: #64748B;
+      margin-top: 3px;
+    }
+
+    .velocity-bar-wrap {
+      background: #F1F5F9;
+      border-radius: 6px;
+      height: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+    .velocity-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: #FFCB05;
+    }
+
+    /* ---- Legend ---- */
+    .legend {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .legend-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #64748B;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: #1A1B2E;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">Agent Performance <span>Dashboard</span></div>
+      <div class="page-subtitle">Sprint 5 -- All 13 Forge and Grind agents</div>
+    </div>
+    <div class="live-badge">
+      <div class="live-dot"></div>
+      Live
+    </div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Commits</div>
+      <div class="kpi-value">1,118</div>
+      <div class="kpi-meta">Across all agents, Sprint 5</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Agents Active</div>
+      <div class="kpi-value">9</div>
+      <div class="kpi-meta">of 13 total agents</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Current Sprint</div>
+      <div class="kpi-value">5</div>
+      <div class="kpi-meta">In progress</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Tests Passing</div>
+      <div class="kpi-value">2,035</div>
+      <div class="kpi-meta">All suites combined</div>
+    </div>
+  </div>
+
+  <!-- Agent Grid -->
+  <div class="section-label">All Agents</div>
+  <div class="agent-grid">
+
+    <!-- FA -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#4A90D9;"></div>
+        <div>
+          <div class="agent-id">FA</div>
+          <div class="agent-role">Chief Architect</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">180</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">24</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">35 min ago</span>
+        <span class="grade-badge grade-a">A</span>
+      </div>
+    </div>
+
+    <!-- FD -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#FFCB05;"></div>
+        <div>
+          <div class="agent-id">FD</div>
+          <div class="agent-role">Design Director</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">120</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">18</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">1h ago</span>
+        <span class="grade-badge grade-a">A</span>
+      </div>
+    </div>
+
+    <!-- FF -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#22C55E;"></div>
+        <div>
+          <div class="agent-id">FF</div>
+          <div class="agent-role">Quality Lead</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">95</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">15</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-idle">Idle</span>
+        <span class="last-activity">3h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- FI -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#6D28D9;"></div>
+        <div>
+          <div class="agent-id">FI</div>
+          <div class="agent-role">Data Lead</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">85</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">14</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">45 min ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- FO -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#94A3B8;"></div>
+        <div>
+          <div class="agent-id">FO</div>
+          <div class="agent-role">Chief of Operations</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">75</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">12</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-idle">Idle</span>
+        <span class="last-activity">4h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- FP -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#CE1126;"></div>
+        <div>
+          <div class="agent-id">FP</div>
+          <div class="agent-role">Security and Ops</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">90</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">13</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">1h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- FR -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#F97316;"></div>
+        <div>
+          <div class="agent-id">FR</div>
+          <div class="agent-role">Research Lead</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">110</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">16</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">30 min ago</span>
+        <span class="grade-badge grade-a">A</span>
+      </div>
+    </div>
+
+    <!-- GA -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#93AEFF;"></div>
+        <div>
+          <div class="agent-id">GA</div>
+          <div class="agent-role">Application Engineer</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">80</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">12</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">2h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- GD -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#3D3D3D;"></div>
+        <div>
+          <div class="agent-id">GD</div>
+          <div class="agent-role">Design Engineer</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">65</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">10</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-idle">Idle</span>
+        <span class="last-activity">5h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- GF -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#6EE7B7;"></div>
+        <div>
+          <div class="agent-id">GF</div>
+          <div class="agent-role">QA Engineer</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">55</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">9</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">2h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- GI -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#A78BFA;"></div>
+        <div>
+          <div class="agent-id">GI</div>
+          <div class="agent-role">Data Engineer</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">40</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">8</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-blocked">Blocked</span>
+        <span class="last-activity">1d ago</span>
+        <span class="grade-badge grade-na">--</span>
+      </div>
+    </div>
+
+    <!-- GP -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#EE2828;"></div>
+        <div>
+          <div class="agent-id">GP</div>
+          <div class="agent-role">Platform Engineer</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">60</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">10</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">2h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+    <!-- GR -->
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-dot" style="background:#FB923C;"></div>
+        <div>
+          <div class="agent-id">GR</div>
+          <div class="agent-role">Research Specialist</div>
+        </div>
+      </div>
+      <div class="agent-metrics">
+        <div class="metric-item">
+          <div class="metric-key">Commits</div>
+          <div class="metric-val">63</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-key">Tasks Done</div>
+          <div class="metric-val">11</div>
+        </div>
+      </div>
+      <div class="agent-footer">
+        <span class="status-badge status-active">Active</span>
+        <span class="last-activity">1h ago</span>
+        <span class="grade-badge grade-b">B</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sprint 5 Summary -->
+  <div class="section-label">Sprint 5 Summary</div>
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-label">Top Performer</div>
+      <div class="summary-value" style="color:#4A90D9;">FA (Blue)</div>
+      <div class="summary-sub">180 commits, 24 tasks, Grade A</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Most Improved</div>
+      <div class="summary-value" style="color:#FB923C;">GR (Orange)</div>
+      <div class="summary-sub">+2 grade levels vs Sprint 4</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Blockers Resolved</div>
+      <div class="summary-value">3 of 5</div>
+      <div class="summary-sub">2 still open</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Team Velocity</div>
+      <div class="summary-value">89%</div>
+      <div class="summary-sub">of planned tasks completed</div>
+      <div class="velocity-bar-wrap">
+        <div class="velocity-bar-fill" style="width:89%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="legend-title">Grade Key</span>
+    <div class="legend-item"><div class="legend-dot" style="background:#DCFCE7;"></div> A = Exceeds expectations</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FEF9C3;"></div> B = Meets expectations</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#FEE2E2;"></div> C = Below expectations</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#F1F5F9;"></div> -- = Blocked, no grade assigned</div>
+  </div>
+
+</body>
+</html>

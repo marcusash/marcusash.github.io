@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TUI Canvas: Design Exploration</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><line x1='10' y1='5' x2='10' y2='27' stroke='%23FFCB05' stroke-width='2' stroke-linecap='round'/><line x1='10' y1='5' x2='26' y2='5' stroke='%23FFCB05' stroke-width='2' stroke-linecap='round'/><line x1='10' y1='16' x2='23' y2='16' stroke='%23FFCB05' stroke-width='2' stroke-linecap='round'/><circle cx='10' cy='5' r='2' fill='%23FFCB05'/><circle cx='10' cy='16' r='2' fill='%23FFCB05'/><circle cx='26' cy='5' r='1.5' fill='none' stroke='%23FFCB05' stroke-width='1.5'/><circle cx='23' cy='16' r='1.5' fill='none' stroke='%23FFCB05' stroke-width='1.5'/><circle cx='10' cy='27' r='1.5' fill='none' stroke='%23FFCB05' stroke-width='1.5'/></svg>">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  overflow: hidden;
+  height: 100%;
+}
+
+/* ── THIN OVERLAY SCROLLBAR (Windows Terminal style) ───────── */
+/* Fixed 6px width: no layout shift. Thumb invisible at rest, fades in on hover. */
+.screen::-webkit-scrollbar          { width: 6px; }
+.screen::-webkit-scrollbar-track    { background: transparent; }
+.screen::-webkit-scrollbar-thumb    { background: transparent; border-radius: 3px; transition: background 0.2s; }
+.screen:hover::-webkit-scrollbar-thumb { background: rgba(136,136,160,0.3); }
+.screen::-webkit-scrollbar-thumb:hover  { background: rgba(136,136,160,0.75); }
+
+:root {
+  --bg:       #0A0A0F;
+  --surface:  #111118;
+  --card:     #16161F;
+  --border:   #1E1E2E;
+  --border2:  #2A2A3E;
+  --cyan:     #00D4AA;
+  --maize:    #FFCB05;
+  --purple:   #A78BFA;
+  --orange:   #FB923C;
+  --green:    #34D399;
+  --slate:    #94A3B8;
+  --text:     #E8E8ED;
+  --dim:      #8888A0;
+  --dimmer:   #44445A;
+  --red:      #FF6B6B;
+  --font:     'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono:     'Cascadia Code', 'Cascadia Mono', 'Consolas', monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── OPTION BAR ─────────────────────────────────────────────── */
+#option-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: rgba(10,10,15,0.96);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+.bar-label { color: var(--cyan); letter-spacing: 1px; font-size: 16px; line-height: 1; }
+.opt-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 14px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: all 0.12s;
+}
+.opt-btn:hover { border-color: var(--cyan); color: var(--text); }
+.opt-btn.active { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,170,0.06); }
+.bar-sep { color: var(--dimmer); }
+
+.screen { display: none; height: 100vh; overflow-y: auto; padding-top: 46px; }
+.screen.active { display: block; }
+
+/* ── SHARED LAYOUT ──────────────────────────────────────────── */
+.page { max-width: 1100px; margin: 0 auto; padding: 24px 32px 48px; }
+
+.section-head {
+  margin-bottom: 32px;
+}
+.section-head h1 {
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.section-head p {
+  color: var(--dim);
+  max-width: 620px;
+  font-size: 14px;
+}
+.section-head .verdict {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 5px 16px;
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+/* ── WINDOW MOCKUP FRAME ────────────────────────────────────── */
+.window-wrap {
+  position: relative;
+  margin: 32px 0;
+}
+.window-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dimmer);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.window-frame {
+  border: 1px solid var(--border2);
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  max-width: 900px;
+}
+
+/* chrome styles for different options */
+.chrome-full {
+  background: #202124;
+  padding: 0;
+}
+.chrome-full .tab-bar {
+  background: #35363a;
+  display: flex;
+  align-items: flex-end;
+  padding: 6px 0 0 12px;
+  gap: 0;
+  height: 36px;
+}
+.chrome-full .tab {
+  background: #202124;
+  padding: 6px 16px;
+  font-size: 11px;
+  color: #bbb;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 160px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.chrome-full .tab.active-tab { background: #202124; color: #fff; }
+.chrome-full .tab-dot { width: 12px; height: 12px; border-radius: 50%; background: #8888A0; flex-shrink: 0; }
+.chrome-full .tab-close { color: #666; font-size: 14px; margin-left: 4px; }
+.chrome-full .address-bar {
+  background: #202124;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #3a3a3a;
+}
+.chrome-full .addr-nav { color: #666; font-size: 16px; cursor: pointer; user-select: none; }
+.chrome-full .addr-input {
+  flex: 1;
+  background: #35363a;
+  border: none;
+  border-radius: 20px;
+  padding: 4px 14px;
+  color: #bbb;
+  font-size: 12px;
+  font-family: var(--mono);
+}
+.chrome-full .addr-icons { color: #666; font-size: 14px; display: flex; gap: 8px; }
+
+.chrome-appmode {
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 32px;
+  border-bottom: 1px solid #2a2a2a;
+}
+.chrome-appmode .win-title { font-size: 12px; color: #aaa; }
+.chrome-appmode .win-controls { display: flex; gap: 8px; }
+.chrome-appmode .wc { width: 12px; height: 12px; border-radius: 50%; }
+.chrome-appmode .wc-min { background: #f5bf4f; }
+.chrome-appmode .wc-max { background: #61c554; }
+.chrome-appmode .wc-close { background: #ec6a5e; }
+
+.chrome-electron-custom {
+  background: #0D0D14;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 28px;
+  border-bottom: 1px solid var(--border);
+  -webkit-app-region: drag;
+}
+.chrome-electron-custom .win-mark { color: var(--cyan); font-size: 13px; margin-right: 8px; }
+.chrome-electron-custom .win-title { font-size: 11px; color: var(--dimmer); font-family: var(--mono); letter-spacing: 0.5px; }
+.chrome-electron-custom .win-controls { margin-left: auto; display: flex; gap: 6px; }
+.chrome-electron-custom .wc { width: 10px; height: 10px; border-radius: 50%; }
+.chrome-electron-custom .wc-min { background: #444; }
+.chrome-electron-custom .wc-max { background: #444; }
+.chrome-electron-custom .wc-close { background: #FF6B6B; }
+
+.chrome-none {
+  /* No chrome at all - 2px drag strip only */
+  height: 2px;
+  background: var(--cyan);
+  opacity: 0.3;
+}
+
+/* ── DASHBOARD CONTENT (the payload) ───────────────────────── */
+.dash-content {
+  background: #0F0F16;
+  padding: 28px 28px 20px;
+}
+.dash-title { font-size: 20px; font-weight: 400; color: var(--text); margin-bottom: 4px; }
+.dash-sub { font-size: 12px; color: var(--dim); margin-bottom: 24px; }
+.session-totals {
+  border: 1px solid var(--border2);
+  padding: 18px 20px;
+  margin-bottom: 20px;
+}
+.totals-label { font-size: 10px; color: var(--dimmer); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; font-family: var(--mono); }
+.totals-row { display: flex; gap: 40px; flex-wrap: wrap; }
+.total-item .n { font-size: 28px; color: var(--cyan); font-family: var(--mono); line-height: 1; }
+.total-item .l { font-size: 10px; color: var(--dim); margin-top: 3px; }
+.total-item.red .n { color: var(--red); }
+.agents-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.agent-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 14px 16px;
+}
+.ac-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.ac-id { font-size: 10px; color: var(--cyan); font-family: var(--mono); letter-spacing: 1px; }
+.ac-name { font-size: 13px; color: var(--text); font-weight: 500; margin-top: 1px; }
+.ac-badge { font-size: 9px; padding: 2px 8px; letter-spacing: 1px; font-family: var(--mono); }
+.badge-active { background: rgba(52,211,153,0.15); border: 1px solid var(--green); color: var(--green); }
+.badge-stopped { background: rgba(255,107,107,0.12); border: 1px solid var(--red); color: var(--red); }
+.ac-n { font-size: 26px; color: var(--text); font-family: var(--mono); margin-bottom: 2px; }
+.ac-nl { font-size: 10px; color: var(--dim); margin-bottom: 10px; }
+.ac-check { font-size: 11px; color: var(--dim); line-height: 1.7; }
+.ac-check span { color: var(--green); margin-right: 5px; }
+
+/* ── COMPARISON TABLE ───────────────────────────────────────── */
+.compare-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+.compare-table th {
+  text-align: left;
+  font-size: 10px;
+  color: var(--cyan);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border2);
+  font-family: var(--mono);
+}
+.compare-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--dim);
+  vertical-align: top;
+}
+.compare-table tr:last-child td { border-bottom: none; }
+.compare-table td:first-child { color: var(--text); font-weight: 500; width: 160px; }
+.tag { display: inline-block; padding: 2px 8px; font-size: 10px; font-family: var(--mono); margin: 1px; }
+.tag-green { background: rgba(52,211,153,0.1); border: 1px solid var(--green); color: var(--green); }
+.tag-cyan { background: rgba(0,212,170,0.1); border: 1px solid var(--cyan); color: var(--cyan); }
+.tag-orange { background: rgba(251,146,60,0.1); border: 1px solid var(--orange); color: var(--orange); }
+.tag-red { background: rgba(255,107,107,0.1); border: 1px solid var(--red); color: var(--red); }
+.tag-gray { background: rgba(148,163,184,0.1); border: 1px solid var(--slate); color: var(--slate); }
+
+/* ── CODE BLOCK ─────────────────────────────────────────────── */
+.code-block {
+  background: #0D0D14;
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--cyan);
+  padding: 16px 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--cyan);
+  margin: 16px 0;
+  white-space: pre;
+  overflow-x: auto;
+}
+.code-block .comment { color: var(--dimmer); }
+.code-block .key { color: var(--maize); }
+.code-block .str { color: var(--green); }
+
+/* ── SPRINT PLAN ────────────────────────────────────────────── */
+.sprint-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+.sprint-week {
+  border: 1px solid var(--border2);
+  padding: 20px;
+}
+.sprint-week h3 {
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  margin-bottom: 16px;
+}
+.sprint-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--dim);
+}
+.sprint-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cyan); margin-top: 5px; flex-shrink: 0; }
+.sprint-day { color: var(--dimmer); font-family: var(--mono); font-size: 10px; min-width: 28px; margin-top: 2px; }
+
+/* ── ANNOTATION ─────────────────────────────────────────────── */
+.annotation {
+  display: flex;
+  gap: 12px;
+  background: rgba(255,203,5,0.05);
+  border: 1px solid rgba(255,203,5,0.2);
+  border-left: 3px solid var(--maize);
+  padding: 14px 16px;
+  margin: 20px 0;
+  font-size: 13px;
+  color: var(--dim);
+}
+.annotation .ann-icon { color: var(--maize); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 36px 0; }
+</style>
+</head>
+<body>
+
+<!-- OPTION BAR -->
+<div id="option-bar">
+  <span class="bar-label">◉</span>
+  <span class="bar-sep">/</span>
+  <button class="opt-btn active" onclick="show('before',this)">Before</button>
+  <button class="opt-btn" onclick="show('a',this)">A: App Mode</button>
+  <button class="opt-btn" onclick="show('b',this)">B: Electron Chrome</button>
+  <button class="opt-btn" onclick="show('c',this)">C: Frameless</button>
+  <button class="opt-btn" onclick="show('compare',this)">Compare + Sprint</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- BEFORE: Full Browser -->
+<!-- ============================================================ -->
+<div id="screen-before" class="screen active">
+<div class="page">
+  <div class="section-head">
+    <h1>The problem.</h1>
+    <p>The dashboard content is right. The browser around it is the problem. Five tabs, an address bar, bookmarks, extensions. Every time Marcus opens a Forge view he's looking through a browser, not at a tool.</p>
+  </div>
+
+  <div class="window-label">Current state: full browser chrome</div>
+  <div class="window-frame">
+    <!-- Browser chrome simulation -->
+    <div class="chrome-full">
+      <div class="tab-bar">
+        <div class="tab"><div class="tab-dot"></div>Forge<div class="tab-close">×</div></div>
+        <div class="tab"><div class="tab-dot"></div>New tab<div class="tab-close">×</div></div>
+        <div class="tab"><div class="tab-dot"></div>Kai Score Analysis<div class="tab-close">×</div></div>
+        <div class="tab active-tab"><div class="tab-dot" style="background:#00D4AA"></div>Forge Async Session…<div class="tab-close">×</div></div>
+        <div class="tab"><div class="tab-dot"></div>Forge Async Session…<div class="tab-close">×</div></div>
+      </div>
+      <div class="address-bar">
+        <span class="addr-nav">←</span>
+        <span class="addr-nav">→</span>
+        <span class="addr-nav">↻</span>
+        <input class="addr-input" value="C:/GitHub/journal/docs/agents/async-session-summary-20260222.html" readonly>
+        <div class="addr-icons">★ ↓ ⚙</div>
+      </div>
+    </div>
+    <!-- Content payload (same in all options) -->
+    <div class="dash-content">
+      <div class="dash-title">Forge Async Session Summary</div>
+      <div class="dash-sub">2026-02-22 · Marcus offline 13:30 UTC to 00:24 UTC (+1) · ~10.9 hours</div>
+      <div class="session-totals">
+        <div class="totals-label">Session Totals</div>
+        <div class="totals-row">
+          <div class="total-item"><div class="n">7</div><div class="l">Agents active</div></div>
+          <div class="total-item"><div class="n">6</div><div class="l">Agents stopped / no output</div></div>
+          <div class="total-item"><div class="n">159</div><div class="l">Total commits (both repos)</div></div>
+          <div class="total-item red"><div class="n">0</div><div class="l">P1 regressions</div></div>
+          <div class="total-item"><div class="n" style="color:var(--maize)">2687/2687</div><div class="l">MCM exam checks passing</div></div>
+        </div>
+      </div>
+      <div class="agents-row">
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FR</div><div class="ac-name">Research Lead</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">10</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check">
+            <span>✓</span>MCM root cause diagnosis<br>
+            <span>✓</span>Postmortem filed<br>
+            <span>✓</span>Hydration gate implemented<br>
+          </div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FO</div><div class="ac-name">Chief of Operations</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">8</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check">
+            <span>✓</span>Dispatched queue to all 13 agents<br>
+            <span>✓</span>Agent dashboard HTML canvas built<br>
+            <span>✓</span>Autonomous bug report<br>
+          </div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FF</div><div class="ac-name">Quality Lead</div></div>
+            <div class="ac-badge badge-stopped">STOPPED</div>
+          </div>
+          <div class="ac-n">6</div><div class="ac-nl">tasks completed before stopping</div>
+          <div class="ac-check">
+            <span>✓</span>Launch infra tests (35 tests)<br>
+            <span>✓</span>Parser mutation testing 92.13%<br>
+            <span>✓</span>Branch coverage improvements<br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="ann-icon">▲</div>
+    <div>Everything above the dashed line is browser. The dashboard starts at "Forge Async Session Summary". That's 80px of tab bar + address bar + toolbar that has nothing to do with Forge. It also anchors the view to a browser, not to a tool. The goal: zero browser furniture. Pure window.</div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION A: App Mode -->
+<!-- ============================================================ -->
+<div id="screen-a" class="screen">
+<div class="page">
+  <div class="section-head">
+    <h1>Option A: App Mode.</h1>
+    <p>Launch Edge or Chrome with <code style="background:#1a1a2a;padding:2px 6px;color:var(--cyan);font-family:var(--mono)">--app=file:///path</code> flag. Removes all browser chrome instantly. No tabs, no address bar, no toolbar. Just a thin OS title bar with the page title and standard window controls. Works today. Zero install.</p>
+    <div class="verdict">Available right now. No build required.</div>
+  </div>
+
+  <div class="window-label">App Mode: OS title bar only</div>
+  <div class="window-frame">
+    <div class="chrome-appmode">
+      <div class="win-controls">
+        <div class="wc wc-close"></div>
+        <div class="wc wc-min"></div>
+        <div class="wc wc-max"></div>
+      </div>
+      <div class="win-title">Forge Async Session Summary — 2026-02-22</div>
+      <div style="width:60px"></div>
+    </div>
+    <div class="dash-content">
+      <div class="dash-title">Forge Async Session Summary</div>
+      <div class="dash-sub">2026-02-22 · Marcus offline 13:30 UTC to 00:24 UTC (+1) · ~10.9 hours</div>
+      <div class="session-totals">
+        <div class="totals-label">Session Totals</div>
+        <div class="totals-row">
+          <div class="total-item"><div class="n">7</div><div class="l">Agents active</div></div>
+          <div class="total-item"><div class="n">6</div><div class="l">Agents stopped</div></div>
+          <div class="total-item"><div class="n">159</div><div class="l">Total commits</div></div>
+          <div class="total-item red"><div class="n">0</div><div class="l">P1 regressions</div></div>
+          <div class="total-item"><div class="n" style="color:var(--maize)">2687/2687</div><div class="l">MCM passing</div></div>
+        </div>
+      </div>
+      <div class="agents-row">
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FR</div><div class="ac-name">Research Lead</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">10</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check"><span>✓</span>MCM root cause diagnosis<br><span>✓</span>Postmortem filed<br><span>✓</span>Hydration gate implemented</div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FO</div><div class="ac-name">Chief of Operations</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">8</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check"><span>✓</span>Dispatched queue to all 13<br><span>✓</span>Agent dashboard HTML built<br><span>✓</span>Autonomous bug report</div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FF</div><div class="ac-name">Quality Lead</div></div>
+            <div class="ac-badge badge-stopped">STOPPED</div>
+          </div>
+          <div class="ac-n">6</div><div class="ac-nl">tasks before stopping</div>
+          <div class="ac-check"><span>✓</span>Launch infra tests (35 tests)<br><span>✓</span>Parser mutation 92.13%<br><span>✓</span>Branch coverage improvements</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="comment"># PowerShell — add to profile or scripts/canvas.ps1</span>
+<span class="key">function</span> canvas {
+  <span class="key">param</span>([<span class="str">string</span>]$Path, [<span class="str">string</span>]$Title = <span class="str">"Forge Canvas"</span>)
+  $uri = <span class="str">"file:///"</span> + ($Path -replace <span class="str">'\\'</span>, <span class="str">'/'</span>)
+  Start-Process msedge <span class="str">"--app=$uri --window-size=1400,900"</span>
+}
+
+<span class="comment"># Usage:</span>
+canvas <span class="str">"C:\GitHub\journal\docs\agents\async-session-summary.html"</span>
+canvas <span class="str">"C:\GitHub\journal\docs\pitch-deck\forge-deck-v5.html"</span></div>
+
+  <div class="annotation">
+    <div class="ann-icon">◉</div>
+    <div>App mode removes all browser chrome. The OS title bar remains (the thin bar with the window title). This is acceptable and actually useful: the title communicates what's open. The window is moveable, resizable, and snappable. Keyboard shortcuts (F12 for devtools, F5 to reload) still work. This is the right Week 1 foundation.</div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION B: Electron Custom Chrome -->
+<!-- ============================================================ -->
+<div id="screen-b" class="screen">
+<div class="page">
+  <div class="section-head">
+    <h1>Option B: Electron, minimal custom chrome.</h1>
+    <p>A lightweight Electron shell: <code style="background:#1a1a2a;padding:2px 6px;color:var(--cyan);font-family:var(--mono)">forge-canvas path/to/file.html</code>. Frameless BrowserWindow with a custom 28px title bar we design. Forge brand. Drag to move. Window controls. Nothing else.</p>
+    <div class="verdict">Week 2 build. Node.js access. Full IPC bridge.</div>
+  </div>
+
+  <div class="window-label">Electron: Forge title bar + content</div>
+  <div class="window-frame">
+    <div class="chrome-electron-custom">
+      <span class="win-mark">◉</span>
+      <span class="win-title">async-session-summary-20260222</span>
+      <div class="win-controls">
+        <div class="wc wc-min"></div>
+        <div class="wc wc-max"></div>
+        <div class="wc wc-close"></div>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="dash-title">Forge Async Session Summary</div>
+      <div class="dash-sub">2026-02-22 · Marcus offline 13:30 UTC to 00:24 UTC (+1) · ~10.9 hours</div>
+      <div class="session-totals">
+        <div class="totals-label">Session Totals</div>
+        <div class="totals-row">
+          <div class="total-item"><div class="n">7</div><div class="l">Agents active</div></div>
+          <div class="total-item"><div class="n">6</div><div class="l">Agents stopped</div></div>
+          <div class="total-item"><div class="n">159</div><div class="l">Total commits</div></div>
+          <div class="total-item red"><div class="n">0</div><div class="l">P1 regressions</div></div>
+          <div class="total-item"><div class="n" style="color:var(--maize)">2687/2687</div><div class="l">MCM passing</div></div>
+        </div>
+      </div>
+      <div class="agents-row">
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FR</div><div class="ac-name">Research Lead</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">10</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check"><span>✓</span>MCM root cause diagnosis<br><span>✓</span>Postmortem filed<br><span>✓</span>Hydration gate implemented</div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FO</div><div class="ac-name">Chief of Operations</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">8</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check"><span>✓</span>Dispatched queue to all 13<br><span>✓</span>Agent dashboard HTML built<br><span>✓</span>Autonomous bug report</div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FF</div><div class="ac-name">Quality Lead</div></div>
+            <div class="ac-badge badge-stopped">STOPPED</div>
+          </div>
+          <div class="ac-n">6</div><div class="ac-nl">tasks before stopping</div>
+          <div class="ac-check"><span>✓</span>Launch infra tests (35 tests)<br><span>✓</span>Parser mutation 92.13%<br><span>✓</span>Branch coverage improvements</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block"><span class="comment"># Terminal — spawns Forge canvas from any directory</span>
+forge-canvas docs/agents/async-session-summary-20260222.html
+forge-canvas docs/pitch-deck/forge-deck-v5.html <span class="key">--size</span> <span class="str">1600x900</span>
+forge-canvas . <span class="comment"># opens directory browser</span>
+
+<span class="comment"># With live data piped in (future):</span>
+echo <span class="str">'{"agent":"FD","status":"active"}'</span> | forge-canvas dashboard.html</div>
+
+  <div class="annotation">
+    <div class="ann-icon">◉</div>
+    <div>The 28px Forge title bar is ours. The ◉ mark identifies the window as a Forge tool. Filename shown as window context. Drag anywhere on the bar to move. Node.js IPC means the HTML inside can read files, write to disk, or call back to the terminal. This is the right final form: a Forge-branded tool, not a browser.</div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPTION C: Electron Frameless -->
+<!-- ============================================================ -->
+<div id="screen-c" class="screen">
+<div class="page">
+  <div class="section-head">
+    <h1>Option C: Electron, fully frameless.</h1>
+    <p>Zero OS chrome. Not even a title bar. The content is the window. A 2px cyan drag strip at the top is the only affordance for moving. Feels like a floating viewport from the TUI.</p>
+    <div class="verdict">Most immersive. Hardest to manage. Later phase.</div>
+  </div>
+
+  <div class="window-label">Electron frameless: content edge-to-edge</div>
+  <div class="window-frame" style="border-color: var(--cyan); border-width: 1px;">
+    <div class="chrome-none"></div>
+    <div class="dash-content" style="padding-top:22px">
+      <div class="dash-title">Forge Async Session Summary</div>
+      <div class="dash-sub">2026-02-22 · Marcus offline 13:30 UTC to 00:24 UTC (+1) · ~10.9 hours</div>
+      <div class="session-totals">
+        <div class="totals-label">Session Totals</div>
+        <div class="totals-row">
+          <div class="total-item"><div class="n">7</div><div class="l">Agents active</div></div>
+          <div class="total-item"><div class="n">6</div><div class="l">Agents stopped</div></div>
+          <div class="total-item"><div class="n">159</div><div class="l">Total commits</div></div>
+          <div class="total-item red"><div class="n">0</div><div class="l">P1 regressions</div></div>
+          <div class="total-item"><div class="n" style="color:var(--maize)">2687/2687</div><div class="l">MCM passing</div></div>
+        </div>
+      </div>
+      <div class="agents-row">
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FR</div><div class="ac-name">Research Lead</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">10</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check"><span>✓</span>MCM root cause diagnosis<br><span>✓</span>Postmortem filed<br><span>✓</span>Hydration gate implemented</div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FO</div><div class="ac-name">Chief of Operations</div></div>
+            <div class="ac-badge badge-active">ACTIVE</div>
+          </div>
+          <div class="ac-n">8</div><div class="ac-nl">tasks completed</div>
+          <div class="ac-check"><span>✓</span>Dispatched queue to all 13<br><span>✓</span>Agent dashboard HTML built<br><span>✓</span>Autonomous bug report</div>
+        </div>
+        <div class="agent-card">
+          <div class="ac-header">
+            <div><div class="ac-id">FF</div><div class="ac-name">Quality Lead</div></div>
+            <div class="ac-badge badge-stopped">STOPPED</div>
+          </div>
+          <div class="ac-n">6</div><div class="ac-nl">tasks before stopping</div>
+          <div class="ac-check"><span>✓</span>Launch infra tests (35 tests)<br><span>✓</span>Parser mutation 92.13%<br><span>✓</span>Branch coverage improvements</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <div class="ann-icon">▲</div>
+    <div>Fully frameless is the most terminal-native feeling: a window that appears to be a richer section of the terminal, not a separate app. The 1px cyan border and 2px drag strip are the only signals that this is a separate window. Limitation: no taskbar thumbnail, Alt+Tab shows a blank icon. Probably Phase 3, not Week 2.</div>
+  </div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- COMPARE + SPRINT -->
+<!-- ============================================================ -->
+<div id="screen-compare" class="screen">
+<div class="page">
+  <div class="section-head">
+    <h1>Decision + 2-week sprint.</h1>
+    <p>Three options, two phases. App Mode works today. Electron ships Week 2. Frameless is a later phase once the pattern is established.</p>
+  </div>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Option</th>
+        <th>Chrome removed</th>
+        <th>Install required</th>
+        <th>Node.js / file access</th>
+        <th>Custom brand</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>A: App Mode (msedge --app)</td>
+        <td>Tabs, address bar, toolbar. OS title bar remains.</td>
+        <td><span class="tag tag-green">NONE</span></td>
+        <td><span class="tag tag-red">NO</span></td>
+        <td><span class="tag tag-red">NO</span></td>
+        <td><span class="tag tag-cyan">WEEK 1 NOW</span></td>
+      </tr>
+      <tr>
+        <td>B: Electron + minimal Forge chrome</td>
+        <td>Everything. 28px Forge title bar replaces OS chrome.</td>
+        <td><span class="tag tag-orange">ELECTRON (~120MB)</span></td>
+        <td><span class="tag tag-green">YES</span></td>
+        <td><span class="tag tag-green">YES</span></td>
+        <td><span class="tag tag-cyan">WEEK 2 TARGET</span></td>
+      </tr>
+      <tr>
+        <td>C: Electron frameless</td>
+        <td>Everything including title bar. 2px drag strip only.</td>
+        <td><span class="tag tag-orange">ELECTRON</span></td>
+        <td><span class="tag tag-green">YES</span></td>
+        <td><span class="tag tag-green">YES</span></td>
+        <td><span class="tag tag-gray">PHASE 3</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr class="divider">
+  <h2 style="font-size:18px;font-weight:300;color:var(--text);margin-bottom:20px">2-week sprint</h2>
+
+  <div class="sprint-grid">
+    <div class="sprint-week">
+      <h3>Week 1: App Mode canvas (today)</h3>
+      <div class="sprint-item"><span class="sprint-day">D1</span><div class="sprint-dot"></div><div>Add <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">canvas</code> function to PowerShell profile. Wraps <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">msedge --app</code> with size and title params.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D1</span><div class="sprint-dot"></div><div>Add <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">scripts/canvas.ps1</code> to journal repo. Runnable from terminal: <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">.\scripts\canvas.ps1 path.html</code></div></div>
+      <div class="sprint-item"><span class="sprint-day">D2</span><div class="sprint-dot"></div><div>Document design principles for TUI Canvas HTML pages: no scrollbars, dark bg enforced, viewport-relative sizing, no external deps.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D3</span><div class="sprint-dot"></div><div>Update all existing HTML artifacts (session summary, web mockup, deck) to declare <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">canvas-ready</code> in meta tag.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D4</span><div class="sprint-dot"></div><div>Broadcast to all agents: canvas is the default for all HTML output. No more "open in browser". All HTML ships canvas-ready.</div></div>
+    </div>
+    <div class="sprint-week">
+      <h3>Week 2: forge-canvas CLI (Electron)</h3>
+      <div class="sprint-item"><span class="sprint-day">D5</span><div class="sprint-dot"></div><div>Scaffold Electron shell at <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">tools/forge-canvas/</code>. BrowserWindow with frameless option, preload IPC bridge.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D6</span><div class="sprint-dot"></div><div>Build 28px Forge title bar component. ◉ mark, filename, window controls. CSS drag region. Matches brand system.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D7</span><div class="sprint-dot"></div><div>CLI entry point: <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">forge-canvas file.html --size 1400x900 --title "Session Summary"</code>. Accepts file:// and http:// paths.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D8</span><div class="sprint-dot"></div><div>IPC bridge: HTML page can call <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">window.forge.readFile(path)</code>, <code style="color:var(--cyan);font-family:var(--mono);font-size:11px">window.forge.watch(path, cb)</code> for live-updating dashboards.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D9</span><div class="sprint-dot"></div><div>Keyboard: Ctrl+R reload, Ctrl+W close, F12 devtools. Esc to close if canvas-modal flag set.</div></div>
+      <div class="sprint-item"><span class="sprint-day">D10</span><div class="sprint-dot"></div><div>Tests: window creates with correct size, IPC file read works, title bar shows filename, closes cleanly.</div></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <h2 style="font-size:18px;font-weight:300;color:var(--text);margin-bottom:16px">Design principles for canvas-ready HTML</h2>
+  <p style="color:var(--dim);margin-bottom:16px;max-width:700px">Every HTML artifact we build should follow these rules so it works in both browser and canvas:</p>
+
+  <table class="compare-table">
+    <thead><tr><th>Principle</th><th>Rule</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Dark background enforced</td><td><code style="color:var(--cyan);font-family:var(--mono);font-size:11px">background:#0A0A0F</code> on html + body</td><td>App mode shows OS bg flash on open if not set</td></tr>
+      <tr><td>Viewport-relative layout</td><td>Use vw/vh, not px for top-level sizing</td><td>Canvas window is resizable; layout must adapt</td></tr>
+      <tr><td>No external network deps</td><td>No CDN fonts, no remote scripts</td><td>Canvas may be offline; file:// has no network</td></tr>
+      <tr><td>Canvas meta tag</td><td><code style="color:var(--cyan);font-family:var(--mono);font-size:11px">&lt;meta name="forge-canvas" content="ready"&gt;</code></td><td>Electron can read this to configure window</td></tr>
+      <tr><td>No scrollbars by default</td><td><code style="color:var(--cyan);font-family:var(--mono);font-size:11px">overflow:hidden</code> on body; scroll inside panels</td><td>Canvas is a viewport, not a document</td></tr>
+      <tr><td>Prefer system fonts</td><td>Segoe UI Variable + Cascadia Code (already on machine)</td><td>No font load flash in file:// context</td></tr>
+    </tbody>
+  </table>
+
+</div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Strategic Options</title>
+<style>
+  :root {
+    --bg: #0A0A0F; --card: #12121A; --border: #1E1E2A;
+    --text: #E8E8F0; --secondary: #8889A0; --dim: #555568;
+    --fd: #FFCB05; --fa: #4A90D9; --ff: #22C55E;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  .header { border-bottom: 1px solid var(--border); padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { font-size: 1rem; font-weight: 800; color: var(--fd); }
+  .header-sub { font-family: var(--mono); font-size: 0.48rem; color: var(--dim); margin-top: 0.2rem; }
+  .header-tag { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); border: 1px solid var(--border); border-radius: 3px; padding: 0.2rem 0.5rem; }
+  .container { max-width: 1060px; margin: 0 auto; padding: 2rem; }
+  .context { font-size: 0.65rem; color: var(--secondary); line-height: 1.7; max-width: 640px; margin-bottom: 2rem; border-left: 3px solid var(--fd); padding-left: 1rem; }
+  .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .option { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .option-head { padding: 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid var(--border); min-height: 160px; }
+  .option-letter { font-size: 3.5rem; font-weight: 900; line-height: 1; margin-bottom: 0.5rem; }
+  .option-name { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .option-tag { font-family: var(--mono); font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; }
+  .option-body { padding: 1.25rem 1.5rem; }
+  .section-head { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+  .option-desc { font-size: 0.62rem; color: var(--secondary); line-height: 1.7; margin-bottom: 1rem; }
+  .pro-con { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+  .col-head { font-family: var(--mono); font-size: 0.43rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .pro-head { color: var(--ff); }
+  .con-head { color: #EF4444; }
+  .item { font-size: 0.55rem; line-height: 1.6; padding: 0.2rem 0; }
+  .pro-item::before { content: "+"; color: var(--ff); margin-right: 0.4rem; font-weight: 700; }
+  .con-item::before { content: "-"; color: #EF4444; margin-right: 0.4rem; font-weight: 700; }
+  .timeline-row { margin-bottom: 0.5rem; }
+  .timeline-label { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem; }
+  .timeline-bar { display: flex; align-items: center; gap: 0.5rem; }
+  .bar-fill { height: 5px; border-radius: 3px; }
+  .bar-label { font-size: 0.5rem; color: var(--secondary); }
+  .outcome-box { border-radius: 6px; padding: 0.6rem 0.75rem; margin-top: 1rem; }
+  .outcome-box .outcome-label { font-family: var(--mono); font-size: 0.43rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+  .outcome-box .outcome-text { font-size: 0.58rem; line-height: 1.55; }
+  .bottom-row { margin-top: 2rem; display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+  .decision-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+  .decision-title { font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .decision-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.58rem; color: var(--secondary); }
+  .decision-row:last-child { border-bottom: none; }
+  .d-letter { font-weight: 700; width: 18px; flex-shrink: 0; }
+  .marcus-note { background: rgba(255,203,5,0.04); border: 1px solid rgba(255,203,5,0.15); border-radius: 8px; padding: 1.25rem; }
+  .marcus-note-title { color: var(--fd); font-size: 0.7rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .marcus-note-body { font-size: 0.58rem; color: var(--secondary); line-height: 1.7; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="header-title">Forge Strategic Options</div>
+      <div class="header-sub">Marcus decision canvas · Option A, B, or C · Pick one to lock</div>
+    </div>
+    <div class="header-tag">MARCUS DECISION REQUIRED</div>
+  </div>
+  <div class="container">
+    <div class="context">
+      Forge has three viable paths forward. Each is real and executable from where we are today. These are not rough ideas. They are the three most strategically distinct directions. You pick one. FD builds toward it.
+    </div>
+
+    <div class="options-grid">
+
+      <!-- OPTION A: Strategic Partnership -->
+      <div class="option">
+        <div class="option-head" style="background:rgba(74,144,217,0.06)">
+          <div class="option-letter" style="color:var(--fa)">A</div>
+          <div class="option-name">Strategic Partnership</div>
+          <div class="option-tag" style="color:var(--fa)">Highest leverage</div>
+        </div>
+        <div class="option-body">
+          <div class="section-head">What it is</div>
+          <div class="option-desc">Partner with a VC, enterprise tech company, or AI lab. Forge becomes the reference implementation for AI-native software organizations. Marcus stays at Microsoft. Forge operates as a jointly funded research lab or incubator.</div>
+
+          <div class="pro-con">
+            <div>
+              <div class="col-head pro-head">Pros</div>
+              <div class="item pro-item">No quit-Microsoft required</div>
+              <div class="item pro-item">Forge model gets scaled faster</div>
+              <div class="item pro-item">External validation</div>
+              <div class="item pro-item">Funding enables more agents</div>
+            </div>
+            <div>
+              <div class="col-head con-head">Risks</div>
+              <div class="item con-item">Control dilution</div>
+              <div class="item con-item">Partner agenda misalignment</div>
+              <div class="item con-item">Slower to start</div>
+              <div class="item con-item">Microsoft IP considerations</div>
+            </div>
+          </div>
+
+          <div class="section-head" style="margin-top:0">Timeline</div>
+          <div class="timeline-row">
+            <div class="timeline-bar"><div class="bar-fill" style="width:20%;background:var(--fa)"></div><div class="bar-label">Find partner (60-90 days)</div></div>
+          </div>
+          <div class="timeline-row">
+            <div class="timeline-bar"><div class="bar-fill" style="width:40%;background:var(--fa)"></div><div class="bar-label">Structure deal (30-60 days)</div></div>
+          </div>
+
+          <div class="outcome-box" style="background:rgba(74,144,217,0.06);border:1px solid rgba(74,144,217,0.15)">
+            <div class="outcome-label" style="color:var(--fa)">Outcome</div>
+            <div class="outcome-text">Forge becomes the most credible public proof of AI-native org design. 3-year roadmap to spin-out or acquisition.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPTION B: Lab Grant / Research -->
+      <div class="option">
+        <div class="option-head" style="background:rgba(255,203,5,0.04)">
+          <div class="option-letter" style="color:var(--fd)">B</div>
+          <div class="option-name">Research Lab</div>
+          <div class="option-tag" style="color:var(--fd)">Intellectual capital</div>
+        </div>
+        <div class="option-body">
+          <div class="section-head">What it is</div>
+          <div class="option-desc">Forge operates as a named AI research lab. Academic or industry sponsor funds operations. Output is published research on AI org design, software delivery at agent scale, and prompt engineering standards.</div>
+
+          <div class="pro-con">
+            <div>
+              <div class="col-head pro-head">Pros</div>
+              <div class="item pro-item">Highest intellectual credibility</div>
+              <div class="item pro-item">No equity given up</div>
+              <div class="item pro-item">Marcus voice amplified</div>
+              <div class="item pro-item">Fits Microsoft context well</div>
+            </div>
+            <div>
+              <div class="col-head con-head">Risks</div>
+              <div class="item con-item">Slower to generate revenue</div>
+              <div class="item con-item">Grant cycles are slow</div>
+              <div class="item con-item">Products stay internal</div>
+              <div class="item con-item">Hard to scale headcount</div>
+            </div>
+          </div>
+
+          <div class="section-head" style="margin-top:0">Timeline</div>
+          <div class="timeline-row">
+            <div class="timeline-bar"><div class="bar-fill" style="width:15%;background:var(--fd)"></div><div class="bar-label">Write research brief (2 weeks)</div></div>
+          </div>
+          <div class="timeline-row">
+            <div class="timeline-bar"><div class="bar-fill" style="width:50%;background:var(--fd)"></div><div class="bar-label">Submit grant / find sponsor (90 days)</div></div>
+          </div>
+
+          <div class="outcome-box" style="background:rgba(255,203,5,0.04);border:1px solid rgba(255,203,5,0.15)">
+            <div class="outcome-label" style="color:var(--fd)">Outcome</div>
+            <div class="outcome-text">Marcus becomes the defining voice on AI-native organization design. Forge research is cited by practitioners building agent orgs.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPTION C: Products to Market -->
+      <div class="option">
+        <div class="option-head" style="background:rgba(34,197,94,0.05)">
+          <div class="option-letter" style="color:var(--ff)">C</div>
+          <div class="option-name">Products to Market</div>
+          <div class="option-tag" style="color:var(--ff)">Fastest revenue</div>
+        </div>
+        <div class="option-body">
+          <div class="section-head">What it is</div>
+          <div class="option-desc">Ship Inkwell and MCM publicly. Build revenue. Use it to fund Forge operations and grow the agent team. Marcus eventually transitions from CVP to full-time founder as revenue exceeds salary.</div>
+
+          <div class="pro-con">
+            <div>
+              <div class="col-head pro-head">Pros</div>
+              <div class="item pro-item">Products are already built</div>
+              <div class="item pro-item">Revenue validates model</div>
+              <div class="item pro-item">Full control retained</div>
+              <div class="item pro-item">Fastest path to independence</div>
+            </div>
+            <div>
+              <div class="col-head con-head">Risks</div>
+              <div class="item con-item">Requires public launch effort</div>
+              <div class="item con-item">Revenue slow to start</div>
+              <div class="item con-item">Microsoft transition complex</div>
+              <div class="item con-item">Market competition in AI tools</div>
+            </div>
+          </div>
+
+          <div class="section-head" style="margin-top:0">Timeline</div>
+          <div class="timeline-row">
+            <div class="timeline-bar"><div class="bar-fill" style="width:25%;background:var(--ff)"></div><div class="bar-label">Beta launch Inkwell (30 days)</div></div>
+          </div>
+          <div class="timeline-row">
+            <div class="timeline-bar"><div class="bar-fill" style="width:45%;background:var(--ff)"></div><div class="bar-label">MCM launch (60-90 days)</div></div>
+          </div>
+
+          <div class="outcome-box" style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2)">
+            <div class="outcome-label" style="color:var(--ff)">Outcome</div>
+            <div class="outcome-text">Forge is a self-sustaining software company by Q4 2026. Marcus is a founder. Products are the proof that the model scales.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Decision matrix + Marcus note -->
+    <div class="bottom-row">
+      <div class="decision-card">
+        <div class="decision-title">Decision Matrix: Which Fits Your 2026 Goals?</div>
+        <div class="decision-row"><div class="d-letter" style="color:var(--fa)">A</div><div>Pick if: you want Forge to have external validation without leaving Microsoft. The story matters as much as the products.</div></div>
+        <div class="decision-row"><div class="d-letter" style="color:var(--fd)">B</div><div>Pick if: you want Marcus to be the definitive researcher on AI org design. You want Forge in academic and industry citations.</div></div>
+        <div class="decision-row"><div class="d-letter" style="color:var(--ff)">C</div><div>Pick if: the products are ready and you want to prove the model by shipping it to real users who pay. Revenue is the signal.</div></div>
+        <div class="decision-row"><div class="d-letter" style="color:var(--dim)">?</div><div>These are not mutually exclusive forever. But you cannot pursue all three at once without losing focus. Pick one primary. Keep the others as future pivots.</div></div>
+      </div>
+      <div class="marcus-note">
+        <div class="marcus-note-title">Marcus: Pick A, B, or C</div>
+        <div class="marcus-note-body">
+          This canvas is here so you can react visually to the three options side by side. FD's read: your energy has been most aligned with C (products are real, the tests pass, Kai uses MCM). But you also said A multiple times when talking about the pitch deck. Tell FD which one gets the focus for 2026 and the deck and website will be built to that thesis.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

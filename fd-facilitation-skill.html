@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FD Facilitation Skill</title>
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --surface: #161622;
+    --surface2: #1E1E2E;
+    --border: #2A2A3E;
+    --text: #E8E8F0;
+    --body: #C0C0D4;
+    --dim: #808098;
+    --pink: #fe57a1;
+    --maize: #FFCB05;
+    --green: #22C55E;
+    --blue: #4A90D9;
+    --orange: #F97316;
+    --accent: #fe57a1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    line-height: 1.75;
+    font-size: 18px;
+  }
+
+  /* ---- PAGE LAYOUT ---- */
+  .page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 60px;
+  }
+
+  /* ---- COVER ---- */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+    padding: 80px 60px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .cover h1 {
+    font-size: 64px;
+    font-weight: 300;
+    line-height: 1.1;
+    color: var(--text);
+    max-width: 800px;
+  }
+
+  .cover h1 span {
+    color: var(--accent);
+  }
+
+  .cover-sub {
+    font-size: 22px;
+    color: var(--body);
+    margin-top: 28px;
+    max-width: 600px;
+    font-weight: 300;
+  }
+
+  .cover-meta {
+    margin-top: 60px;
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+
+  .cover-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .cover-meta-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .cover-meta-value {
+    font-size: 16px;
+    color: var(--body);
+  }
+
+  /* ---- SECTION DIVIDERS ---- */
+  .section-break {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  .section {
+    padding: 80px 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+
+  .section h2 {
+    font-size: 40px;
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.2;
+  }
+
+  .section-intro {
+    font-size: 20px;
+    color: var(--body);
+    max-width: 720px;
+    margin-bottom: 48px;
+    font-weight: 300;
+    line-height: 1.65;
+  }
+
+  /* ---- PHASE CARDS ---- */
+  .phase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .phase-card {
+    background: var(--surface);
+    padding: 32px 28px;
+  }
+
+  .phase-num {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  .phase-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.3;
+  }
+
+  .phase-desc {
+    font-size: 15px;
+    color: var(--body);
+    line-height: 1.65;
+  }
+
+  /* ---- BIG RULE ---- */
+  .big-rule {
+    background: var(--surface);
+    border-left: 4px solid var(--accent);
+    padding: 36px 40px;
+    border-radius: 0 4px 4px 0;
+    margin: 40px 0;
+  }
+
+  .big-rule p {
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* ---- LESSON CARDS ---- */
+  .lesson-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .lesson-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px 36px;
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  .lesson-num {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .lesson-body {}
+
+  .lesson-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .lesson-subtitle {
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+  .lesson-text {
+    font-size: 17px;
+    color: var(--body);
+    line-height: 1.7;
+  }
+
+  .lesson-rule {
+    margin-top: 16px;
+    padding: 14px 18px;
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ---- TWO COL ---- */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+
+  .col-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px 28px;
+  }
+
+  .col-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .col-card-title .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .col-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .col-list li {
+    font-size: 16px;
+    color: var(--body);
+    line-height: 1.6;
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+  }
+
+  /* ---- TOOLS GRID ---- */
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .tool-card {
+    background: var(--surface);
+    padding: 28px 28px;
+  }
+
+  .tool-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+
+  .tool-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .tool-desc {
+    font-size: 15px;
+    color: var(--body);
+    line-height: 1.65;
+  }
+
+  /* ---- MULTIMODAL DIAGRAM ---- */
+  .modal-diagram {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 32px 0;
+  }
+
+  .modal-col {
+    background: var(--surface);
+    padding: 28px 24px;
+    border-right: 1px solid var(--border);
+  }
+
+  .modal-col:last-child {
+    border-right: none;
+  }
+
+  .modal-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .modal-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .modal-detail {
+    font-size: 15px;
+    color: var(--body);
+    line-height: 1.65;
+  }
+
+  .modal-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    font-size: 22px;
+    color: var(--accent);
+    padding: 28px 4px;
+    border-right: 1px solid var(--border);
+  }
+
+  /* ---- QUOTE ---- */
+  .quote-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 36px 40px;
+    margin: 32px 0;
+  }
+
+  .quote-text {
+    font-size: 22px;
+    color: var(--text);
+    font-weight: 300;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .quote-attr {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- FAILURE TABLE ---- */
+  .fail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+  }
+
+  .fail-table th {
+    text-align: left;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    font-weight: 600;
+    padding: 0 16px 16px 16px;
+  }
+
+  .fail-table td {
+    padding: 16px;
+    vertical-align: top;
+    color: var(--body);
+    line-height: 1.5;
+    border-top: 1px solid var(--border);
+  }
+
+  .fail-table tr:first-child td {
+    border-top: none;
+  }
+
+  .fail-tag {
+    display: inline-block;
+    background: rgba(254, 87, 161, 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(254, 87, 161, 0.25);
+    border-radius: 3px;
+    font-size: 12px;
+    padding: 3px 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  /* ---- QRC ---- */
+  .qrc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .qrc-cell {
+    background: var(--surface);
+    padding: 24px 28px;
+  }
+
+  .qrc-key {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .qrc-val {
+    font-size: 17px;
+    color: var(--body);
+    line-height: 1.6;
+  }
+
+  /* ---- NEW BADGE ---- */
+  .new-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  /* ---- FOOTER ---- */
+  .footer {
+    padding: 48px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-id {
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 0.08em;
+  }
+
+  .footer-badge {
+    font-size: 12px;
+    color: var(--dim);
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <div style="max-width: 1100px; margin: 0 auto; width: 100%;">
+    <div class="eyebrow">FD Design Facilitator Skill / Version 2.0</div>
+    <h1>How FD runs<br><span>peer sessions</span><br>with humans</h1>
+    <p class="cover-sub">Six phases. One rule. Two things Greg taught us that changed everything.</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Agent</span>
+        <span class="cover-meta-value">FD (Design Director)</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Updated</span>
+        <span class="cover-meta-value">Feb 24 2026</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Source</span>
+        <span class="cover-meta-value">Greg Cox debrief, 3-question interview</span>
+      </div>
+      <div class="cover-meta-item">
+        <span class="cover-meta-label">Status</span>
+        <span class="cover-meta-value">Active, in use</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHAT THE SKILL IS -->
+<div class="section">
+  <div class="section-eyebrow">The Skill</div>
+  <h2>What FD does as a design facilitator</h2>
+  <p class="section-intro">Marcus runs peer conversations with CTOs, designers, and operators. These are not presentations. They are structured exchanges where both parties leave with something they could not have reached alone. FD designs the session, builds the pre-work, facilitates in real time, and captures what emerged.</p>
+
+  <div class="big-rule">
+    <p>The job is not to run a meeting. The job is to make the conversation better than it would have been without FD in it.</p>
+  </div>
+</div>
+
+<!-- SIX PHASES -->
+<div class="section">
+  <div class="section-eyebrow">The Method</div>
+  <h2>Six phases, every session</h2>
+  <p class="section-intro">Every peer session FD runs follows this sequence. Each phase has outputs the next phase depends on. Skip a phase and the session degrades.</p>
+
+  <div class="phase-grid">
+    <div class="phase-card">
+      <div class="phase-num">Phase 01</div>
+      <div class="phase-title">Discovery Interview</div>
+      <p class="phase-desc">7 questions to Marcus before planning anything. Format, goal, guest AI maturity, real-time access, what Marcus wants to share, what Marcus wants to learn, and relationship context. Never skip.</p>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 02</div>
+      <div class="phase-title">Guest Profile</div>
+      <p class="phase-desc">Every guest processes ideas differently. FD profiles them before designing. Silent Evaluator, Reactor, Architect, or Empiricist. The profile determines who goes first, how much context to give, and how to read silence.</p>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 03</div>
+      <div class="phase-title">Session Design</div>
+      <p class="phase-desc">The 90-minute arc. Frame and ground rules, Marcus first, Demo 1, Guest compression, Guest's turn, Demo 2, Demo 3 (optional), Joint synthesis, Takeaways. Synthesis is sacred. Never crowd it out.</p>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 04</div>
+      <div class="phase-title">Pre-Read Deck</div>
+      <p class="phase-desc">Sent before every session. Editorial design, not pitch. 4 slides max (Greg taught us this). Names what Marcus wants to share and what Marcus wants to learn. Surfaces failure modes explicitly. Includes the one ground rule.</p>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 05</div>
+      <div class="phase-title">Real-Time Facilitation</div>
+      <p class="phase-desc">FD is active, not passive. Tracks time, runs compression rounds, reads filter signals for Silent Evaluators, rebalances when one person is at 80%, and delivers the synthesis prompt at 1:20 without fail.</p>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 06</div>
+      <div class="phase-title">Post-Session Capture</div>
+      <p class="phase-desc">3 findings as claims. The sharpest disagreement. One skill update. A follow-up action. Captured the same night, not reconstructed later. The session does not end at the table.</p>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS FD USES -->
+<div class="section">
+  <div class="section-eyebrow">The Tools</div>
+  <h2>What FD builds to run these sessions</h2>
+  <p class="section-intro">FD is not just a planner. FD builds the artifacts that make the session work.</p>
+
+  <div class="tools-grid">
+    <div class="tool-card">
+      <div class="tool-icon">📋</div>
+      <div class="tool-name">Pre-read deck</div>
+      <p class="tool-desc">HTML canvas. Editorial dark theme. 4 slides max. Sent before the session. Covers: the problem, what Marcus brings, what Marcus needs, pre-work for the guest, failure modes named explicitly.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-icon">🎯</div>
+      <div class="tool-name">Feedback collection app</div>
+      <p class="tool-desc">HTML canvas with slide-by-slide capture. Pink accent. Gill Sans. Dark theme. Textarea per slide for written feedback. v1 was a survey. v2 will be a facilitated interview with follow-up prompts built in.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-icon">🧩</div>
+      <div class="tool-name">Synthesis canvas</div>
+      <p class="tool-desc">Built post-session. All real feedback organized into themes. What FD heard, what FD will change, and what the next discussion guide looks like. Readable type (18px min). Sent to Marcus same night.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-icon">📬</div>
+      <div class="tool-name">Dispatch email canvas</div>
+      <p class="tool-desc">TUI-style compose view for the follow-up email to the guest. FD drafts based on session findings. Gives Marcus an immediate send or edit artifact, not a blank compose window.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-icon">⚡</div>
+      <div class="tool-name">Real-time prompt library</div>
+      <p class="tool-desc">Live prompts Marcus can copy or read aloud. Compression rounds ("one thing that held up, one that did not"), adversarial question ("strongest argument against"), synthesis opener, takeaway extractor.</p>
+    </div>
+    <div class="tool-card">
+      <div class="tool-icon">🗂</div>
+      <div class="tool-name">Facilitation skill file</div>
+      <p class="tool-desc">This document: fd-facilitation.md. Updated after every session. Not a static spec. A living skill that improves from session to session. Version 2.0 includes Greg's full debrief findings.</p>
+    </div>
+  </div>
+</div>
+
+<!-- GREG'S LESSONS -->
+<div class="section">
+  <div class="section-eyebrow">What Greg Taught FD / Feb 24 2026</div>
+  <h2>Three things FD got wrong.<br>Three things changing now.</h2>
+  <p class="section-intro">Greg Cox (CTO, ExpertVoice) sat for a 3-question debrief interview after the dinner session. He was generous and direct. Here is what he said, and what FD is changing because of it.</p>
+
+  <div class="lesson-list">
+    <div class="lesson-card">
+      <div class="lesson-num">01</div>
+      <div class="lesson-body">
+        <div class="lesson-subtitle">What went wrong</div>
+        <div class="lesson-title">Mode mismatch breaks naturalness</div>
+        <p class="lesson-text">Greg used voice to answer every question in the feedback session. The questions were in text. That is a mismatch. He was switching from reading to speaking across every single interaction, which created friction and made the session feel like a form, not a conversation. The mode of the question sets the expectation for the mode of the answer. When they do not match, the guest has to do extra work just to participate.</p>
+        <div class="lesson-rule">The rule: mirror the guest. Voice session, voice questions. Text session, text questions. Never mix.</div>
+      </div>
+    </div>
+
+    <div class="lesson-card">
+      <div class="lesson-num">02</div>
+      <div class="lesson-body">
+        <div class="lesson-subtitle">What went wrong</div>
+        <div class="lesson-title">No follow-up questions. The first answer is not the answer.</div>
+        <p class="lesson-text">The feedback app gave Greg one textarea per slide and moved to the next. That is a survey. A skilled interviewer hears "multi-human organization problem" and immediately asks "tell me more about that." FD did not do that. Greg said it directly: the real response comes after you dig in. The first answer is the guest getting started. The second answer, the one that comes after a follow-up, is where the actual insight lives.</p>
+        <div class="lesson-rule">Follow-up questions are not optional. They are where the insight is. Always probe before moving on.</div>
+      </div>
+    </div>
+
+    <div class="lesson-card">
+      <div class="lesson-num">03</div>
+      <div class="lesson-body">
+        <div class="lesson-subtitle">What went wrong</div>
+        <div class="lesson-title">Structure replaced conversation</div>
+        <p class="lesson-text">The session had structure that Greg could feel. One slide, one box, one button. That is not a conversation. A facilitated interview is organic: the interviewer follows energy, goes deeper where the guest opens up, leaves space when something important was just said. Greg should have felt like someone was genuinely listening and following his thread, not a wizard moving him from field to field. The structure should be invisible. FD holds it. The guest never feels it.</p>
+        <div class="lesson-rule">Anxiety decreases as the session feels more like a conversation. More probing, less structure visible.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- THE RULE -->
+<div class="section">
+  <div class="section-eyebrow">The New Rule</div>
+  <h2>One thing to remember above all else</h2>
+
+  <div class="big-rule" style="margin-top: 0;">
+    <p>"The first answer is not the answer.<br>The answer comes after you ask: tell me more."</p>
+  </div>
+
+  <p style="font-size: 18px; color: var(--body); max-width: 680px; line-height: 1.7;">Greg said this. FD is writing it in. Every facilitated interview, every feedback session, every compression round: one follow-up before moving on. The follow-up does not have to be clever. "Tell me more about that" is enough. "What is behind that?" is enough. The signal the follow-up sends is: your answer mattered. That signal is what opens the real response.</p>
+</div>
+
+<!-- MULTIMODALITY -->
+<div class="section">
+  <div class="section-eyebrow">Multi-modality Principle</div>
+  <h2>Match the mode. Always.</h2>
+  <p class="section-intro">FD now operates with a formal multi-modality rule for all sessions. The format of the question must match the format the guest is using to answer.</p>
+
+  <div class="modal-diagram">
+    <div class="modal-col">
+      <div class="modal-label">Session type</div>
+      <div class="modal-value">In-person or voice</div>
+      <p class="modal-detail">Guest is speaking. FD asks questions aloud. Show the slide. Speak the question. Leave silence. Probe with voice. Do not put the question in a text field.</p>
+    </div>
+    <div class="modal-col" style="background: var(--surface2);">
+      <div class="modal-label">Session type</div>
+      <div class="modal-value">Async or text</div>
+      <p class="modal-detail">Guest is typing. FD asks in text. Clear written questions, one at a time. Follow-ups in writing. Do not switch to a voice prompt mid-session.</p>
+    </div>
+    <div class="modal-col">
+      <div class="modal-label">Session type</div>
+      <div class="modal-value">Hybrid (show + ask)</div>
+      <p class="modal-detail">Show the slide (visual anchor). Ask the question verbally. Wait. Probe verbally. The slide orients. The voice humanizes. Together, this is the right format for high-quality feedback sessions.</p>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    <p class="quote-text">"The feedback felt like a survey. I wanted you to ask me a question. If I'm responding with voice, the question should come by voice. It was unnatural. Anxiety decreases the more it feels like a conversation. More follow-ups, more it feels like a conversation, more honest answers you get."</p>
+    <div class="quote-attr">Greg Cox, CTO ExpertVoice. Post-session debrief interview, question 1.</div>
+  </div>
+</div>
+
+<!-- THE NEW ASSUMPTION POLICY -->
+<div class="section">
+  <div class="section-eyebrow">No Assumptions</div>
+  <h2>What FD was assuming.<br>What FD does now instead.</h2>
+
+  <div class="two-col">
+    <div class="col-card">
+      <div class="col-card-title" style="color: #ef4444;">
+        <div class="dot" style="background: #ef4444;"></div>
+        What FD was doing
+      </div>
+      <ul class="col-list">
+        <li>Assuming the slide covers the question. It does not. The slide is context, not a substitute for asking.</li>
+        <li>Assuming one answer per slide is enough. It is not. The first answer is the guest getting started.</li>
+        <li>Assuming the guest will volunteer their real reaction. They will not. Real reactions require probing.</li>
+        <li>Assuming the structure makes the session feel organized. It makes it feel like a form. Structure should be invisible.</li>
+        <li>Assuming the written question is sufficient when the guest is speaking. It creates mode mismatch and costs authenticity.</li>
+        <li>Assuming the synthesis is FD's job alone. The guest should be asked to name what they believe now that they did not before.</li>
+      </ul>
+    </div>
+    <div class="col-card">
+      <div class="col-card-title" style="color: var(--green);">
+        <div class="dot" style="background: var(--green);"></div>
+        What FD does now
+      </div>
+      <ul class="col-list">
+        <li>Ask a question for every slide. The question is separate from the slide. It is spoken, not written, in voice sessions.</li>
+        <li>Always probe before moving on. One follow-up, minimum. "Tell me more." "What is behind that?"</li>
+        <li>Read the silence. For Silent Evaluators: name the filter. "What just failed your filter there?"</li>
+        <li>Hold the structure privately. Pace with it. Never let the guest feel it as a constraint.</li>
+        <li>Match the mode the guest is in. If they speak, FD speaks the question. If they type, FD types the question.</li>
+        <li>End with the synthesis prompt to both parties. "What do you now believe that you did not believe before?"</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FAILURE MODE TABLE -->
+<div class="section">
+  <div class="section-eyebrow">Failure Modes</div>
+  <h2>What goes wrong and how to prevent it</h2>
+
+  <table class="fail-table">
+    <tr>
+      <th style="width: 200px;">Failure</th>
+      <th style="width: 200px;">Root cause</th>
+      <th>Prevention</th>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">Survey, not interview</span></td>
+      <td style="color: var(--dim);">No follow-up questions. One answer per slide and done.</td>
+      <td>Always probe before moving to the next slide. One follow-up, minimum.</td>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">Mode mismatch</span></td>
+      <td style="color: var(--dim);">Text questions to a voice-answering guest.</td>
+      <td>Mirror the guest. Voice session: ask aloud. Text session: ask in text.</td>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">Structure visible</span></td>
+      <td style="color: var(--dim);">Guest feels the form, not the conversation.</td>
+      <td>Hold structure backstage. Guest experiences a conversation. FD experiences a plan.</td>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">Silence = agreement</span></td>
+      <td style="color: var(--dim);">Silent Evaluator guest not named.</td>
+      <td>Open ground rule: "If it passes your filter, say it out loud. Silence is on probation."</td>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">Too stylized</span></td>
+      <td style="color: var(--dim);">Pre-read puts pressure on guest instead of putting them at ease.</td>
+      <td>Low-key, not polished. 4 slides. 5-minute read. Editorial, not corporate.</td>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">No problem statement</span></td>
+      <td style="color: var(--dim);">Deck leads with the solution. Guest does not know what problem this solves.</td>
+      <td>First slide (or first sentence): the problem. One sentence. Always before anything else.</td>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">Synthesis crowded out</span></td>
+      <td style="color: var(--dim);">Third demo runs long. Synthesis gets squeezed.</td>
+      <td>Cut Demo 3 before touching synthesis. Synthesis is non-negotiable.</td>
+    </tr>
+    <tr>
+      <td><span class="fail-tag">80/20 imbalance</span></td>
+      <td style="color: var(--dim);">One person dominates. FD does not rebalance.</td>
+      <td>FD tracks. After any 10-minute monologue: compression round. "One thing that held up, one that did not."</td>
+    </tr>
+  </table>
+</div>
+
+<!-- QUICK REFERENCE -->
+<div class="section">
+  <div class="section-eyebrow">Quick Reference Card</div>
+  <h2>Everything at a glance</h2>
+
+  <div class="qrc-grid">
+    <div class="qrc-cell">
+      <div class="qrc-key">The interview</div>
+      <p class="qrc-val">7 questions to Marcus before planning anything. Physical format, primary goal, guest AI maturity, real-time access, share, learn, relationship. Never skip.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">The pre-read <span class="new-badge">v2</span></div>
+      <p class="qrc-val">4 slides max. 5-minute read. Low-key, not stylized. Editorial, not corporate. Names failure modes. Includes the ground rule.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">The ground rule</div>
+      <p class="qrc-val">"If it passes your filter, say it out loud. Silence is on probation." Stated at the opening. Every session.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">The arc</div>
+      <p class="qrc-val">Frame + problem, Marcus shares, Demo 1, Guest compression, Guest shares, Demo 2, Synthesis. Synthesis is sacred.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">Mode matching <span class="new-badge">new</span></div>
+      <p class="qrc-val">Voice session = voice questions. Text session = text questions. Never mix modes. Mirror the guest.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">Follow-up rule <span class="new-badge">new</span></div>
+      <p class="qrc-val">After every substantive answer, one follow-up before moving on. "Tell me more." "What is behind that?" The first answer is not the answer.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">Start with the problem <span class="new-badge">new</span></div>
+      <p class="qrc-val">One sentence naming the problem before any solution. Always. Guest cannot engage with a solution they do not understand the problem for.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">The synthesis prompt</div>
+      <p class="qrc-val">"What do you now believe that you did not believe 90 minutes ago?" Both people answer. FD captures. This is the whole point.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">Post-session capture</div>
+      <p class="qrc-val">3 findings as claims. Sharpest disagreement. One skill update. Follow-up action. Same night.</p>
+    </div>
+    <div class="qrc-cell">
+      <div class="qrc-key">The new rule</div>
+      <p class="qrc-val" style="color: var(--accent); font-style: italic;">"The first answer is not the answer. The answer comes after you ask: tell me more."</p>
+    </div>
+  </div>
+</div>
+
+<!-- SESSION LOG -->
+<div class="section">
+  <div class="section-eyebrow">Session Log</div>
+  <h2>Sessions run under this skill</h2>
+
+  <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 32px 36px;">
+    <div style="display: grid; grid-template-columns: 120px 220px 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+      <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); font-weight: 600;">Date</div>
+      <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); font-weight: 600;">Guest</div>
+      <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); font-weight: 600;">Key finding</div>
+      <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); font-weight: 600;">Skill update</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 120px 220px 1fr 1fr; gap: 16px; border-top: 1px solid var(--border); padding-top: 20px;">
+      <div style="font-size: 15px; color: var(--dim);">Feb 23 2026</div>
+      <div style="font-size: 15px; color: var(--body);">Greg Cox<br><span style="color: var(--dim); font-size: 13px;">CTO, ExpertVoice</span></div>
+      <div style="font-size: 15px; color: var(--body); line-height: 1.6;">Agents in multi-human organizations is the real unsolved problem. The hard problems are not technical, they are organizational. Problem statement must lead. Fewer, focused questions beat many slides.</div>
+      <div style="font-size: 15px; color: var(--body); line-height: 1.6;">Version 2.0: mode matching, follow-up questions required, structure must be invisible, pre-read 4 slides max, low-key over stylized, start with the problem.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-id">FD (Design Director) / Forge Agent System / fd-facilitation.md v2.0</div>
+  <div class="footer-badge">Feb 24 2026</div>
+</div>
+
+</body>
+</html>

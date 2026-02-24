@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>◉ Forge Deck — Slide Variants</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0A0A0F;
+  --bg-card: #111118;
+  --bg-subtle: #16161F;
+  --cyan: #00D4AA;
+  --cyan-dim: rgba(0,212,170,0.18);
+  --yellow: #FFD700;
+  --maize: #FFCB05;
+  --white: #E8E8ED;
+  --gray: #8888A0;
+  --dim: #3A3A50;
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', monospace;
+}
+html, body { height: 100%; background: var(--bg); color: var(--white); font-family: var(--font); }
+
+/* ── Selector bar ── */
+.selector-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  background: rgba(10,10,15,0.96);
+  border-bottom: 1px solid #1E1E2A;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 24px;
+  backdrop-filter: blur(8px);
+  overflow-x: auto;
+}
+.sb-section {
+  font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--cyan); font-family: var(--mono); white-space: nowrap;
+  padding-right: 8px; border-right: 1px solid #2a2a3a; margin-right: 4px;
+  font-weight: 600;
+}
+.opt-btn {
+  background: transparent; border: 1px solid var(--dim); color: var(--gray);
+  padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; cursor: pointer;
+  font-family: var(--mono); white-space: nowrap; letter-spacing: 0.04em;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.opt-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.opt-btn.active { border-color: var(--cyan); color: var(--cyan); background: var(--cyan-dim); }
+.sb-divider { width: 1px; height: 20px; background: var(--dim); flex-shrink: 0; margin: 0 6px; }
+
+/* ── Slide stage ── */
+.stage { display: none; padding-top: 66px; }
+.stage.active { display: block; }
+
+/* ── Slide frame ── */
+.slide-frame {
+  width: 100vw; height: calc(100vh - 66px);
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 80px 120px; text-align: center;
+}
+
+/* ── Type scale (matches deck) ── */
+.xl {
+  font-size: clamp(2.4rem, 5vw, 4.2rem); font-weight: 300;
+  line-height: 1.15; letter-spacing: -0.01em; max-width: 880px;
+}
+.lg {
+  font-size: clamp(1.8rem, 3.2vw, 2.8rem); font-weight: 300;
+  line-height: 1.2; max-width: 820px;
+}
+.md {
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem); font-weight: 300;
+  line-height: 1.5; color: var(--gray); max-width: 700px; margin-top: 1.25rem;
+}
+.sm {
+  font-size: clamp(0.85rem, 1.2vw, 1rem); color: var(--gray);
+  max-width: 640px; margin-top: 1rem; line-height: 1.7;
+}
+.label {
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--cyan); font-family: var(--mono); margin-bottom: 1.5rem;
+}
+.accent { color: var(--cyan); }
+.yellow { color: var(--yellow); }
+.maize  { color: var(--maize); }
+.pull {
+  font-size: clamp(1.3rem, 2.2vw, 1.9rem); font-weight: 300; font-style: italic;
+  color: var(--white); max-width: 680px; line-height: 1.45;
+  position: relative; padding-left: 28px; text-align: left;
+  text-wrap: pretty; overflow-wrap: break-word;
+}
+.pull::before {
+  content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+  width: 2px; background: var(--cyan); border-radius: 2px;
+}
+/* Stats */
+.stat-row { display: flex; gap: 48px; justify-content: center; margin-top: 2.5rem; flex-wrap: wrap; }
+.stat-block { text-align: center; }
+.stat-n {
+  font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 200;
+  color: var(--cyan); font-family: var(--mono); line-height: 1; letter-spacing: -0.02em;
+}
+.stat-l { font-size: 0.78rem; color: var(--gray); margin-top: 6px; letter-spacing: 0.06em; }
+
+/* Variant badge */
+.variant-label {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--dim); font-family: var(--mono);
+  background: var(--bg-card); border: 1px solid var(--dim);
+  padding: 6px 14px; border-radius: 20px; pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ── Selector bar ── -->
+<div class="selector-bar">
+
+  <span class="sb-section">The Problem</span>
+  <button class="opt-btn active" onclick="show('prob-b', this)">B · Writing with him</button>
+
+  <div class="sb-divider"></div>
+
+  <span class="sb-section">Engineering Stats</span>
+  <button class="opt-btn" onclick="show('stats-a', this)">A · Current 4-up</button>
+  <button class="opt-btn" onclick="show('stats-b', this)">B · Updated numbers</button>
+  <button class="opt-btn" onclick="show('stats-c', this)">C · Sprint focus</button>
+
+  <div class="sb-divider"></div>
+
+  <span class="sb-section">Closing</span>
+  <button class="opt-btn" onclick="show('close-a', this)">A · Current</button>
+  <button class="opt-btn" onclick="show('close-b', this)">B · Warmer</button>
+  <button class="opt-btn" onclick="show('close-c', this)">C · Marcus voice</button>
+
+  <div class="sb-divider"></div>
+
+  <span class="sb-section">Bridge</span>
+  <button class="opt-btn" onclick="show('bridge-a', this)">A · Original</button>
+  <button class="opt-btn" onclick="show('bridge-b', this)">B · Fear as strategy</button>
+  <button class="opt-btn" onclick="show('bridge-c', this)">C · Safe to fail</button>
+  <button class="opt-btn" onclick="show('bridge-d', this)">D · Stuck same place</button>
+  <button class="opt-btn" onclick="show('bridge-e', this)">E · Makers didn't wait</button>
+  <button class="opt-btn" onclick="show('bridge-f', this)">F · Waiting is the risk</button>
+
+  <div class="sb-divider"></div>
+
+  <span class="sb-section">Maize Entrance</span>
+  <button class="opt-btn" onclick="show('maize-a', this)">A · FA was the default</button>
+  <button class="opt-btn" onclick="show('maize-b', this)">B · The wall every builder hits</button>
+  <button class="opt-btn" onclick="show('maize-c', this)">C · Built it myself, it showed</button>
+  <button class="opt-btn" onclick="show('maize-d', this)">D · The screenshot</button>
+
+  <div class="sb-divider"></div>
+
+  <span class="sb-section">Penultimate Beat</span>
+  <button class="opt-btn" onclick="show('penult-a', this)">A · Current declarative</button>
+  <button class="opt-btn" onclick="show('penult-b', this)">B · Challenge + proof</button>
+  <button class="opt-btn" onclick="show('penult-c', this)">C · Quiet confidence</button>
+  <button class="opt-btn" onclick="show('penult-d', this)">D · Merge + making close</button>
+  <button class="opt-btn" onclick="show('penult-e', this)">E · Making is the learning</button>
+  <button class="opt-btn" onclick="show('penult-f', this)">F · Build or follow</button>
+  <button class="opt-btn" onclick="show('penult-g', this)">G · Don't wonder what's possible</button>
+  <button class="opt-btn" onclick="show('penult-h', this)">H · Most compressed</button>
+
+</div>
+
+<!-- ═══════════════════════════════════════════
+     THE PROBLEM — 3 variants
+════════════════════════════════════════════ -->
+
+<!-- B · With him — writing as ongoing relationship — LOCKED -->
+<div class="stage active" id="prob-b">
+  <div class="slide-frame">
+    <p class="label">The Problem</p>
+    <h2 class="lg">I&rsquo;ve been writing<br>with my father for 15 years.</h2>
+    <p class="md">352 entries. 210,000 words.<br>And I still can&rsquo;t hear myself across any of it.</p>
+  </div>
+  <div class="variant-label">The Problem — B · Writing with him (LOCKED)</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     ENGINEERING STATS — 3 variants
+════════════════════════════════════════════ -->
+
+<!-- A · Current 4-up (unchanged from deck) -->
+<div class="stage" id="stats-a">
+  <div class="slide-frame">
+    <p class="label">The grind. Since Feb 15.</p>
+    <div class="stat-row">
+      <div class="stat-block"><div class="stat-n">592</div><div class="stat-l">git commits</div></div>
+      <div class="stat-block"><div class="stat-n">1,271</div><div class="stat-l">passing tests</div></div>
+      <div class="stat-block"><div class="stat-n">12</div><div class="stat-l">active agents</div></div>
+      <div class="stat-block"><div class="stat-n">6</div><div class="stat-l">days</div></div>
+    </div>
+  </div>
+  <div class="variant-label">Engineering Stats — A · Current (not landing)</div>
+</div>
+
+<!-- B · 6-metric target — the science card (TBD pending FA/FP/FR/FI) -->
+<div class="stage" id="stats-b">
+  <div class="slide-frame">
+    <p class="label">The grind. Since Feb 15.</p>
+    <div class="stat-row" style="gap:40px;max-width:900px">
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,3.5vw,3.2rem)">—</div>
+        <div class="stat-l">lines of code<br><span style="color:var(--dim);font-size:0.68rem">awaiting FA</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,3.5vw,3.2rem)">—</div>
+        <div class="stat-l">model + tool calls<br><span style="color:var(--dim);font-size:0.68rem">awaiting FP</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,3.5vw,3.2rem)">1,271</div>
+        <div class="stat-l">passing tests<br><span style="color:var(--dim);font-size:0.68rem">all from scratch</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,3.5vw,3.2rem)">—</div>
+        <div class="stat-l">tokens processed<br><span style="color:var(--dim);font-size:0.68rem">awaiting FP</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,3.5vw,3.2rem)">—</div>
+        <div class="stat-l">evals run<br><span style="color:var(--dim);font-size:0.68rem">awaiting FR</span></div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,3.5vw,3.2rem)">—</div>
+        <div class="stat-l">eval frameworks<br>built from scratch<br><span style="color:var(--dim);font-size:0.68rem">awaiting FR + FI</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="variant-label">Engineering Stats — B · 6-metric science card (TBD — data requests sent to FA/FP/FR/FI)</div>
+</div>
+
+<!-- C · 4-metric fallback if tokens stay unavailable -->
+<div class="stage" id="stats-c">
+  <div class="slide-frame">
+    <p class="label">The grind. Since Feb 15.</p>
+    <div class="stat-row" style="gap:56px">
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,4vw,4rem)">—</div>
+        <div class="stat-l">lines of code</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,4vw,4rem)">1,271</div>
+        <div class="stat-l">passing tests</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,4vw,4rem)">—</div>
+        <div class="stat-l">evals run</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-n" style="font-size:clamp(2rem,4vw,4rem)">—</div>
+        <div class="stat-l">eval frameworks<br>built from scratch</div>
+      </div>
+    </div>
+    <p class="sm" style="margin-top:2rem">6 days. All passing. No exceptions.</p>
+  </div>
+  <div class="variant-label">Engineering Stats — C · 4-metric fallback (if tokens/model calls unavailable)</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     CLOSING — 3 variants
+════════════════════════════════════════════ -->
+
+<!-- A · Current (unchanged from deck) -->
+<div class="stage" id="close-a">
+  <div class="slide-frame">
+    <h1 class="xl" style="font-weight:200;color:var(--cyan)">Make first.<br>Take agency.<br>Play.</h1>
+    <p class="sm" style="margin-top:3rem;font-family:var(--mono);letter-spacing:0.1em;color:var(--dim)">◉ FORGE &middot; FEB 2026</p>
+  </div>
+  <div class="variant-label">Closing — A · Current (data-i 50)</div>
+</div>
+
+<!-- B · Warmer — keeps the call to action, adds human address -->
+<div class="stage" id="close-b">
+  <div class="slide-frame">
+    <h1 class="xl" style="font-weight:200">Make something.<br><span class="accent">Don&rsquo;t wait.</span></h1>
+    <p class="md">The only thing that separates the AI makers<br>from the AI followers is the willingness<br>to be bad at it first.</p>
+    <p class="sm" style="margin-top:2.5rem;font-family:var(--mono);letter-spacing:0.1em;color:var(--dim)">◉ FORGE &middot; FEB 2026</p>
+  </div>
+  <div class="variant-label">Closing — B · Warmer (Marcus language)</div>
+</div>
+
+<!-- C · Marcus voice — direct, no decoration -->
+<div class="stage" id="close-c">
+  <div class="slide-frame">
+    <p class="pull" style="max-width:720px;text-align:center;padding-left:0;font-size:clamp(1.6rem,3vw,2.6rem)">
+      &ldquo;I&rsquo;m not going to find out if this works.<br>I already know it works.<br>The question is how far.&rdquo;
+    </p>
+    <p class="sm" style="margin-top:3rem;font-family:var(--mono);letter-spacing:0.1em;color:var(--dim)">◉ FORGE &middot; FEB 2026</p>
+  </div>
+  <div class="variant-label">Closing — C · Marcus voice</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     BRIDGE — 2 variants
+     (slides before THE PROBLEM to establish: pick something personal)
+════════════════════════════════════════════ -->
+
+<!-- A · Don't solve abstract -->
+<div class="stage" id="bridge-a">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Don&rsquo;t solve AI.<br>Solve <span class="accent">something you live in.</span></h2>
+    <p class="md">The most dangerous place to start is the abstract problem.<br>Pick something personal. Build the thing you need most.</p>
+  </div>
+  <div class="variant-label">Bridge — A · Original (insert before data-i 5)</div>
+</div>
+
+<!-- B · Fear dressed as strategy -->
+<div class="stage" id="bridge-b">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Don&rsquo;t solve AI.<br>Solve <span class="accent">something you live in.</span></h2>
+    <p class="md">Most people are still waiting for the right problem.<br>That&rsquo;s not caution. That&rsquo;s fear dressed up as strategy.</p>
+  </div>
+  <div class="variant-label">Bridge — B · Fear dressed as strategy</div>
+</div>
+
+<!-- C · The abstract feels safe -->
+<div class="stage" id="bridge-c">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Don&rsquo;t solve AI.<br>Solve <span class="accent">something you live in.</span></h2>
+    <p class="md">The abstract problem feels safe because you can&rsquo;t fail at something you never built.<br>Pick something real. Fail at that.</p>
+  </div>
+  <div class="variant-label">Bridge — C · The abstract feels safe</div>
+</div>
+
+<!-- D · Stuck at the same place -->
+<div class="stage" id="bridge-d">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Don&rsquo;t solve AI.<br>Solve <span class="accent">something you live in.</span></h2>
+    <p class="md">Everyone is stuck at the same place: knowing AI matters and not knowing where to start.<br>The answer is always the same. Start with something you need.</p>
+  </div>
+  <div class="variant-label">Bridge — D · Stuck at the same place</div>
+</div>
+
+<!-- E · Makers didn't wait -->
+<div class="stage" id="bridge-e">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Don&rsquo;t solve AI.<br>Solve <span class="accent">something you live in.</span></h2>
+    <p class="md">The makers didn&rsquo;t wait until it was comfortable.<br>They picked something personal and built badly until they built well.</p>
+  </div>
+  <div class="variant-label">Bridge — E · Makers didn't wait</div>
+</div>
+
+<!-- F · Waiting is the real risk -->
+<div class="stage" id="bridge-f">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Don&rsquo;t solve AI.<br>Solve <span class="accent">something you live in.</span></h2>
+    <p class="md">The most dangerous thing isn&rsquo;t building the wrong thing.<br>It&rsquo;s building nothing while you wait to be sure.</p>
+  </div>
+  <div class="variant-label">Bridge — F · Waiting is the real risk</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     MAIZE ENTRANCE — 3 variants
+     Story: FA was default Copilot (not a hire). Marcus built clunky first app.
+     Hit the design ceiling. First real hire: a creative director.
+     Maize color (#FFCB05) hinted subtly.
+════════════════════════════════════════════ -->
+
+<!-- A · FA was the default -->
+<div class="stage" id="maize-a">
+  <div class="slide-frame">
+    <p class="label">The first hire</p>
+    <h2 class="lg" style="text-wrap:balance">I started like everyone else.</h2>
+    <p class="md">Opened the CLI. Started building.<br>FA wasn&rsquo;t a hire. FA was the default.<br>And the app looked exactly like that.</p>
+    <p class="md" style="margin-top:1.5rem;color:var(--white)">I&rsquo;m a design leader. Not a designer.<br>I needed someone to help me <span style="color:#FFCB05">think.</span></p>
+  </div>
+  <div class="variant-label">Maize Entrance — A · Honest admission</div>
+</div>
+
+<!-- B · The wall every builder hits -->
+<div class="stage" id="maize-b">
+  <div class="slide-frame">
+    <p class="label">The first hire</p>
+    <h2 class="lg" style="text-wrap:balance">Every builder hits the same wall.</h2>
+    <p class="md">Not &ldquo;I can&rsquo;t ship this.&rdquo;<br>&ldquo;I can ship it. But I can&rsquo;t make it <em>good.</em>&rdquo;</p>
+    <p class="md" style="margin-top:1.5rem;color:var(--white)">The app worked. I knew what it should feel like.<br>This wasn&rsquo;t it. So I made my first <span style="color:#FFCB05">hire.</span></p>
+  </div>
+  <div class="variant-label">Maize Entrance — B · The wall every builder hits</div>
+</div>
+
+<!-- C · Built it myself, it showed -->
+<div class="stage" id="maize-c">
+  <div class="slide-frame">
+    <p class="label">The first hire</p>
+    <h2 class="lg" style="text-wrap:balance">I built the first version myself.<br><span style="color:var(--gray)">It looked like I built it.</span></h2>
+    <p class="md" style="margin-top:2rem">I&rsquo;m not a designer. I&rsquo;m a design leader.<br>There&rsquo;s a gap between those two things.<br>I needed someone to close it — and to push back on me.</p>
+    <p style="margin-top:2rem;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;font-family:var(--mono);padding-left:14px;border-left:2px solid #FFCB05;text-align:left;color:var(--gray)">First hire. Creative Director.</p>
+  </div>
+  <div class="variant-label">Maize Entrance — C · The confession, own the gap</div>
+</div>
+
+<!-- D · The screenshot slide — Feb 14, Voice to Message, the moment of clarity -->
+<div class="stage" id="maize-d">
+  <div class="slide-frame" style="flex-direction:row;gap:60px;align-items:center;justify-content:center;padding:60px 80px">
+    <!-- Screenshot -->
+    <div style="flex-shrink:0;position:relative">
+      <img src="assets/dispatch-v0-screenshot.png"
+           alt="Voice to Message — Feb 14"
+           style="width:320px;border-radius:8px;box-shadow:0 0 60px rgba(0,0,0,0.6);opacity:0.85;border:1px solid #2a2a3a">
+      <div style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:0.65rem;font-family:var(--mono);color:var(--dim);letter-spacing:0.1em;white-space:nowrap">Saturday, Feb 14. 11:56 AM.</div>
+    </div>
+    <!-- Text -->
+    <div style="text-align:left;max-width:400px">
+      <p class="label" style="text-align:left">The first hire</p>
+      <h2 class="lg" style="text-wrap:balance;text-align:left">It worked.</h2>
+      <p class="md" style="text-align:left;margin-top:1rem">It looked like I built it.<br><br>This isn&rsquo;t a capability problem.<br>It&rsquo;s a team problem.</p>
+      <p style="margin-top:2rem;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;font-family:var(--mono);color:var(--gray)">First hire: <span style="color:#FFCB05">Creative Director.</span></p>
+    </div>
+  </div>
+  <div class="variant-label">Maize Entrance — D · The screenshot (Feb 14 Voice to Message)</div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PENULTIMATE BEAT — 3 variants
+     Current: "Design leaders should be building this." (data-i 49)
+     Question: is that strong enough? too declarative? needs proof?
+════════════════════════════════════════════ -->
+
+<!-- A · Current declarative (unchanged from deck) -->
+<div class="stage" id="penult-a">
+  <div class="slide-frame">
+    <h2 class="xl" style="text-wrap:balance">Design leaders should be<br>building this.</h2>
+  </div>
+  <div class="variant-label">Penultimate Beat — A · Current (data-i 49)</div>
+</div>
+
+<!-- B · Challenge + proof — earns the declaration with receipts -->
+<div class="stage" id="penult-b">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Design leaders should be<br>building this.</h2>
+    <p class="md" style="margin-top:2rem">Not experimenting with it.<br>Not delegating it.<br><span style="color:var(--white)">Building it.</span></p>
+    <p class="sm" style="margin-top:1.5rem">I shipped a working app in a weekend.<br>12 agents are running while I sleep.<br>My son scored an 87 three days after scoring a 47.</p>
+  </div>
+  <div class="variant-label">Penultimate Beat — B · Challenge + proof</div>
+</div>
+
+<!-- C · Quiet confidence — no justification needed, let it land -->
+<div class="stage" id="penult-c">
+  <div class="slide-frame">
+    <h2 class="xl" style="font-weight:200;text-wrap:balance;color:var(--white)">If design leaders<br>aren&rsquo;t building this<br>someone else will.</h2>
+  </div>
+  <div class="variant-label">Penultimate Beat — C · Quiet confidence</div>
+</div>
+
+<!-- D · Merged headline + making close — combines the two sections, drops "shipped a working app" -->
+<div class="stage" id="penult-d">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Design leaders shouldn&rsquo;t be<br>experimenting with this or delegating it.<br><span style="color:var(--white)">They should be building it.</span></h2>
+    <p class="sm" style="margin-top:2rem">12 agents running while I sleep.<br>My son scored an 87 three days after scoring a 47.</p>
+    <p class="md" style="margin-top:2rem;color:var(--white)">Making it is how you lead it.</p>
+  </div>
+  <div class="variant-label">Penultimate Beat — D · Merge + making close</div>
+</div>
+
+<!-- E · Making is the learning — learning framing, no shortcuts -->
+<div class="stage" id="penult-e">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Design leaders don&rsquo;t delegate AI.<br><span style="color:var(--white)">They build with it.</span></h2>
+    <p class="sm" style="margin-top:2rem">12 agents running while I sleep.<br>My son: 47 to 87 in three days.</p>
+    <p class="md" style="margin-top:2rem;color:var(--white)">You don&rsquo;t understand it by reading about it.<br>You understand it by making something with it.</p>
+  </div>
+  <div class="variant-label">Penultimate Beat — E · Making is the learning</div>
+</div>
+
+<!-- F · Build or follow — sharper stakes -->
+<div class="stage" id="penult-f">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">Build it yourself<br>or let someone else<br><span style="color:var(--white)">define what&rsquo;s possible.</span></h2>
+    <p class="sm" style="margin-top:2rem">12 agents running while I sleep.<br>My son: 47 to 87. Three days.</p>
+    <p class="md" style="margin-top:2rem;color:var(--white)">This is what learning through making looks like.</p>
+  </div>
+  <div class="variant-label">Penultimate Beat — F · Build or follow</div>
+</div>
+
+<!-- G · Don't wonder what's possible — earned confidence, quiet delivery -->
+<div class="stage" id="penult-g">
+  <div class="slide-frame">
+    <h2 class="lg" style="text-wrap:balance">The design leaders who&rsquo;ve<br>made something with AI<br><span style="color:var(--white)">don&rsquo;t wonder what&rsquo;s possible.</span></h2>
+    <p class="sm" style="margin-top:2rem">12 agents running while I sleep.<br>My son: 47 to 87 in three days.</p>
+    <p class="md" style="margin-top:2rem;color:var(--white)">Making it is the learning.</p>
+  </div>
+  <div class="variant-label">Penultimate Beat — G · Don&rsquo;t wonder what&rsquo;s possible</div>
+</div>
+
+<!-- H · Most compressed — one idea, no decoration -->
+<div class="stage" id="penult-h">
+  <div class="slide-frame">
+    <h2 class="xl" style="text-wrap:balance">Design leaders who aren&rsquo;t<br>building this are<br><span style="color:var(--white)">falling behind it.</span></h2>
+    <p class="sm" style="margin-top:2.5rem">12 agents running while I sleep. My son: 47 to 87.<br>Everything I&rsquo;ve shipped in the last eight days.</p>
+    <p class="md" style="margin-top:2rem;color:var(--white)">Making it is how you understand it.<br>There is no shortcut.</p>
+  </div>
+  <div class="variant-label">Penultimate Beat — H · Most compressed</div>
+</div>
+
+
+<script>
+function show(id, btn) {
+  // Deactivate all stages and buttons in same section
+  const section = btn.closest('.selector-bar');
+  const allBtns = section.querySelectorAll('.opt-btn');
+  const clickedGroup = getSiblingBtns(btn);
+
+  clickedGroup.forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Hide all stages, show target
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) { target.classList.add('active'); window.scrollTo(0, 0); }
+}
+
+function getSiblingBtns(btn) {
+  // Find all buttons in the same group (between dividers)
+  const bar = btn.closest('.selector-bar');
+  const children = Array.from(bar.children);
+  const idx = children.indexOf(btn);
+  let start = 0, end = children.length;
+  for (let i = idx - 1; i >= 0; i--) {
+    if (children[i].classList.contains('sb-divider') || children[i].classList.contains('sb-section')) { start = i + 1; break; }
+  }
+  for (let i = idx + 1; i < children.length; i++) {
+    if (children[i].classList.contains('sb-divider')) { end = i; break; }
+  }
+  return children.slice(start, end).filter(el => el.classList.contains('opt-btn'));
+}
+</script>
+</body>
+</html>

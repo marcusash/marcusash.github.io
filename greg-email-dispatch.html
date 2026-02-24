@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch - Compose to Greg</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0A0A0F;
+    --surface: #161622;
+    --text:    #E8E8F0;
+    --muted:   #808099;
+    --border:  #2A2A3E;
+    --maize:   #FFCB05;
+    --ui-font: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --mono:    'Cascadia Code', 'Consolas', monospace;
+  }
+
+  body {
+    background: #F4F5F7;
+    font-family: var(--ui-font);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+  }
+
+  .tab-bar {
+    width: 880px;
+    background: #FFFFFF;
+    border: 1px solid #D0D3DA;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .tab-bar-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #1A1A2E;
+    text-transform: uppercase;
+    padding: 13px 0;
+    margin-right: 20px;
+    white-space: nowrap;
+    border-right: 1px solid #E0E0E8;
+    padding-right: 20px;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 13px 18px 10px;
+    font-family: var(--ui-font);
+    font-size: 12px;
+    font-weight: 600;
+    color: #606070;
+    cursor: default;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .tab-btn.active {
+    color: #1A1A2E;
+    border-bottom-color: var(--maize);
+  }
+
+  .terminal-window {
+    width: 880px;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.22);
+  }
+
+  .terminal-chrome {
+    background: #1E1E2E;
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .dot { width: 13px; height: 13px; border-radius: 50%; }
+  .dot-red    { background: #FF5F56; }
+  .dot-yellow { background: #FFBD2E; }
+  .dot-green  { background: #27C93F; }
+
+  .chrome-title {
+    flex: 1;
+    text-align: center;
+    font-family: var(--ui-font);
+    font-size: 12px;
+    color: #808099;
+    letter-spacing: 0.04em;
+  }
+
+  .chrome-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--maize);
+    opacity: 0.7;
+  }
+
+  /* Header section: static fields */
+  .compose-header {
+    background: var(--bg);
+    padding: 22px 28px 0;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .compose-title-row {
+    margin-bottom: 2px;
+  }
+
+  .compose-title-row .label-maize { color: var(--maize); font-weight: bold; }
+  .compose-title-row .label-muted { color: var(--muted); }
+
+  .field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-family: var(--mono);
+    line-height: 2;
+  }
+
+  .field-key {
+    color: var(--muted);
+    min-width: 90px;
+    flex-shrink: 0;
+  }
+
+  .field-val-blue  { color: #4A90D9; }
+  .field-val-maize { color: var(--maize); }
+  .field-val-green { color: #22C55E; }
+  .field-val-dim   { color: var(--muted); }
+
+  /* Editable subject field */
+  .field-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 2;
+    width: 480px;
+    caret-color: var(--maize);
+  }
+
+  .divider {
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 13.5px;
+    padding: 6px 28px 0;
+    background: var(--bg);
+  }
+
+  /* Editable body */
+  .compose-body {
+    background: var(--bg);
+    padding: 0 28px 0 28px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .compose-textarea {
+    width: 100%;
+    min-height: 360px;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.8;
+    caret-color: var(--maize);
+    padding: 10px 0 16px;
+  }
+
+  /* Footer bar */
+  .compose-footer {
+    background: var(--bg);
+    padding: 10px 28px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .compose-footer .key { color: var(--muted); }
+  .compose-footer .action-send  { color: #22C55E; font-weight: 600; }
+  .compose-footer .action-prev  { color: #4A90D9; }
+  .compose-footer .action-disc  { color: var(--muted); }
+
+  .footer-sep { color: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="tab-bar">
+  <span class="tab-bar-title">DISPATCH</span>
+  <button class="tab-btn">01 Inbox</button>
+  <button class="tab-btn">02 Read</button>
+  <button class="tab-btn active">03 Compose</button>
+  <button class="tab-btn">04 Sent</button>
+</div>
+
+<div class="terminal-window">
+  <div class="terminal-chrome">
+    <span class="dot dot-red"></span>
+    <span class="dot dot-yellow"></span>
+    <span class="dot dot-green"></span>
+    <span class="chrome-title">dispatch v1.0  &mdash;  compose</span>
+    <span class="chrome-badge">PERSONAL</span>
+  </div>
+
+  <div class="compose-header">
+    <div class="compose-title-row">
+      <span class="label-maize">DISPATCH</span>&nbsp;<span class="label-muted">&gt; Compose &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Esc to discard]</span>
+    </div>
+    <div class="field-row"><span class="field-key">  To:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="field-val-blue">Greg Cox</span>&nbsp;&nbsp;<span class="field-val-dim">&lt;greg@expertvoice.com&gt;</span></div>
+    <div class="field-row"><span class="field-key">  From:&nbsp;&nbsp;&nbsp;</span><span class="field-val-maize">Marcus Ash</span>&nbsp;&nbsp;<span class="field-val-dim">&lt;marcusash@microsoft.com&gt;</span></div>
+    <div class="field-row"><span class="field-key">  Subject:</span>&nbsp;<input class="field-input" id="subject" value="After tonight" spellcheck="false"></div>
+    <div class="field-row"><span class="field-key">  Type:&nbsp;&nbsp;&nbsp;</span><span class="field-val-green">PERSONAL</span></div>
+  </div>
+
+  <div class="divider">  &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;</div>
+
+  <div class="compose-body">
+    <textarea class="compose-textarea" id="body" spellcheck="true" autocorrect="on">Greg,
+
+Thank you. To you and Angie for the evening, and to
+you specifically for how seriously you engaged with
+what we put in front of you.
+
+You gave us three things we are acting on:
+
+The deck told you what your problems are instead of
+asking. That is wrong and we know it now. Starting
+with the problem in one sentence, before anything
+else, is the fix.
+
+The format felt like a survey. You were generous
+enough to say it directly. Next time it is a
+conversation, not a form. Voice questions, follow-ups,
+less structure showing.
+
+The real question underneath everything you said:
+how do agents fit into a team of humans? Not the
+technical question. The organizational one. That is
+the one nobody has answered yet, including us.
+
+That last one is worth its own conversation.
+
+When can we get back together? I want to try a
+different format with you. Smaller. One topic.
+You talk more, I listen more. I think we get
+something more useful out of it for both of us.
+
+Marcus</textarea>
+  </div>
+
+  <div class="compose-footer">
+    <span><span class="key">[Ctrl+Enter]</span>&nbsp;<span class="action-send">Send</span></span>
+    <span class="footer-sep">|</span>
+    <span><span class="key">[Tab]</span>&nbsp;<span class="action-prev">Preview</span></span>
+    <span class="footer-sep">|</span>
+    <span><span class="key">[Esc]</span>&nbsp;<span class="action-disc">Discard</span></span>
+  </div>
+</div>
+
+</body>
+</html>

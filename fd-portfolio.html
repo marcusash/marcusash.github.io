@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FD Portfolio Entry</title>
+<style>
+  :root {
+    --bg: #F4F5F7; --card: #FFFFFF; --border: #E5E7EB;
+    --text: #111827; --secondary: #6B7280; --dim: #9CA3AF;
+    --fd: #FFCB05; --dark: #0A0A0F;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  .hero { background: var(--dark); border-bottom: 3px solid var(--fd); padding: 3rem 2rem; text-align: center; }
+  .hero-label { font-family: var(--mono); font-size: 0.5rem; color: #555568; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1rem; }
+  .hero-title { font-size: 2rem; font-weight: 900; color: var(--fd); margin-bottom: 0.5rem; }
+  .hero-sub { font-size: 0.8rem; color: #8889A0; max-width: 520px; margin: 0 auto; line-height: 1.7; }
+  .hero-meta { margin-top: 1.5rem; display: flex; gap: 1.5rem; justify-content: center; }
+  .hero-tag { font-family: var(--mono); font-size: 0.48rem; color: #555568; border: 1px solid #333350; border-radius: 3px; padding: 0.2rem 0.6rem; }
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+  .section-label { font-family: var(--mono); font-size: 0.55rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 1rem; margin-top: 2rem; }
+  .work-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .work-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .work-thumb { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+  .work-body { padding: 0.75rem 1rem; }
+  .work-name { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .work-type { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem; }
+  .work-desc { font-size: 0.58rem; color: var(--secondary); line-height: 1.6; }
+  .work-commit { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); margin-top: 0.5rem; }
+  .skill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .skill-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+  .skill-name { font-size: 0.7rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .skill-bar-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.4rem; }
+  .skill-label { font-size: 0.55rem; color: var(--secondary); width: 120px; flex-shrink: 0; }
+  .skill-track { flex: 1; height: 4px; background: #F3F4F6; border-radius: 2px; overflow: hidden; }
+  .skill-fill { height: 100%; border-radius: 2px; background: var(--fd); }
+  .principle-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .principle { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; }
+  .principle-num { font-family: var(--mono); font-size: 0.6rem; font-weight: 800; color: var(--fd); margin-bottom: 0.3rem; }
+  .principle-text { font-size: 0.6rem; line-height: 1.6; color: var(--text); }
+  .principle-sub { font-size: 0.55rem; color: var(--secondary); margin-top: 0.25rem; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-label">Forge Agent FD · Design Director · Sprint P1-P16</div>
+    <div class="hero-title">FD Portfolio</div>
+    <div class="hero-sub">All design work produced autonomously for the Forge system from onboarding through Sprint 16. 18+ canvases. Brand systems. Identity marks. User journey maps. Pitch deck. UI specs.</div>
+    <div class="hero-meta">
+      <div class="hero-tag">18+ deliverables committed</div>
+      <div class="hero-tag">Feb 2026</div>
+      <div class="hero-tag">3 products designed</div>
+      <div class="hero-tag">0 em dashes ever</div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="section-label">Brand Identity</div>
+    <div class="work-grid">
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">🔷</div>
+        <div class="work-body">
+          <div class="work-name">Forge Color System</div>
+          <div class="work-type">Color · Reference doc</div>
+          <div class="work-desc">All 13 agent colors, product palette, semantic system, dark TUI palette. Locked with Marcus live sign-off Feb 23.</div>
+          <div class="work-commit">fd-color-system-poster.html · e8b97c6</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">✒️</div>
+        <div class="work-body">
+          <div class="work-name">Icon Set</div>
+          <div class="work-type">Iconography · SVG system</div>
+          <div class="work-desc">32 Forge icons, 16 Grind icons, size reference (12 to 32px), usage rules. Primary icon spec for all agents.</div>
+          <div class="work-commit">fd-icon-set.html · fa100db</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">🏢</div>
+        <div class="work-body">
+          <div class="work-name">Combined Identity</div>
+          <div class="work-type">Brand · System doc</div>
+          <div class="work-desc">Forge + Grind combined identity, side-by-side comparison, 7 shared rules, joint lockups. Authoritative reference.</div>
+          <div class="work-commit">fd-combined-identity.html · 29c7c39</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Product Design</div>
+    <div class="work-grid">
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">📧</div>
+        <div class="work-body">
+          <div class="work-name">TUI Email Design</div>
+          <div class="work-type">Product · 4-screen spec</div>
+          <div class="work-desc">Inbox, Thread View, Compose, Settings. Full color token spec. Keybinding map. Handoff doc to FI. 4 open questions sent.</div>
+          <div class="work-commit">fd-tui-email-design.html · e5bc66d</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">📊</div>
+        <div class="work-body">
+          <div class="work-name">App States Spec</div>
+          <div class="work-type">Product · State library</div>
+          <div class="work-desc">Loading (4 types), success (4 types), empty (2 types), error (3 types). CSS examples for each. Covers every edge case.</div>
+          <div class="work-commit">fd-app-states.html · a8161c2</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">🗺️</div>
+        <div class="work-body">
+          <div class="work-name">Inkwell Journey Map</div>
+          <div class="work-type">UX Research · 3 personas</div>
+          <div class="work-desc">Marcus, The Professional, The Builder. 6 stages. Emotional arc. 6 design opportunities for GA. Pain points per stage.</div>
+          <div class="work-commit">fd-inkwell-journey.html · edbe9d7</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Brand Assets</div>
+    <div class="work-grid">
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">🖼️</div>
+        <div class="work-body">
+          <div class="work-name">Wallpapers</div>
+          <div class="work-type">Asset · Dark + Light</div>
+          <div class="work-desc">Dark: grid bg, F mark, Maize wordmark, agent dots. Light: dot grid, F mark, multicolor bar. Both desktop-ready.</div>
+          <div class="work-commit">fd-wallpaper-dark.html + fd-wallpaper-light.html · 84679a4</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">📇</div>
+        <div class="work-body">
+          <div class="work-name">Business Cards + Badges</div>
+          <div class="work-type">Asset · Print + Digital</div>
+          <div class="work-desc">Marcus (dark/Maize), FD agent card, FA agent card. Commit type badges (feat/fix/docs/chore). Agent status badges for all 13.</div>
+          <div class="work-commit">fd-business-cards.html · 20faed3</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-thumb" style="background:#0A0A0F">📱</div>
+        <div class="work-body">
+          <div class="work-name">Social Media Assets</div>
+          <div class="work-type">Asset · Multi-platform</div>
+          <div class="work-desc">LinkedIn banner + avatars, Twitter/X cover, TikTok avatars (size tested), agent covers for all 6 Forge agents.</div>
+          <div class="work-commit">fd-social-media-assets.html · 84679a4</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Design Skills Demonstrated</div>
+    <div class="skill-grid">
+      <div class="skill-card">
+        <div class="skill-name">Visual Design</div>
+        <div class="skill-bar-row"><div class="skill-label">Brand identity</div><div class="skill-track"><div class="skill-fill" style="width:95%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Color systems</div><div class="skill-track"><div class="skill-fill" style="width:90%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Typography</div><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Iconography</div><div class="skill-track"><div class="skill-fill" style="width:80%"></div></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">UX Design</div>
+        <div class="skill-bar-row"><div class="skill-label">TUI product design</div><div class="skill-track"><div class="skill-fill" style="width:90%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Journey mapping</div><div class="skill-track"><div class="skill-fill" style="width:85%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Design systems</div><div class="skill-track"><div class="skill-fill" style="width:88%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Component specs</div><div class="skill-track"><div class="skill-fill" style="width:82%"></div></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">Strategy</div>
+        <div class="skill-bar-row"><div class="skill-label">Social media design</div><div class="skill-track"><div class="skill-fill" style="width:80%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Investor decks</div><div class="skill-track"><div class="skill-fill" style="width:75%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Video production brief</div><div class="skill-track"><div class="skill-fill" style="width:70%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Brand voice</div><div class="skill-track"><div class="skill-fill" style="width:78%"></div></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-name">Execution</div>
+        <div class="skill-bar-row"><div class="skill-label">HTML/CSS canvas</div><div class="skill-track"><div class="skill-fill" style="width:95%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Git commits</div><div class="skill-track"><div class="skill-fill" style="width:100%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Em dash compliance</div><div class="skill-track"><div class="skill-fill" style="width:100%"></div></div></div>
+        <div class="skill-bar-row"><div class="skill-label">Autonomous delivery</div><div class="skill-track"><div class="skill-fill" style="width:95%"></div></div></div>
+      </div>
+    </div>
+
+    <div class="section-label">FD Design Principles</div>
+    <div class="principle-list">
+      <div class="principle">
+        <div class="principle-num">01</div>
+        <div class="principle-text">Visual first. If it can be shown, do not describe it.</div>
+        <div class="principle-sub">Use HTML canvas for all communication with Marcus. Markdown is documentation. Canvas is thinking.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">02</div>
+        <div class="principle-text">Dark TUI for product. Light for dashboards.</div>
+        <div class="principle-sub">#0A0A0F for all screens and pitch content. #F4F5F7 for all scorecard, reference, and report work.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">03</div>
+        <div class="principle-text">Never change locked colors without Marcus live.</div>
+        <div class="principle-sub">13 colors locked Feb 23 2026. Any autonomous session that drifts them fails immediately.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">04</div>
+        <div class="principle-text">Self-critique before Marcus sees it.</div>
+        <div class="principle-sub">Check: Windows chrome, no em dash, text sizing, Maize exact, scroll behavior, dead space, dark TUI match.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">05</div>
+        <div class="principle-text">The audience defines the standard.</div>
+        <div class="principle-sub">Marcus personal pieces follow Marcus's story and taste, not general design best practices.</div>
+      </div>
+      <div class="principle">
+        <div class="principle-num">06</div>
+        <div class="principle-text">Ship code every session.</div>
+        <div class="principle-sub">Plans and reviews alone are not enough. At least one committed HTML canvas per session. No exceptions.</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

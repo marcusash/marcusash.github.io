@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Sprint Scorecard v3</title>
+<style>
+  :root {
+    --bg: #F4F5F7; --card: #FFFFFF; --border: #E5E7EB;
+    --text: #111827; --secondary: #6B7280; --dim: #9CA3AF;
+    --fa: #4A90D9; --fd: #FFCB05; --ff: #22C55E; --fi: #6D28D9;
+    --fo: #94A3B8; --fp: #CE1126; --fr: #F97316;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  .header { background: #0A0A0F; padding: 1.5rem 2rem; border-bottom: 3px solid var(--fo); }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; max-width: 1000px; margin: 0 auto; }
+  .header-left { display: flex; align-items: center; gap: 1rem; }
+  .header-title { font-size: 1.1rem; font-weight: 800; color: var(--fo); }
+  .header-sub { font-family: var(--mono); font-size: 0.5rem; color: #555568; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.2rem; }
+  .sprint-badge { background: #1A1A2E; border: 1px solid #333350; border-radius: 4px; padding: 0.3rem 0.6rem; font-family: var(--mono); font-size: 0.5rem; color: var(--fo); }
+  .container { max-width: 1000px; margin: 0 auto; padding: 2rem; }
+  .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .metric-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+  .metric-value { font-size: 1.6rem; font-weight: 800; }
+  .metric-label { font-family: var(--mono); font-size: 0.5rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.3rem; }
+  .metric-delta { font-size: 0.6rem; margin-top: 0.4rem; }
+  .delta-up { color: var(--ff); }
+  .delta-down { color: var(--fp); }
+  .agent-table { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 2rem; }
+  .table-head { background: #F9FAFB; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 40px 80px 1fr 80px 80px 80px 90px 80px; gap: 0; padding: 0.6rem 1rem; }
+  .table-head span { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; }
+  .table-row { display: grid; grid-template-columns: 40px 80px 1fr 80px 80px 80px 90px 80px; gap: 0; padding: 0.6rem 1rem; border-bottom: 1px solid rgba(0,0,0,0.04); align-items: center; }
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: rgba(0,0,0,0.02); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .agent-id { font-family: var(--mono); font-size: 0.55rem; font-weight: 700; }
+  .agent-name { font-size: 0.6rem; color: var(--secondary); }
+  .score-badge { font-size: 0.6rem; font-weight: 700; padding: 0.15rem 0.35rem; border-radius: 3px; }
+  .score-a { background: rgba(34,197,94,0.08); color: #15803D; }
+  .score-b { background: rgba(74,144,217,0.08); color: #1D4ED8; }
+  .score-c { background: rgba(251,191,36,0.08); color: #92400E; }
+  .score-d { background: rgba(206,17,38,0.08); color: #991B1B; }
+  .bar-wrap { position: relative; height: 6px; background: #F3F4F6; border-radius: 3px; overflow: hidden; flex: 1; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .stat { font-family: var(--mono); font-size: 0.55rem; color: var(--text); }
+  .trend { font-size: 0.65rem; }
+  .section-label { font-family: var(--mono); font-size: 0.55rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  .callout { border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.6rem; line-height: 1.6; margin-bottom: 0.5rem; }
+  .callout-warn { background: rgba(206,17,38,0.05); border-left: 3px solid var(--fp); color: #7F1D1D; }
+  .callout-ok { background: rgba(34,197,94,0.05); border-left: 3px solid var(--ff); color: #14532D; }
+  .callout-info { background: rgba(94,114,228,0.05); border-left: 3px solid var(--fo); color: #1E3A5F; }
+  .fo-note { font-family: var(--mono); font-size: 0.5rem; color: var(--dim); margin-top: 0.25rem; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="#94A3B8" stroke-width="2"/>
+          <path d="M8 12h8M12 8v8" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="header-title">Forge Sprint Scorecard v3</div>
+          <div class="header-sub">Forge Operations · Sprint P12-P16 Review · Feb 23 2026</div>
+        </div>
+      </div>
+      <div class="sprint-badge">FO SCORECARD V3</div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Summary metrics -->
+    <div class="summary-row">
+      <div class="metric-card">
+        <div class="metric-value" style="color:var(--ff)">2,035</div>
+        <div class="metric-label">Tests Passing</div>
+        <div class="metric-delta delta-up">+119 vs prior sprint</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" style="color:var(--fa)">13</div>
+        <div class="metric-label">Active Agents</div>
+        <div class="metric-delta" style="color:var(--secondary)">6 Forge, 6 Grind, 1 COO</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" style="color:var(--fd)">42</div>
+        <div class="metric-label">Deck Slides</div>
+        <div class="metric-delta delta-up">Cut from 53 (FR audit)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" style="color:var(--fp)">7</div>
+        <div class="metric-label">P1 Issues Open</div>
+        <div class="metric-delta delta-down">FO tracking all 7</div>
+      </div>
+    </div>
+
+    <!-- Agent scorecard table -->
+    <div class="section-label">Agent Performance by Sprint Phase</div>
+    <div class="agent-table">
+      <div class="table-head">
+        <span></span>
+        <span>Agent</span>
+        <span>Key Delivery</span>
+        <span>Grade</span>
+        <span>Commits</span>
+        <span>Velocity</span>
+        <span>Blocker?</span>
+        <span>Trend</span>
+      </div>
+
+      <!-- FA -->
+      <div class="table-row">
+        <span class="dot" style="background:var(--fa)"></span>
+        <div><div class="agent-id" style="color:var(--fa)">FA</div><div class="agent-name">Chief Architect</div></div>
+        <div style="font-size:0.58rem">designTokens.ts + architecture reviews + color lock enforcement</div>
+        <span class="score-badge score-a">A</span>
+        <span class="stat">14</span>
+        <div style="width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:90%;background:var(--fa)"></div></div></div>
+        <span style="font-size:0.55rem;color:var(--ff)">None</span>
+        <span class="trend">+</span>
+      </div>
+
+      <!-- FD -->
+      <div class="table-row">
+        <span class="dot" style="background:var(--fd)"></span>
+        <div><div class="agent-id" style="color:var(--fd)">FD</div><div class="agent-name">Design Director</div></div>
+        <div style="font-size:0.58rem">18 canvases, brand system, deck v5 (42 slides), UI systems</div>
+        <span class="score-badge score-a">A</span>
+        <span class="stat">18</span>
+        <div style="width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:95%;background:var(--fd)"></div></div></div>
+        <span style="font-size:0.55rem;color:var(--ff)">None</span>
+        <span class="trend">+</span>
+      </div>
+
+      <!-- FF -->
+      <div class="table-row">
+        <span class="dot" style="background:var(--ff)"></span>
+        <div><div class="agent-id" style="color:var(--ff)">FF</div><div class="agent-name">Quality Lead</div></div>
+        <div style="font-size:0.58rem">2035 tests passing, mutation testing, Stryker config across 4 modules</div>
+        <span class="score-badge score-a">A</span>
+        <span class="stat">11</span>
+        <div style="width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:88%;background:var(--ff)"></div></div></div>
+        <span style="font-size:0.55rem;color:var(--ff)">None</span>
+        <span class="trend">+</span>
+      </div>
+
+      <!-- FI -->
+      <div class="table-row">
+        <span class="dot" style="background:var(--fi)"></span>
+        <div><div class="agent-id" style="color:var(--fi)">FI</div><div class="agent-name">Data Lead</div></div>
+        <div style="font-size:0.58rem">Email infrastructure (TUI) + M365 pipeline design + voice indexing</div>
+        <span class="score-badge score-b">B</span>
+        <span class="stat">8</span>
+        <div style="width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:72%;background:var(--fi)"></div></div></div>
+        <span style="font-size:0.55rem;color:var(--fd)">4 Q open w/ FD</span>
+        <span class="trend">~</span>
+      </div>
+
+      <!-- FO -->
+      <div class="table-row">
+        <span class="dot" style="background:var(--fo)"></span>
+        <div><div class="agent-id" style="color:var(--fo)">FO</div><div class="agent-name">Chief of Ops</div></div>
+        <div style="font-size:0.58rem">Agent onboarding flow, comms protocol, web presence brief to Marcus</div>
+        <span class="score-badge score-b">B</span>
+        <span class="stat">6</span>
+        <div style="width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:68%;background:var(--fo)"></div></div></div>
+        <span style="font-size:0.55rem;color:var(--fd)">7 P1 unresolved</span>
+        <span class="trend">~</span>
+      </div>
+
+      <!-- FP -->
+      <div class="table-row">
+        <span class="dot" style="background:var(--fp)"></span>
+        <div><div class="agent-id" style="color:var(--fp)">FP</div><div class="agent-name">Security/Ops</div></div>
+        <div style="font-size:0.58rem">Session launcher, PC setup, agent comms protocol, canvas.ps1</div>
+        <span class="score-badge score-a">A</span>
+        <span class="stat">12</span>
+        <div style="width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:85%;background:var(--fp)"></div></div></div>
+        <span style="font-size:0.55rem;color:var(--ff)">None</span>
+        <span class="trend">+</span>
+      </div>
+
+      <!-- FR -->
+      <div class="table-row">
+        <span class="dot" style="background:var(--fr)"></span>
+        <div><div class="agent-id" style="color:var(--fr)">FR</div><div class="agent-name">Research Lead</div></div>
+        <div style="font-size:0.58rem">Deck slide audit (53 to 43), voice research spec, social media brief pending</div>
+        <span class="score-badge score-b">B</span>
+        <span class="stat">7</span>
+        <div style="width:60px"><div class="bar-wrap"><div class="bar-fill" style="width:70%;background:var(--fr)"></div></div></div>
+        <span style="font-size:0.55rem;color:var(--fd)">FR promo letter blocked</span>
+        <span class="trend">~</span>
+      </div>
+    </div>
+
+    <!-- Issues + ops notes -->
+    <div class="two-col">
+      <div>
+        <div class="section-label">Open P1 Issues (FO Tracking)</div>
+        <div class="callout callout-warn">FO-P1-01: Forge Way Comms doc has 5 critical color bugs. Agent colors wrong throughout. FO must fix before next Marcus review.</div>
+        <div class="callout callout-warn">FO-P1-02: Sprint scorecard v1/v2 did not surface FI blocker (4 open questions from FD). Loop must close faster.</div>
+        <div class="callout callout-warn">FO-P1-03: FR promo letter blocked since P12. FO must route or unlock.</div>
+        <div class="callout callout-warn">FO-P1-04: Web presence decision (GitHub Pages vs SharePoint) routes to Marcus via FO. Still pending.</div>
+        <div class="callout callout-warn">FO-P1-05: Closing slide (A/B/C/D) still unmade decision. Variants file built, Marcus to pick.</div>
+        <div class="callout callout-warn">FO-P1-06: Valentine's Day slide 09 needs Marcus to confirm the 3-beat story arc before FD can rebuild it.</div>
+        <div class="callout callout-warn">FO-P1-07: Postmortem (2026-02-22) FD section blank. FD must fill or FO marks as incomplete.</div>
+      </div>
+      <div>
+        <div class="section-label">Ops Health Notes</div>
+        <div class="callout callout-ok">Test suite: 2035 passing, 7 skipped, 0 failing. Baseline strong. FF owns this.</div>
+        <div class="callout callout-ok">Deck: 42 slides committed. FR audit complete. FD delivered all FR-requested changes.</div>
+        <div class="callout callout-ok">Brand: 13-agent color system locked, committed, and warned (fd-color-system-poster.html). No more drift.</div>
+        <div class="callout callout-info">Autonomous loop: agent re-fire timing issue fixed by FP (pc-setup commit 82eabe4). Monitor for recurrence.</div>
+        <div class="callout callout-info">FO goal: clear all 7 P1s by end of next sprint. Block Marcus 1:1 on items 4 and 5 only; rest are agent-resolvable.</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

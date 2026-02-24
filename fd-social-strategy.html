@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FD Social Media Strategy Canvas</title>
+<style>
+  /* ============================================================
+     FD Social Media Strategy Canvas
+     Light dashboard theme. Maize #FFCB05 primary.
+     No em dashes. No CDN. No external fonts.
+     FD / 2026
+  ============================================================ */
+
+  :root {
+    --bg:       #F4F5F7;
+    --card:     #FFFFFF;
+    --text:     #111827;
+    --muted:    #6B7280;
+    --dim:      #9CA3AF;
+    --border:   #E5E7EB;
+    --maize:    #FFCB05;
+    --maize-lt: #FFF8D6;
+    --navy:     #1E293B;
+    --accent2:  #3B82F6;
+    --accent3:  #10B981;
+    --red:      #EF4444;
+    --sans:     'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --mono:     'Cascadia Code', 'Consolas', monospace;
+    --sidebar:  220px;
+    --header:   56px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ---- LAYOUT ---- */
+  .shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+
+  .topbar {
+    height: var(--header);
+    background: var(--navy);
+    border-bottom: 3px solid var(--maize);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .topbar-mark {
+    width: 32px;
+    height: 32px;
+    background: var(--maize);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+
+  .topbar-title {
+    flex: 1;
+  }
+
+  .topbar-title h1 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+  }
+
+  .topbar-title .sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #94A3B8;
+    margin-top: 1px;
+  }
+
+  .topbar-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #64748B;
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  .body-area {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ---- SIDEBAR ---- */
+  .sidebar {
+    width: var(--sidebar);
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+
+  .sidebar-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 0 16px;
+    margin-bottom: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 0.12s;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    user-select: none;
+  }
+
+  .nav-item:hover {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    background: var(--maize-lt);
+    color: var(--text);
+    border-left-color: var(--maize);
+    font-weight: 600;
+  }
+
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-icon {
+    background: var(--maize);
+    color: var(--navy);
+  }
+
+  .nav-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    margin-left: auto;
+  }
+
+  .sidebar-spacer { flex: 1; }
+
+  .sidebar-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    line-height: 1.6;
+  }
+
+  /* ---- CONTENT AREA ---- */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 32px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ---- COMMON COMPONENTS ---- */
+  .page-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .page-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .page-header .desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .page-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--maize);
+    color: var(--navy);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .card-sub {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+
+  /* Pill badges */
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .pill-maize  { background: var(--maize-lt); color: #92700A; border: 1px solid #F0C040; }
+  .pill-blue   { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+  .pill-green  { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+  .pill-red    { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+  .pill-gray   { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+
+  /* List */
+  .item-list { list-style: none; }
+  .item-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .item-list li:last-child { border-bottom: none; }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+
+  .dot-maize  { background: var(--maize); }
+  .dot-blue   { background: var(--accent2); }
+  .dot-green  { background: var(--accent3); }
+  .dot-navy   { background: var(--navy); }
+
+  /* ============================================================
+     TAB 1: Strategy Overview
+  ============================================================ */
+
+  .three-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+
+  .platform-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .platform-item:last-child { border-bottom: none; }
+
+  .platform-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .platform-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .pillar-item {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pillar-item:last-child { border-bottom: none; }
+
+  .pillar-num {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .pillar-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .pillar-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+
+  .cadence-item {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .cadence-item:last-child { border-bottom: none; }
+
+  .cadence-platform {
+    font-size: 13px;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .cadence-target {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    font-weight: 700;
+  }
+
+  /* ============================================================
+     TAB 2: Content Calendar
+  ============================================================ */
+
+  .calendar-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .calendar-table th {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    text-align: left;
+    padding: 8px 14px;
+    border-bottom: 2px solid var(--border);
+    background: var(--bg);
+  }
+
+  .calendar-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .calendar-table tr:last-child td { border-bottom: none; }
+
+  .calendar-table tr:hover td { background: #FAFAFA; }
+
+  .cal-day {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .cal-hook {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .cal-format {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* Status badges */
+  .status-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .status-draft    { background: #FFF8D6; color: #92700A; border: 1px solid #F0C040; }
+  .status-ready    { background: #ECFDF5; color: #065F46; border: 1px solid #A7F3D0; }
+  .status-planned  { background: #EFF6FF; color: #1D4ED8; border: 1px solid #BFDBFE; }
+  .status-engage   { background: #F5F3FF; color: #5B21B6; border: 1px solid #DDD6FE; }
+  .status-prep     { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+
+  /* ============================================================
+     TAB 3: Voice Guide
+  ============================================================ */
+
+  .rules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .rule-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: flex;
+    gap: 14px;
+  }
+
+  .rule-num {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--maize);
+    line-height: 1;
+    flex-shrink: 0;
+    min-width: 28px;
+  }
+
+  .rule-body {}
+
+  .rule-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .rule-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* DO/DON'T examples */
+  .example-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .dont-card {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .do-card {
+    background: #ECFDF5;
+    border: 1px solid #A7F3D0;
+    border-radius: 10px;
+    padding: 16px;
+  }
+
+  .example-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+
+  .dont-card .example-label { color: #991B1B; }
+  .do-card   .example-label { color: #065F46; }
+
+  .example-text {
+    font-size: 13px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .dont-card .example-text { color: #7F1D1D; }
+  .do-card   .example-text { color: #064E3B; }
+
+  /* ============================================================
+     TAB 4: LinkedIn Templates
+  ============================================================ */
+
+  .templates-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .template-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .template-header {
+    background: var(--navy);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .template-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+
+  .template-chars {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--maize);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .template-body {
+    padding: 16px 18px;
+  }
+
+  .template-use {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  .template-hook-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .template-hook {
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+    padding: 10px 14px;
+    background: var(--maize-lt);
+    border-left: 3px solid var(--maize);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .template-structure {
+    margin-top: 12px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .template-structure-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  /* 5th template spans full width */
+  .template-card.full-width {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+  }
+
+  .template-card.full-width .template-header {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    padding: 20px 14px;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-radius: 0;
+    gap: 8px;
+  }
+
+  .template-card.full-width .template-name {
+    font-size: 13px;
+  }
+
+  .template-card.full-width .template-chars {
+    writing-mode: horizontal-tb;
+    transform: rotate(180deg);
+    font-size: 9px;
+  }
+
+  /* ============================================================
+     TAB 5: FR Research Request
+  ============================================================ */
+
+  .brief-wrap {
+    max-width: 760px;
+  }
+
+  .task-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .task-header {
+    background: var(--navy);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 3px solid var(--maize);
+  }
+
+  .task-header-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--maize);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--navy);
+    flex-shrink: 0;
+  }
+
+  .task-header-info { flex: 1; }
+
+  .task-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+  }
+
+  .task-subtitle {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #94A3B8;
+    margin-top: 2px;
+  }
+
+  .task-priority {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: #991B1B;
+    color: #FEE2E2;
+    border: 1px solid #B91C1C;
+  }
+
+  .task-meta-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-meta-cell {
+    padding: 14px 20px;
+    border-right: 1px solid var(--border);
+  }
+
+  .task-meta-cell:last-child { border-right: none; }
+
+  .task-meta-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .task-meta-value {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .task-body {
+    padding: 24px;
+  }
+
+  .task-section {
+    margin-bottom: 24px;
+  }
+
+  .task-section:last-child { margin-bottom: 0; }
+
+  .task-section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .task-section p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .question-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .question-list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .q-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--navy);
+    background: var(--maize);
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .deliverable-box {
+    background: var(--maize-lt);
+    border: 1px solid #F0C040;
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+
+  .deliverable-box p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .deliverable-items {
+    list-style: none;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .deliverable-items li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .check-icon {
+    width: 16px;
+    height: 16px;
+    background: var(--maize);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    flex-shrink: 0;
+    color: var(--navy);
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-mark">FD</div>
+    <div class="topbar-title">
+      <h1>Social Media Strategy Canvas</h1>
+      <div class="sub">Marcus Ash / CVP of Design, Microsoft / Forge Founder</div>
+    </div>
+    <div class="topbar-meta">
+      FD (Maize)<br>
+      Design Director<br>
+      2026
+    </div>
+  </header>
+
+  <div class="body-area">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-label">Navigation</div>
+
+      <div class="nav-item active" onclick="switchTab('tab-strategy', this)">
+        <div class="nav-icon">01</div>
+        Strategy Overview
+        <span class="nav-num">3 cols</span>
+      </div>
+
+      <div class="nav-item" onclick="switchTab('tab-calendar', this)">
+        <div class="nav-icon">02</div>
+        Content Calendar
+        <span class="nav-num">W1</span>
+      </div>
+
+      <div class="nav-item" onclick="switchTab('tab-voice', this)">
+        <div class="nav-icon">03</div>
+        Voice Guide
+        <span class="nav-num">6 rules</span>
+      </div>
+
+      <div class="nav-item" onclick="switchTab('tab-templates', this)">
+        <div class="nav-icon">04</div>
+        LI Templates
+        <span class="nav-num">5</span>
+      </div>
+
+      <div class="nav-item" onclick="switchTab('tab-fr', this)">
+        <div class="nav-icon">05</div>
+        FR Research Brief
+        <span class="nav-num">task</span>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-footer">
+        Platforms: LinkedIn<br>
+        Twitter/X + TikTok<br>
+        Goal: AI + Design + Parenting
+      </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+      <!-- ========================================================
+           TAB 1: Strategy Overview
+      ======================================================== -->
+      <div id="tab-strategy" class="tab-panel active">
+        <div class="page-header">
+          <div>
+            <h2>Strategy Overview</h2>
+            <div class="desc">Platforms, content pillars, and cadence targets</div>
+          </div>
+          <span class="page-badge">Three platforms</span>
+        </div>
+
+        <div class="three-col">
+
+          <!-- Column 1: Platform Priorities -->
+          <div class="card">
+            <div class="card-sub">Platform priorities</div>
+            <div class="card-title">Where to show up</div>
+
+            <div class="platform-item">
+              <div class="platform-name">
+                <span class="dot dot-maize"></span>
+                LinkedIn
+                <span class="pill pill-maize">Primary</span>
+              </div>
+              <div class="platform-desc">B2B and thought leadership. VPs and directors watch this feed. Every post is a brand signal at the executive level. This is the main channel.</div>
+            </div>
+
+            <div class="platform-item">
+              <div class="platform-name">
+                <span class="dot dot-blue"></span>
+                Twitter / X
+                <span class="pill pill-blue">Secondary</span>
+              </div>
+              <div class="platform-desc">Tech community and real-time conversation. Builders, PMs, and researchers live here. Good for hot takes, threads, and daily presence without long-form pressure.</div>
+            </div>
+
+            <div class="platform-item">
+              <div class="platform-name">
+                <span class="dot dot-green"></span>
+                TikTok
+                <span class="pill pill-green">Experimental</span>
+              </div>
+              <div class="platform-desc">Short video. Broader audience outside tech. Parent builders, DIY engineers, curious generalists. Low production bar. Test formats here before committing.</div>
+            </div>
+          </div>
+
+          <!-- Column 2: Content Pillars -->
+          <div class="card">
+            <div class="card-sub">Content pillars</div>
+            <div class="card-title">Five recurring themes</div>
+
+            <div class="pillar-item">
+              <div class="pillar-num">Pillar 01</div>
+              <div class="pillar-title">AI + Design at Microsoft</div>
+              <div class="pillar-desc">What it actually looks like inside a major tech company. Real decisions, real constraints, real tradeoffs.</div>
+            </div>
+
+            <div class="pillar-item">
+              <div class="pillar-num">Pillar 02</div>
+              <div class="pillar-title">Building Forge</div>
+              <div class="pillar-desc">What it means to run a 13-agent autonomous AI organization. Systems, failures, and what works.</div>
+            </div>
+
+            <div class="pillar-item">
+              <div class="pillar-num">Pillar 03</div>
+              <div class="pillar-title">Motor City Math / Kai</div>
+              <div class="pillar-desc">The personal story. A parent and a builder solving a real problem for his son. Algebra 2, results, and what AI gets right and wrong.</div>
+            </div>
+
+            <div class="pillar-item">
+              <div class="pillar-num">Pillar 04</div>
+              <div class="pillar-title">Design craft</div>
+              <div class="pillar-desc">How to think about design at the executive level. Judgment, prioritization, and leading designers.</div>
+            </div>
+
+            <div class="pillar-item">
+              <div class="pillar-num">Pillar 05</div>
+              <div class="pillar-title">Process transparency</div>
+              <div class="pillar-desc">Show the work, not just the result. Drafts, commits, mistakes, and course corrections.</div>
+            </div>
+          </div>
+
+          <!-- Column 3: Cadence Targets -->
+          <div class="card">
+            <div class="card-sub">Cadence targets</div>
+            <div class="card-title">Post frequency by platform</div>
+
+            <div class="cadence-item">
+              <span class="dot dot-maize"></span>
+              <div class="cadence-platform">LinkedIn</div>
+              <div class="cadence-target">3 posts / week</div>
+            </div>
+
+            <div class="cadence-item">
+              <span class="dot dot-blue"></span>
+              <div class="cadence-platform">Twitter / X</div>
+              <div class="cadence-target">Daily or near-daily</div>
+            </div>
+
+            <div class="cadence-item">
+              <span class="dot dot-green"></span>
+              <div class="cadence-platform">TikTok</div>
+              <div class="cadence-target">2-3 videos / week</div>
+            </div>
+
+            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+              <div class="section-label">Principles</div>
+              <ul class="item-list">
+                <li><span class="dot dot-navy"></span>Start with LinkedIn. Nail cadence there first.</li>
+                <li><span class="dot dot-navy"></span>Twitter content can be shorter cuts of LinkedIn drafts.</li>
+                <li><span class="dot dot-navy"></span>TikTok is a test bed. Nothing is wasted if it flops.</li>
+                <li><span class="dot dot-navy"></span>Batch prep on Sunday. Don't create under pressure.</li>
+                <li><span class="dot dot-navy"></span>One pillar per post. No cross-pillar mixes.</li>
+              </ul>
+            </div>
+
+            <div style="margin-top: 20px; padding: 14px; background: var(--maize-lt); border-radius: 8px; border: 1px solid #F0C040;">
+              <div style="font-family: var(--mono); font-size: 9px; color: #92700A; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Goal statement</div>
+              <div style="font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.5;">Build public presence around AI, design, and parenting. In that order.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================
+           TAB 2: Content Calendar Week 1
+      ======================================================== -->
+      <div id="tab-calendar" class="tab-panel">
+        <div class="page-header">
+          <div>
+            <h2>Content Calendar</h2>
+            <div class="desc">Week 1 plan. Day by day. Platform, format, and hook.</div>
+          </div>
+          <span class="page-badge">Week 1</span>
+        </div>
+
+        <div class="card" style="padding: 0; overflow: hidden;">
+          <table class="calendar-table">
+            <thead>
+              <tr>
+                <th style="width: 90px;">Day</th>
+                <th style="width: 110px;">Platform</th>
+                <th style="width: 130px;">Format</th>
+                <th>Hook / Angle</th>
+                <th style="width: 100px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="cal-day">Monday</td>
+                <td><span class="pill pill-maize">LinkedIn</span></td>
+                <td class="cal-format">Text post</td>
+                <td class="cal-hook">
+                  "We built Motor City Math in 3 weeks with 13 AI agents. Here is what I learned."
+                </td>
+                <td><span class="status-badge status-draft">Draft</span></td>
+              </tr>
+              <tr>
+                <td class="cal-day">Tuesday</td>
+                <td><span class="pill pill-blue">Twitter / X</span></td>
+                <td class="cal-format">Thread</td>
+                <td class="cal-hook">
+                  "What does a CVP of Design actually do all day? A thread."
+                </td>
+                <td><span class="status-badge status-planned">Planned</span></td>
+              </tr>
+              <tr>
+                <td class="cal-day">Wednesday</td>
+                <td><span class="pill pill-maize">LinkedIn</span></td>
+                <td class="cal-format">Carousel</td>
+                <td class="cal-hook">
+                  "5 things I changed about how I design after working with AI."
+                </td>
+                <td><span class="status-badge status-planned">Planned</span></td>
+              </tr>
+              <tr>
+                <td class="cal-day">Thursday</td>
+                <td><span class="pill pill-green">TikTok</span></td>
+                <td class="cal-format">Video script (15 sec)</td>
+                <td class="cal-hook">
+                  "Day in the life: designing with 13 AI agents."
+                </td>
+                <td><span class="status-badge status-draft">Draft</span></td>
+              </tr>
+              <tr>
+                <td class="cal-day">Friday</td>
+                <td><span class="pill pill-maize">LinkedIn</span></td>
+                <td class="cal-format">Text post</td>
+                <td class="cal-hook">
+                  "Forge shipped 2035 passing tests this week. Here is the one decision that made it possible."
+                </td>
+                <td><span class="status-badge status-planned">Planned</span></td>
+              </tr>
+              <tr>
+                <td class="cal-day">Saturday</td>
+                <td><span class="pill pill-blue">Twitter / X</span></td>
+                <td class="cal-format">Reply / engage</td>
+                <td class="cal-hook" style="color: var(--muted); font-style: italic;">
+                  Community engagement. No original post. Reply to 5 threads in AI, design, or parenting.
+                </td>
+                <td><span class="status-badge status-engage">Engage</span></td>
+              </tr>
+              <tr>
+                <td class="cal-day">Sunday</td>
+                <td><span class="pill pill-gray">All</span></td>
+                <td class="cal-format">Planning session</td>
+                <td class="cal-hook" style="color: var(--muted); font-style: italic;">
+                  Plan and prep for Week 2. Batch draft LinkedIn posts. Review what landed this week.
+                </td>
+                <td><span class="status-badge status-prep">Prep</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+          <div class="card" style="padding: 16px;">
+            <div style="font-family: var(--mono); font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Week 1 LinkedIn posts</div>
+            <div style="font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--text);">3</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Monday, Wednesday, Friday</div>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <div style="font-family: var(--mono); font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Twitter / X actions</div>
+            <div style="font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--text);">2</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Thread Tuesday + engage Saturday</div>
+          </div>
+          <div class="card" style="padding: 16px;">
+            <div style="font-family: var(--mono); font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">TikTok videos</div>
+            <div style="font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--text);">1</div>
+            <div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Thursday. Test format, iterate Week 2.</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================
+           TAB 3: Voice Guide
+      ======================================================== -->
+      <div id="tab-voice" class="tab-panel">
+        <div class="page-header">
+          <div>
+            <h2>Voice Guide</h2>
+            <div class="desc">Six writing rules. Three DO / DON'T examples.</div>
+          </div>
+          <span class="page-badge">Marcus voice</span>
+        </div>
+
+        <div class="section-label" style="margin-bottom: 16px;">Six writing rules</div>
+
+        <div class="rules-grid">
+
+          <div class="rule-card">
+            <div class="rule-num">01</div>
+            <div class="rule-body">
+              <div class="rule-title">Present tense. Always.</div>
+              <div class="rule-desc">"We shipped" not "We have shipped." The past is context, not the subject. Keep the verb alive.</div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">02</div>
+            <div class="rule-body">
+              <div class="rule-title">Short sentences. Max 20 words.</div>
+              <div class="rule-desc">Break anything longer. Two sentences are almost always better than one long one. The period is your friend.</div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">03</div>
+            <div class="rule-body">
+              <div class="rule-title">No marketing language.</div>
+              <div class="rule-desc">No "leverage," "utilize," "synergize," or "best-in-class." These words signal that nothing real happened. Say what happened.</div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">04</div>
+            <div class="rule-body">
+              <div class="rule-title">Specifics first.</div>
+              <div class="rule-desc">Numbers before adjectives. "2035 tests" not "lots of tests." "3 weeks" not "a short time." Precision earns trust.</div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">05</div>
+            <div class="rule-body">
+              <div class="rule-title">No hedging.</div>
+              <div class="rule-desc">"This works." Not "This might work for some teams." Commit to the point. If you're not sure, don't post it yet.</div>
+            </div>
+          </div>
+
+          <div class="rule-card">
+            <div class="rule-num">06</div>
+            <div class="rule-body">
+              <div class="rule-title">Tell the story.</div>
+              <div class="rule-desc">Every post has a beginning, a thing that changed, and what it means. Setup. Shift. Meaning. In that order.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="section-label" style="margin-bottom: 16px;">DO / DON'T examples</div>
+
+        <div class="example-block">
+          <div class="dont-card">
+            <div class="example-label">Don't</div>
+            <div class="example-text">"We're excited to announce that our cutting-edge AI platform is revolutionizing the design process."</div>
+          </div>
+          <div class="do-card">
+            <div class="example-label">Do</div>
+            <div class="example-text">"Forge shipped 2035 tests this week. All passing. Built in 3 weeks."</div>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <div class="dont-card">
+            <div class="example-label">Don't</div>
+            <div class="example-text">"As we continue to leverage our synergies across teams, we're seeing improvements."</div>
+          </div>
+          <div class="do-card">
+            <div class="example-label">Do</div>
+            <div class="example-text">"The QA agent caught 14 regressions this sprint. None made it to main."</div>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <div class="dont-card">
+            <div class="example-label">Don't</div>
+            <div class="example-text">"I'm humbled and grateful to share this incredible journey with all of you."</div>
+          </div>
+          <div class="do-card">
+            <div class="example-label">Do</div>
+            <div class="example-text">"Kai got a 92 on his Algebra 2 quiz. MCM worked."</div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- ========================================================
+           TAB 4: LinkedIn Post Templates
+      ======================================================== -->
+      <div id="tab-templates" class="tab-panel">
+        <div class="page-header">
+          <div>
+            <h2>LinkedIn Post Templates</h2>
+            <div class="desc">Five reusable formats. Pick the right container for the content.</div>
+          </div>
+          <span class="page-badge">5 templates</span>
+        </div>
+
+        <div class="templates-grid">
+
+          <!-- Template 1: The Insight -->
+          <div class="template-card">
+            <div class="template-header">
+              <span class="template-name">01. The Insight</span>
+              <span class="template-chars">~150 chars / hook</span>
+            </div>
+            <div class="template-body">
+              <div class="template-use">
+                <strong>Use for:</strong> lessons learned, what changed after a decision, things that surprised you.
+              </div>
+              <div class="template-hook-label">Example opening hook</div>
+              <div class="template-hook">
+                "I changed one thing about how I run design reviews. The output improved immediately. Here is what it was."
+              </div>
+              <div class="template-structure-label" style="margin-top: 12px;">Structure</div>
+              <div class="template-structure">
+                Hook line (1 sentence). Context (3 to 4 short paragraphs). Key takeaway bullets (3 to 5 items). Close with one action or question.
+              </div>
+            </div>
+          </div>
+
+          <!-- Template 2: The Story -->
+          <div class="template-card">
+            <div class="template-header">
+              <span class="template-name">02. The Story</span>
+              <span class="template-chars">~200 chars / hook</span>
+            </div>
+            <div class="template-body">
+              <div class="template-use">
+                <strong>Use for:</strong> origin story, Kai moments, Forge milestones, things worth preserving.
+              </div>
+              <div class="template-hook-label">Example opening hook</div>
+              <div class="template-hook">
+                "Three weeks ago Kai was failing Algebra 2. Yesterday he got a 92. This is how we built the thing that fixed it."
+              </div>
+              <div class="template-structure-label" style="margin-top: 12px;">Structure</div>
+              <div class="template-structure">
+                Scene-setting first sentence. Narrative arc: before, what we did, after. No bullet points. Prose only. End with what it means.
+              </div>
+            </div>
+          </div>
+
+          <!-- Template 3: The List -->
+          <div class="template-card">
+            <div class="template-header">
+              <span class="template-name">03. The List</span>
+              <span class="template-chars">Hook + 5 to 7 items</span>
+            </div>
+            <div class="template-body">
+              <div class="template-use">
+                <strong>Use for:</strong> tactics, rules, frameworks, things people can act on immediately.
+              </div>
+              <div class="template-hook-label">Example opening hook</div>
+              <div class="template-hook">
+                "5 things I stopped doing as a design leader. Each one made me better at the job."
+              </div>
+              <div class="template-structure-label" style="margin-top: 12px;">Structure</div>
+              <div class="template-structure">
+                Hook (1 sentence). Numbered list (5 to 7 items, 1 to 2 sentences each). Close with the pattern or principle connecting them all.
+              </div>
+            </div>
+          </div>
+
+          <!-- Template 4: The Question -->
+          <div class="template-card">
+            <div class="template-header">
+              <span class="template-name">04. The Question</span>
+              <span class="template-chars">1 line question</span>
+            </div>
+            <div class="template-body">
+              <div class="template-use">
+                <strong>Use for:</strong> community building, surveys, gauging where your audience stands on a topic.
+              </div>
+              <div class="template-hook-label">Example opening hook</div>
+              <div class="template-hook">
+                "How do you decide when to build with AI vs. when to build without it?"
+              </div>
+              <div class="template-structure-label" style="margin-top: 12px;">Structure</div>
+              <div class="template-structure">
+                Question (1 line). Context (3 lines, no more). Call to reply in final line. Do not answer your own question in the post.
+              </div>
+            </div>
+          </div>
+
+          <!-- Template 5: The Result (full width) -->
+          <div class="template-card full-width">
+            <div class="template-header">
+              <span class="template-name">05. The Result</span>
+              <span class="template-chars">Metric first</span>
+            </div>
+            <div class="template-body">
+              <div class="template-use">
+                <strong>Use for:</strong> shipping announcements, sprint summaries, anything where a number leads the story.
+              </div>
+              <div class="template-hook-label">Example opening hook</div>
+              <div class="template-hook">
+                "2035. That is how many tests Forge passed this week. Here is the story of the one decision that made it possible."
+              </div>
+              <div class="template-structure-label" style="margin-top: 12px;">Structure</div>
+              <div class="template-structure">
+                Lead with the metric (bold, on its own line). Story of how (3 to 4 paragraphs). What it means for what comes next. Keep it under 300 words total.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- ========================================================
+           TAB 5: FR Research Request
+      ======================================================== -->
+      <div id="tab-fr" class="tab-panel">
+        <div class="page-header">
+          <div>
+            <h2>FR Research Request</h2>
+            <div class="desc">Formatted task brief for FR (Research Lead). Send to inbox-FR.</div>
+          </div>
+          <span class="page-badge">High priority</span>
+        </div>
+
+        <div class="brief-wrap">
+          <div class="task-card">
+
+            <!-- Task header -->
+            <div class="task-header">
+              <div class="task-header-mark">FR</div>
+              <div class="task-header-info">
+                <div class="task-title">Social Media Voice Optimization Research</div>
+                <div class="task-subtitle">Research brief from FD. Deliverable required before Marcus posts.</div>
+              </div>
+              <span class="task-priority">High Priority</span>
+            </div>
+
+            <!-- Meta row -->
+            <div class="task-meta-row">
+              <div class="task-meta-cell">
+                <div class="task-meta-label">From</div>
+                <div class="task-meta-value">FD (Maize)</div>
+              </div>
+              <div class="task-meta-cell">
+                <div class="task-meta-label">To</div>
+                <div class="task-meta-value">FR (Research Lead)</div>
+              </div>
+              <div class="task-meta-cell">
+                <div class="task-meta-label">Type</div>
+                <div class="task-meta-value">Research Brief</div>
+              </div>
+              <div class="task-meta-cell">
+                <div class="task-meta-label">Status</div>
+                <div class="task-meta-value" style="color: var(--red); font-family: var(--mono); font-size: 11px;">PENDING</div>
+              </div>
+            </div>
+
+            <!-- Body -->
+            <div class="task-body">
+
+              <div class="task-section">
+                <div class="task-section-label">Research objective</div>
+                <p>
+                  FR needs to research what makes a senior tech executive's LinkedIn voice authentic versus corporate. Marcus is ready to post. The research should tell him what works, what fails, and what patterns to build from before he hits publish on the first post.
+                </p>
+              </div>
+
+              <div class="task-section">
+                <div class="task-section-label">Specific questions (answer all three)</div>
+                <ul class="question-list">
+                  <li>
+                    <span class="q-num">Q1</span>
+                    What posting frequency is optimal for a tech executive reaching a VP and director audience on LinkedIn? Include data on drop-off when overposting.
+                  </li>
+                  <li>
+                    <span class="q-num">Q2</span>
+                    What content types get highest engagement from VPs and directors? Break out: text posts, carousels, threads, video, polls. Rank by both reach and comment quality.
+                  </li>
+                  <li>
+                    <span class="q-num">Q3</span>
+                    What are the top 5 posts by senior tech executives from 2024 to 2025 that Marcus should study? Include the post, the author, and FR's read on why it worked.
+                  </li>
+                </ul>
+              </div>
+
+              <div class="task-section">
+                <div class="task-section-label">Deliverable</div>
+                <div class="deliverable-box">
+                  <p>FR returns a research brief with the following components:</p>
+                  <ul class="deliverable-items">
+                    <li>
+                      <span class="check-icon">1</span>
+                      Research brief answering Q1, Q2, Q3. Each answer includes source evidence and FR's stated confidence level.
+                    </li>
+                    <li>
+                      <span class="check-icon">2</span>
+                      Three recommended voice frameworks Marcus can choose from. Each framework gets a name, a one-paragraph description, and one example post written in that voice.
+                    </li>
+                    <li>
+                      <span class="check-icon">3</span>
+                      FR's recommendation: which framework fits Marcus's existing voice best and why.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="task-section">
+                <div class="task-section-label">FR methodology note</div>
+                <p>
+                  Per FR operating principles: list what evidence is required to confirm each claim before naming conclusions. State confidence level explicitly. Distinguish between what data shows and what FR infers. Do not pattern-match from thin evidence. The decision this research changes for Marcus is: which voice to commit to before the first post goes out.
+                </p>
+              </div>
+
+              <div class="task-section">
+                <div class="task-section-label">Deadline and priority</div>
+                <p style="font-weight: 600;">
+                  Priority: High. Marcus is ready to post. Deliver the brief before Marcus's Week 1 Monday post. No extensions.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- JSON preview -->
+          <div style="margin-top: 20px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;">
+            <div style="background: var(--bg); padding: 10px 16px; border-bottom: 1px solid var(--border); font-family: var(--mono); font-size: 9px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em;">
+              Inbox message JSON (send to .agent-comms/inbox-FR/)
+            </div>
+            <pre style="padding: 16px; font-family: var(--mono); font-size: 11px; color: var(--text); line-height: 1.7; overflow-x: auto; white-space: pre-wrap;">{
+  "from": "FD",
+  "to": "FR",
+  "subject": "Social media voice optimization research",
+  "type": "research-request",
+  "priority": "high",
+  "date": "2026",
+  "body": {
+    "objective": "What makes a senior tech executive LinkedIn voice authentic vs corporate.",
+    "questions": [
+      "Q1: Optimal posting frequency for VP/director audience on LinkedIn.",
+      "Q2: Content types ranked by reach + comment quality for exec audience.",
+      "Q3: Top 5 posts by senior tech execs 2024-2025 Marcus should study."
+    ],
+    "deliverable": "Research brief + 3 recommended voice frameworks + FR recommendation.",
+    "deadline": "Before Marcus Week 1 Monday post."
+  }
+}</pre>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  function switchTab(tabId, navEl) {
+    // Deactivate all tabs
+    document.querySelectorAll('.tab-panel').forEach(function(p) {
+      p.classList.remove('active');
+    });
+    // Activate target tab
+    document.getElementById(tabId).classList.add('active');
+
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(function(n) {
+      n.classList.remove('active');
+    });
+    navEl.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

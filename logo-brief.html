@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Forge Icon System — Design Brief</title>
+<style>
+/* ================================================================
+   LOCKED DESIGN FILE - DO NOT MODIFY COLOR VALUES WITHOUT MARCUS APPROVAL
+   Agent color assignments are locked decisions, not implementation details.
+   Violation: commit 72a0aea changed FP from #CE1126 to #78909C without approval.
+   To propose a color change: message Marcus inbox. Do not commit.
+   ================================================================ */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:     #08080D;
+  --card:   #0F0F16;
+  --card2:  #141420;
+  --border: #1C1C2A;
+  --border2:#242436;
+
+  /* Brand anchor: Maize. This is FD's page. */
+  --accent: #FFCB05;
+  --accent-dim: rgba(255,203,5,0.10);
+
+  /* Product colors — used only in product mark SVGs */
+  --cyan:   #00D4AA;
+
+  --maize:  #FFCB05;
+  --blue:   #4B9FD5;
+  --purple: #A78BFA;
+  --white:  #EEEEF5;
+  --offwhite: #C8C8D8;
+  --gray:   #7878A0;
+  --dim:    #2E2E48;
+  --font:   'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono:   'Cascadia Code', 'Consolas', monospace;
+
+  /* Agent color system */
+  --col-fd: #FFCB05;
+  --col-fa: #4A90D9;
+  --col-ff: #22C55E;
+  --col-fi: #6D28D9;
+  --col-fo: #94A3B8;
+  --col-fp: #CE1126;
+  --col-fr: #F97316;
+}
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(8,8,13,0.88); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 48px;
+  display: flex; align-items: center; gap: 36px;
+  height: 52px;
+}
+nav .logo {
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  letter-spacing: 0.12em; text-transform: uppercase; font-family: var(--mono);
+  flex-shrink: 0;
+}
+nav a {
+  font-size: 13px; color: var(--gray); text-decoration: none;
+  letter-spacing: 0.02em; transition: color 0.15s;
+}
+nav a:hover { color: var(--white); }
+nav .pill-nav {
+  margin-left: auto; background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; display: flex; overflow: hidden;
+}
+nav .pill-btn {
+  padding: 5px 16px; font-size: 12px; cursor: pointer; background: none;
+  border: none; color: var(--gray); font-family: var(--font); transition: all 0.15s;
+}
+nav .pill-btn.on { background: var(--accent); color: #000; font-weight: 700; }
+
+/* HERO */
+.hero {
+  padding: 80px 48px 56px;
+  max-width: 1160px; margin: 0 auto;
+  border-bottom: 1px solid var(--border);
+}
+.hero .eyebrow {
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--accent); font-family: var(--mono); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero .eyebrow::after {
+  content: ''; display: block; width: 40px; height: 1px; background: var(--accent); opacity: 0.4;
+}
+.hero h1 {
+  font-size: clamp(2.4rem, 4vw, 3.6rem); font-weight: 300; line-height: 1.1;
+  margin-bottom: 24px; letter-spacing: -0.02em;
+}
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero p {
+  font-size: 1.05rem; color: var(--offwhite); line-height: 1.75; max-width: 660px;
+}
+
+/* BRIEF BOX */
+.brief-box { max-width: 1160px; margin: 0 auto 64px; padding: 56px 48px 0; }
+.brief-box .section-hd { margin-bottom: 32px; }
+
+.brief-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+.brief-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 32px 28px; display: flex; flex-direction: column; gap: 0;
+}
+.brief-card-label {
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--accent); font-family: var(--mono); font-weight: 700;
+  margin-bottom: 28px; display: flex; align-items: center; gap: 10px;
+}
+.brief-card-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--accent); opacity: 0.2;
+}
+
+/* Principles: numbered rows */
+.principle-row {
+  display: flex; gap: 20px; align-items: flex-start;
+  padding: 16px 0; border-bottom: 1px solid var(--border);
+}
+.principle-row:last-child { border-bottom: none; }
+.principle-num {
+  font-size: 11px; font-family: var(--mono); color: var(--accent);
+  opacity: 0.6; padding-top: 2px; min-width: 22px; font-weight: 700;
+}
+.principle-text { font-size: 15px; color: var(--offwhite); line-height: 1.6; }
+.principle-text strong { color: var(--white); font-weight: 600; }
+
+/* Color rows with swatches */
+.color-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.color-row:last-child { border-bottom: none; }
+.color-dot {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.color-info { display: flex; flex-direction: column; gap: 1px; }
+.color-name { font-size: 14px; color: var(--white); font-weight: 500; line-height: 1.3; }
+.color-desc { font-size: 12px; color: var(--gray); }
+.color-hex { font-size: 11px; font-family: var(--mono); color: var(--gray); }
+
+/* Status rows */
+.status-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.status-row:last-child { border-bottom: none; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+.status-dot.locked { background: var(--accent); }
+.status-dot.open { background: var(--gray); opacity: 0.5; }
+.status-dot.iterating { background: var(--col-fr); }
+.status-body { font-size: 15px; color: var(--offwhite); line-height: 1.55; }
+.status-body strong { color: var(--white); font-weight: 600; }
+
+/* SECTION */
+.section { max-width: 1160px; margin: 0 auto 72px; padding: 0 48px; }
+.section-hd {
+  display: flex; align-items: baseline; gap: 20px;
+  margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
+}
+.section-hd h2 { font-size: 1.3rem; font-weight: 400; letter-spacing: -0.01em; }
+.section-hd .tag {
+  font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gray); font-family: var(--mono);
+}
+.locked-tag {
+  color: var(--accent) !important; background: var(--accent-dim);
+  padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(255,203,5,0.25);
+}
+
+/* VARIANT PICKER */
+.v-row { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.v-tab {
+  padding: 7px 18px; border-radius: 20px; font-size: 12px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--card); color: var(--gray);
+  font-family: var(--mono); letter-spacing: 0.04em; transition: all 0.15s;
+}
+.v-tab.on {
+  border-color: var(--accent); color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* LOGO GRID */
+.logo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.logo-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 36px 20px 24px; display: flex; flex-direction: column; align-items: center;
+  gap: 18px; transition: border-color 0.2s, background 0.2s;
+}
+.logo-card:hover { border-color: var(--border2); background: var(--card2); }
+.logo-card.selected {
+  border-color: var(--accent);
+  background: linear-gradient(160deg, rgba(255,203,5,0.04) 0%, var(--card) 60%);
+}
+.logo-icon { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; }
+.logo-icon svg { width: 80px; height: 80px; }
+.logo-name { font-size: 14px; color: var(--offwhite); text-align: center; line-height: 1.55; }
+.logo-name strong {
+  display: block; font-size: 15px; color: var(--white);
+  font-weight: 600; margin-bottom: 6px;
+}
+.logo-note { font-size: 12px; color: var(--gray); font-family: var(--mono); text-align: center; }
+.pick-btn {
+  padding: 7px 18px; font-size: 12px; border-radius: 20px;
+  border: 1px solid var(--border); background: none; color: var(--gray);
+  cursor: pointer; font-family: var(--font); transition: all 0.15s;
+}
+.pick-btn:hover { border-color: var(--accent); color: var(--accent); }
+.logo-card.selected .pick-btn {
+  background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700;
+}
+
+svg { display: block; }
+
+/* PALETTE */
+.palette { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.swatch { width: 48px; height: 48px; border-radius: 10px; border: 1px solid var(--border); position: relative; }
+.swatch span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--dim); white-space: nowrap; font-family: var(--mono); }
+
+/* DECISIONS */
+.decisions { max-width: 1160px; margin: 0 auto 80px; padding: 0 48px; }
+.decision-row { display: flex; gap: 16px; margin-bottom: 12px; align-items: center; }
+.decision-label { font-size: 13px; color: var(--gray); min-width: 140px; font-family: var(--mono); }
+.decision-value { font-size: 14px; color: var(--white); }
+.decision-value.tbd { color: var(--accent); }
+
+footer {
+  text-align: center; padding: 56px 40px; font-size: 13px; color: var(--gray);
+  border-top: 1px solid var(--border); margin-top: 40px;
+}
+
+/* PUNCH LIST */
+.punch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 24px; }
+.punch-group { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px 26px; }
+.punch-label {
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); font-family: var(--mono); margin-bottom: 18px; font-weight: 700;
+}
+.punch-item {
+  display: flex; gap: 12px; font-size: 14px; color: var(--offwhite);
+  line-height: 1.55; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.punch-item:last-child { border-bottom: none; }
+.punch-item.done { color: var(--white); }
+.punch-check { font-size: 11px; min-width: 16px; padding-top: 2px; font-family: var(--mono); }
+.punch-item.done .punch-check { color: #22C55E; }
+.punch-item.open .punch-check { color: var(--gray); opacity: 0.5; }
+
+/* AGENT PALETTE STRIP */
+.agent-palette { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0 36px; }
+.agent-chip {
+  display: flex; align-items: center; gap: 12px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px;
+}
+.agent-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+.agent-chip-name { font-size: 13px; font-weight: 600; color: var(--white); font-family: var(--mono); }
+.agent-chip-hex { font-size: 11px; color: var(--gray); font-family: var(--mono); }
+.agent-chip-role { font-size: 11px; color: var(--gray); }
+/* LIGHT MODE OVERRIDES */
+body[data-mode="light"] nav {
+  background: rgba(245,245,247,0.94);
+  border-bottom-color: var(--border);
+}
+body[data-mode="light"] .color-dot {
+  border-color: rgba(0,0,0,0.08);
+}
+body[data-mode="light"] .locked-tag {
+  border-color: rgba(139,105,20,0.25);
+}
+body[data-mode="light"] .punch-item {
+  border-bottom-color: var(--border);
+}
+body[data-mode="light"] .pill-btn.on {
+  color: #fff;
+}
+body[data-mode="light"] .logo-card,
+body[data-mode="light"] .brief-card,
+body[data-mode="light"] .agent-chip {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+/* Light mode: mark labels use near-black; SVG marks carry the color */
+body[data-mode="light"] .logo-name strong {
+  color: #111111 !important;
+}
+
+/* Agent marks: 4+3 centered layout */
+.agent-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+.agent-grid .logo-card {
+  flex: 0 0 calc(25% - 13px);
+  max-width: calc(25% - 13px);
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo">&#9711; Forge</span>
+  <a href="#brief">Brief</a>
+  <a href="#products">Products</a>
+  <a href="#agents">Agents</a>
+  <a href="#type">Type</a>
+  <div class="pill-nav">
+    <button class="pill-btn on" onclick="setMode('dark',this)">Dark</button>
+    <button class="pill-btn" onclick="setMode('light',this)">Light</button>
+    <button class="pill-btn" onclick="setMode('color',this)">Color</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <p class="eyebrow">&#9711; Forge Brand System &middot; 2026</p>
+  <h1>The Forge Icon System<br><em>Every mark. One system.</em></h1>
+  <p>Forge is built from Detroit's first principle: make things that last. Geometric marks. Michigan-first color. One visual language from the company mark to every agent. This is the brand system.</p>
+</div>
+
+<!-- BRIEF -->
+<div class="brief-box" id="brief">
+  <div class="section-hd">
+    <h2>Design Brief</h2>
+    <span class="tag">The principles and palette that govern everything below</span>
+  </div>
+  <div class="brief-grid">
+    <div class="brief-card">
+      <div class="brief-card-label">Principles</div>
+      <div class="principle-row">
+        <span class="principle-num">01</span>
+        <span class="principle-text"><strong>Detroit in every line.</strong> Every line bears weight. Geometry does work. Nothing earns a place here without purpose.</span>
+      </div>
+      <div class="principle-row">
+        <span class="principle-num">02</span>
+        <span class="principle-text"><strong>The mark IS the idea.</strong> Not a picture of the product. A diagram of what it does. When you have to think, we failed.</span>
+      </div>
+      <div class="principle-row">
+        <span class="principle-num">03</span>
+        <span class="principle-text"><strong>One system.</strong> Same visual logic from the company mark to the last agent. You see the coherence before you are told it is there.</span>
+      </div>
+      <div class="principle-row">
+        <span class="principle-num">04</span>
+        <span class="principle-text"><strong>Inherited, not chosen.</strong> Maize. Blue. Wings Red. Tigers Orange. Pistons Silver. These colors carried meaning before we touched them.</span>
+      </div>
+      <div class="principle-row">
+        <span class="principle-num">05</span>
+        <span class="principle-text"><strong>Monochrome first.</strong> Every mark works in one color. Color is the reward for geometry that already stands.</span>
+      </div>
+    </div>
+    <div class="brief-card">
+      <div class="brief-card-label">Color System</div>
+      <div class="color-row">
+        <div class="color-dot" style="background:#FFCB05"></div>
+        <div class="color-info">
+          <span class="color-name">FD · Forge — Maize</span>
+          <span class="color-hex">#FFCB05 · U of M, brand anchor</span>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-dot" style="background:#4A90D9"></div>
+        <div class="color-info">
+          <span class="color-name">FA — Michigan Blue</span>
+          <span class="color-hex">#4A90D9 · Big House, foundational</span>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-dot" style="background:#22C55E"></div>
+        <div class="color-info">
+          <span class="color-name">FF — Emerald</span>
+          <span class="color-hex">#22C55E · quality, pass, green means good</span>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-dot" style="background:#6D28D9"></div>
+        <div class="color-info">
+          <span class="color-name">FI — Indigo</span>
+          <span class="color-hex">#6D28D9 · identity, depth, data streams</span>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-dot" style="background:#94A3B8"></div>
+        <div class="color-info">
+          <span class="color-name">FO — Pistons Silver</span>
+          <span class="color-hex">#94A3B8 · ops, neutral, coordinates all</span>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-dot" style="background:#CE1126"></div>
+        <div class="color-info">
+          <span class="color-name">FP — Steel</span>
+          <span class="color-hex">#CE1126 · guard, protect, security</span>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-dot" style="background:#F97316"></div>
+        <div class="color-info">
+          <span class="color-name">FR — Tigers Orange</span>
+          <span class="color-hex">#F97316 · pursuit, insight, heat</span>
+        </div>
+      </div>
+    </div>
+    <div class="brief-card">
+      <div class="brief-card-label">Status by Product</div>
+      <div class="status-row">
+        <div class="status-dot locked"></div>
+        <span class="status-body"><strong>Forge Co.</strong> Charged — circuit F, filled nodes.</span>
+      </div>
+      <div class="status-row">
+        <div class="status-dot locked"></div>
+        <span class="status-body"><strong>Inkwell</strong> Drop — organic, writer's mark.</span>
+      </div>
+      <div class="status-row">
+        <div class="status-dot locked"></div>
+        <span class="status-body"><strong>Dispatch</strong> Arrow right, two speed lines.</span>
+      </div>
+      <div class="status-row">
+        <div class="status-dot locked"></div>
+        <span class="status-body"><strong>Grind</strong> Bezier curve, ramp to compound.</span>
+      </div>
+      <div class="status-row">
+        <div class="status-dot locked"></div>
+        <span class="status-body"><strong>Motor City Math</strong> Variant B. The smile.</span>
+      </div>
+      <div class="status-row">
+        <div class="status-dot locked"></div>
+        <span class="status-body"><strong>Agent marks</strong> FA-4, FP Split, FD ◉, FI/FF/FR/FO complete.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<div class="section" id="products">
+  <div class="section-hd">
+    <h2>Products</h2>
+    <span class="tag">Five marks. One visual language.</span>
+  </div>
+  <div class="logo-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <line x1="26" y1="14" x2="26" y2="66" stroke="var(--maize)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="26" y1="14" x2="64" y2="14" stroke="var(--maize)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="26" y1="42" x2="56" y2="42" stroke="var(--maize)" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="26" cy="14" r="5" fill="var(--maize)"/>
+          <circle cx="26" cy="42" r="5" fill="var(--maize)"/>
+          <circle cx="64" cy="14" r="4" fill="none" stroke="var(--maize)" stroke-width="2"/>
+          <circle cx="56" cy="42" r="4" fill="none" stroke="var(--maize)" stroke-width="2"/>
+          <circle cx="26" cy="66" r="4" fill="none" stroke="var(--maize)" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--maize)">Forge Co.</strong>Charged — circuit F. Filled nodes at junctions. Open rings at terminals.</div>
+    </div>
+
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <path d="M40,14 C40,14 20,36 20,50 C20,62 29,68 40,68 C51,68 60,62 60,50 C60,36 40,14 40,14 Z" fill="none" stroke="var(--cyan)" stroke-width="2.2"/>
+          <ellipse cx="40" cy="58" rx="10" ry="5" fill="var(--cyan)" opacity="0.15"/>
+          <line x1="32" y1="54" x2="48" y2="54" stroke="var(--cyan)" stroke-width="1.5" opacity="0.4"/>
+          <line x1="34" y1="47" x2="46" y2="47" stroke="var(--cyan)" stroke-width="1.5" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--cyan)">Inkwell</strong>Drop — ink drop. Every writer knows this shape instantly.</div>
+    </div>
+
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <line x1="14" y1="40" x2="52" y2="40" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round"/>
+          <polyline points="44,28 60,40 44,52" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="14" y1="31" x2="44" y2="31" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
+          <line x1="14" y1="49" x2="44" y2="49" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" opacity="0.35"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--cyan)">Dispatch</strong>Arrow right. Two soft speed lines. One idea: a message sent.</div>
+    </div>
+
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <path d="M14,66 C16,42 32,30 46,30 C56,30 58,16 66,10" fill="none" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M14,66 C16,42 32,30 46,30 C56,30 58,16 66,10 L66,66 Z" fill="#A78BFA" opacity="0.08"/>
+          <line x1="10" y1="68" x2="70" y2="68" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round" opacity="0.25"/>
+          <circle cx="66" cy="10" r="3.5" fill="#A78BFA"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:#A78BFA">Grind</strong>Steady. Then the wall. Then it breaks. That's the shape of real work.</div>
+    </div>
+
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <line x1="12" y1="40" x2="68" y2="40" stroke="#A78BFA" stroke-width="1.5" opacity="0.35"/>
+          <line x1="40" y1="12" x2="40" y2="68" stroke="#A78BFA" stroke-width="1.5" opacity="0.35"/>
+          <path d="M14,30 Q40,66 66,30" fill="none" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="40" y1="42" x2="40" y2="46" stroke="#A78BFA" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="40" cy="48" r="2.5" fill="#A78BFA"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:#A78BFA">Motor City Math</strong>Upward parabola. A smile hidden in a math graph.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- AGENT MARKS -->
+<div class="section" id="agents">
+  <div class="section-hd">
+    <h2>Agent Marks + Color System</h2>
+    <span class="tag">Michigan palette. Seven marks.</span>
+  </div>
+
+  <!-- COLOR PALETTE STRIP -->
+  <div class="agent-palette">
+    <div class="agent-chip">
+      <div class="agent-dot" style="background:var(--col-fd);"></div>
+      <div><div class="agent-chip-name">FD / Forge</div><div class="agent-chip-hex">#FFCB05</div><div class="agent-chip-role">U of M Maize — brand anchor</div></div>
+    </div>
+    <div class="agent-chip">
+      <div class="agent-dot" style="background:var(--col-fa);"></div>
+      <div><div class="agent-chip-name">FA</div><div class="agent-chip-hex">#4A90D9</div><div class="agent-chip-role">Michigan Blue — architect</div></div>
+    </div>
+    <div class="agent-chip">
+      <div class="agent-dot" style="background:var(--col-ff);"></div>
+      <div><div class="agent-chip-name">FF</div><div class="agent-chip-hex">#22C55E</div><div class="agent-chip-role">Emerald — quality, pass</div></div>
+    </div>
+    <div class="agent-chip">
+      <div class="agent-dot" style="background:var(--col-fi);"></div>
+      <div><div class="agent-chip-name">FI</div><div class="agent-chip-hex">#6D28D9</div><div class="agent-chip-role">Indigo — identity, depth</div></div>
+    </div>
+    <div class="agent-chip">
+      <div class="agent-dot" style="background:var(--col-fo);"></div>
+      <div><div class="agent-chip-name">FO</div><div class="agent-chip-hex">#94A3B8</div><div class="agent-chip-role">Pistons Silver — ops, neutral</div></div>
+    </div>
+    <div class="agent-chip">
+      <div class="agent-dot" style="background:var(--col-fp);"></div>
+      <div><div class="agent-chip-name">FP</div><div class="agent-chip-hex">#CE1126</div><div class="agent-chip-role">Red Wings Red - security</div></div>
+    </div>
+    <div class="agent-chip">
+      <div class="agent-dot" style="background:var(--col-fr);"></div>
+      <div><div class="agent-chip-name">FR</div><div class="agent-chip-hex">#F97316</div><div class="agent-chip-role">Tigers Orange — research, pursuit</div></div>
+    </div>
+  </div>
+
+  <div class="logo-grid agent-grid">
+
+    <!-- FD: ◉ -->
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="var(--col-fd)" stroke-width="2"/>
+          <circle cx="36" cy="36" r="11" fill="var(--col-fd)"/>
+          <circle cx="36" cy="36" r="19" fill="none" stroke="var(--col-fd)" stroke-width="1" opacity="0.3"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--col-fd)">FD (Maize)</strong>The vision. ◉ First mark we co-designed.</div>
+    </div>
+
+    <!-- FA: Locked to FA-4 — heavy legs, grounding feet. Built, not drawn. -->
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <line x1="36" y1="10" x2="12" y2="62" stroke="var(--col-fa)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="36" y1="10" x2="60" y2="62" stroke="var(--col-fa)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="22" y1="44" x2="50" y2="44" stroke="var(--col-fa)" stroke-width="2" stroke-linecap="round"/>
+          <line x1="5" y1="62" x2="19" y2="62" stroke="var(--col-fa)" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="53" y1="62" x2="67" y2="62" stroke="var(--col-fa)" stroke-width="3.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--col-fa)">FA (Blue)</strong>A-frame. Heavy legs. Grounded feet. The architect's mark. Built, not drawn.</div>
+    </div>
+
+    <!-- FF -->
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <rect x="14" y="18" width="44" height="48" rx="2" fill="none" stroke="var(--col-ff)" stroke-width="1.8"/>
+          <rect x="24" y="12" width="24" height="10" rx="3" fill="none" stroke="var(--col-ff)" stroke-width="1.5"/>
+          <polyline points="20,32 27,40 40,26" fill="none" stroke="var(--col-ff)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="20" y1="48" x2="52" y2="48" stroke="var(--col-ff)" stroke-width="1.5" opacity="0.35"/>
+          <line x1="20" y1="56" x2="44" y2="56" stroke="var(--col-ff)" stroke-width="1.5" opacity="0.2"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--col-ff)">FF (Emerald)</strong>Clipboard. QA. Verification.</div>
+    </div>
+
+    <!-- FI -->
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <path d="M14,24 Q24,24 28,36 Q32,48 42,48 Q52,48 58,48" fill="none" stroke="var(--col-fi)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M14,36 Q20,36 24,42 Q28,48 36,48" fill="none" stroke="var(--col-fi)" stroke-width="1.5" opacity="0.4" stroke-linecap="round"/>
+          <circle cx="58" cy="48" r="4" fill="none" stroke="var(--col-fi)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--col-fi)">FI (Indigo)</strong>Data flow. Identity stream.</div>
+    </div>
+
+    <!-- FO -->
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <line x1="12" y1="12" x2="60" y2="60" stroke="var(--col-fo)" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="60" y1="12" x2="12" y2="60" stroke="var(--col-fo)" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="36" cy="36" r="6" fill="var(--col-fo)"/>
+          <circle cx="12" cy="12" r="3.5" fill="none" stroke="var(--col-fo)" stroke-width="1.5"/>
+          <circle cx="60" cy="12" r="3.5" fill="none" stroke="var(--col-fo)" stroke-width="1.5"/>
+          <circle cx="12" cy="60" r="3.5" fill="none" stroke="var(--col-fo)" stroke-width="1.5"/>
+          <circle cx="60" cy="60" r="3.5" fill="none" stroke="var(--col-fo)" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--col-fo)">FO (Silver)</strong>Crossroads. COO. Every path runs through here.</div>
+    </div>
+
+    <!-- FP -->
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <polyline points="12,22 36,44 60,22" fill="none" stroke="var(--col-fp)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="12,38 36,60 60,38" fill="none" stroke="var(--col-fp)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--col-fp)">FP (Steel)</strong>Split chevron. Light on top. Weight underneath. Security anchors down.</div>
+    </div>
+
+    <!-- FR -->
+    <div class="logo-card">
+      <div class="logo-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="32" cy="34" r="22" fill="none" stroke="var(--col-fr)" stroke-width="1.5" opacity="0.3"/>
+          <circle cx="32" cy="34" r="14" fill="none" stroke="var(--col-fr)" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="32" cy="34" r="7" fill="none" stroke="var(--col-fr)" stroke-width="1.8"/>
+          <circle cx="32" cy="34" r="3" fill="var(--col-fr)"/>
+          <line x1="44" y1="46" x2="60" y2="62" stroke="var(--col-fr)" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-name"><strong style="color:var(--col-fr)">FR (Orange)</strong>Evidence chain. Rings to a finding.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TYPOGRAPHY -->
+<div class="section" id="type">
+  <div class="section-hd">
+    <h2>Typography</h2>
+    <span class="tag">Two faces. One for reading. One for building.</span>
+  </div>
+  <div class="brief-grid">
+    <div class="brief-card">
+      <h3>Display / UI</h3>
+      <p style="font-family:'Segoe UI Variable','Segoe UI',system-ui,sans-serif;font-size:2rem;font-weight:200;color:var(--white);margin:12px 0">Forge Co.</p>
+      <p style="font-family:'Segoe UI Variable','Segoe UI',system-ui,sans-serif;font-size:1rem;color:var(--gray)">Segoe UI Variable &middot; Weight 200–600 &middot; Used for headlines, UI, slides, and all marketing copy.</p>
+    </div>
+    <div class="brief-card">
+      <h3>Code / Mono</h3>
+      <p style="font-family:'Cascadia Code','Consolas',monospace;font-size:1.6rem;color:var(--white);margin:12px 0">$ forge --build</p>
+      <p style="font-family:'Cascadia Code','Consolas',monospace;font-size:0.85rem;color:var(--gray)">Cascadia Code &middot; All terminal output, code, labels, hex values, and CLI copy.</p>
+    </div>
+    <div class="brief-card">
+      <div class="brief-card-label">Usage Rule</div>
+      <div class="principle-row">
+        <span class="principle-num">01</span>
+        <span class="principle-text">Headlines: Segoe UI, weight 200. Light carries authority here.</span>
+      </div>
+      <div class="principle-row">
+        <span class="principle-num">02</span>
+        <span class="principle-text">Labels and tags: Cascadia Code, uppercase. Letters breathe — slightly open spacing.</span>
+      </div>
+      <div class="principle-row">
+        <span class="principle-num">03</span>
+        <span class="principle-text">Never mix weights aggressively. One bold per visual unit.</span>
+      </div>
+      <div class="principle-row">
+        <span class="principle-num">04</span>
+        <span class="principle-text">Dark backgrounds only. Light mode is not the primary surface.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>&#9711; Forge &middot; Brand System &middot; 2026 &middot; Built by FD (Maize)</footer>
+
+<script>
+// Variant tabs (product sections)
+function showVariant(group, v, btn) {
+  document.querySelectorAll(`#${group}-grid .logo-card`).forEach(c => c.style.display = 'none');
+  document.getElementById(`${group}-${v}`).style.display = 'flex';
+  document.querySelectorAll(`#${group}-tabs .v-tab`).forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// FA variant switcher (inline card tabs)
+function showFAVariant(id, btn) {
+  ['fa1','fa2','fa3','fa4','fa5'].forEach(v => {
+    const el = document.getElementById(v);
+    if (el) el.style.display = v === id ? '' : 'none';
+  });
+  btn.closest('div').querySelectorAll('.v-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// FP variant switcher (inline card tabs)
+function showFPVariant(id, btn) {
+  ['fp1','fp2','fp3','fp4','fp5','fp6','fp7','fp8','fp9','fp10'].forEach(v => {
+    const el = document.getElementById(v);
+    if (el) el.style.display = v === id ? '' : 'none';
+  });
+  btn.closest('div').querySelectorAll('.v-tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// Show all in a group on that section
+function showAll(group) {
+  document.querySelectorAll(`#${group}-grid .logo-card`).forEach(c => c.style.display = 'flex');
+}
+
+// Pick a variant
+const picks = {};
+function pick(group, v) {
+  const card = document.getElementById(`${group}-${v}`);
+  const wasSelected = card.classList.contains('selected');
+  document.querySelectorAll(`#${group}-grid .logo-card`).forEach(c => {
+    c.classList.remove('selected');
+    c.querySelector('.pick-btn').textContent = `Select ${c.id.split('-')[1]}`;
+  });
+  if (!wasSelected) {
+    card.classList.add('selected');
+    card.querySelector('.pick-btn').textContent = 'Selected';
+    picks[group] = v;
+    const labels = { forge: 'Forge Co.', inkwell: 'Inkwell', dispatch: 'Dispatch', grind: 'Grind', mcm: 'Motor City Math' };
+    const d = document.getElementById(`d-${group}`);
+    if (d) { d.textContent = `Variant ${v} — locked`; d.style.color = 'var(--cyan)'; }
+  } else {
+    delete picks[group];
+    const d = document.getElementById(`d-${group}`);
+    if (d) { d.textContent = '— pending'; d.style.color = 'var(--maize)'; }
+  }
+}
+
+// Dark/light/color toggle
+function setMode(mode, btn) {
+  document.querySelectorAll('nav .pill-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.body.setAttribute('data-mode', mode);
+  const r = document.documentElement.style;
+  if (mode === 'dark') {
+    r.setProperty('--bg', '#08080D');
+    r.setProperty('--card', '#0F0F16');
+    r.setProperty('--card2', '#141420');
+    r.setProperty('--border', '#1C1C2A');
+    r.setProperty('--border2', '#242436');
+    r.setProperty('--accent', '#FFCB05');
+    r.setProperty('--accent-dim', 'rgba(255,203,5,0.10)');
+    r.setProperty('--maize', '#FFCB05');
+    r.setProperty('--white', '#EEEEF5');
+    r.setProperty('--offwhite', '#C8C8D8');
+    r.setProperty('--gray', '#7878A0');
+    r.setProperty('--dim', '#2E2E48');
+  } else if (mode === 'light') {
+    r.setProperty('--bg', '#ECEDF0');
+    r.setProperty('--card', '#FFFFFF');
+    r.setProperty('--card2', '#E4E5E9');
+    r.setProperty('--border', '#D4D4E0');
+    r.setProperty('--border2', '#C8C8D4');
+    r.setProperty('--accent', '#1E5AA8');
+    r.setProperty('--accent-dim', 'rgba(30,90,168,0.07)');
+    r.setProperty('--maize', '#FFCB05');
+    r.setProperty('--white', '#111111');
+    r.setProperty('--offwhite', '#333333');
+    r.setProperty('--gray', '#808080');
+    r.setProperty('--dim', '#C4C4C8');
+  } else if (mode === 'color') {
+    r.setProperty('--bg', '#0A0A1A');
+    r.setProperty('--card', '#10101E');
+    r.setProperty('--card2', '#16162A');
+    r.setProperty('--border', '#222238');
+    r.setProperty('--border2', '#2A2A44');
+    r.setProperty('--accent', '#FFCB05');
+    r.setProperty('--accent-dim', 'rgba(255,203,5,0.10)');
+    r.setProperty('--maize', '#FFCB05');
+    r.setProperty('--white', '#E8E8FF');
+    r.setProperty('--offwhite', '#A8A8C8');
+    r.setProperty('--gray', '#9090B8');
+    r.setProperty('--dim', '#2A2A44');
+  }
+}
+</script>
+</body>
+</html>

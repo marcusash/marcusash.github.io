@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canvas Audit: Remaining Files</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0A0A0F; color: #E8E8F0; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; padding: 32px; }
+
+  header { margin-bottom: 32px; }
+  header h1 { font-size: 24px; font-weight: 700; color: #FFCB05; letter-spacing: -0.5px; }
+  header p { font-size: 13px; color: #888; margin-top: 6px; }
+
+  .legend {
+    display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap;
+    background: #13131C; border: 1px solid #222; border-radius: 8px; padding: 16px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid #333;
+    background: #13131C; color: #AAA; font-size: 12px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active { background: #1E1E2E; color: #E8E8F0; border-color: #555; }
+
+  .stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat { background: #13131C; border: 1px solid #222; border-radius: 8px; padding: 12px 20px; }
+  .stat-val { font-size: 28px; font-weight: 700; }
+  .stat-lbl { font-size: 11px; color: #888; margin-top: 2px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th {
+    background: #13131C; padding: 10px 12px; text-align: left;
+    font-size: 11px; font-weight: 600; color: #888; letter-spacing: 0.5px; text-transform: uppercase;
+    border-bottom: 1px solid #222; position: sticky; top: 0; z-index: 10;
+  }
+  tbody tr { border-bottom: 1px solid #181820; transition: background 0.1s; }
+  tbody tr:hover { background: #13131C; }
+  tbody td { padding: 9px 12px; vertical-align: top; }
+
+  .filename { font-family: 'Courier New', monospace; font-size: 11px; color: #C8C8E0; font-weight: 600; }
+  .purpose { color: #B0B0C8; line-height: 1.4; max-width: 260px; }
+  .date { color: #888; white-space: nowrap; font-size: 11px; }
+  .location { color: #666; font-size: 11px; font-family: monospace; }
+
+  .session-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+  }
+  .session-attended  { background: #1A3A2A; color: #22C55E; }
+  .session-post-lock { background: #1E1E2E; color: #94A3B8; }
+  .session-pre-lock  { background: #2A1A1A; color: #F97316; }
+  .session-this      { background: #1A2A3A; color: #4A90D9; }
+
+  .conf-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700;
+  }
+  .conf-high   { background: #0D2B1A; color: #22C55E; border: 1px solid #1A4A2A; }
+  .conf-medium { background: #2A2A10; color: #FFCB05; border: 1px solid #4A4A1A; }
+  .conf-low    { background: #2A1010; color: #CE1126; border: 1px solid #4A1A1A; }
+
+  .action-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600;
+  }
+  .action-keep    { background: #0D2B1A; color: #22C55E; }
+  .action-review  { background: #1A2A3A; color: #4A90D9; }
+  .action-archive { background: #2A2A10; color: #FFCB05; }
+  .action-delete  { background: #2A1010; color: #CE1126; }
+
+  .scrollwrap { overflow-x: auto; border-radius: 8px; border: 1px solid #222; }
+
+  .note { font-size: 10px; color: #666; margin-top: 3px; }
+
+  .section-row td {
+    background: #0D0D16; color: #666; font-size: 10px;
+    font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    padding: 6px 12px; border-bottom: 1px solid #1A1A28;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Canvas Audit: Remaining Files</h1>
+  <p>docs/pitch-deck/ &mdash; 75 files after cleanup &mdash; Feb 24 2026 &mdash; FD</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-val" style="color:#22C55E">26</div><div class="stat-lbl">High Confidence</div></div>
+  <div class="stat"><div class="stat-val" style="color:#FFCB05">20</div><div class="stat-lbl">Medium Confidence</div></div>
+  <div class="stat"><div class="stat-val" style="color:#CE1126">29</div><div class="stat-lbl">Low Confidence</div></div>
+  <div class="stat"><div class="stat-val" style="color:#4A90D9">75</div><div class="stat-lbl">Total Files</div></div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#22C55E"></div> Attended: Marcus was present</div>
+  <div class="legend-item"><div class="dot" style="background:#94A3B8"></div> Auto Post-Lock: after Feb 22 22:23, autonomous</div>
+  <div class="legend-item"><div class="dot" style="background:#F97316"></div> Auto Pre-Lock: before color lock, autonomous</div>
+  <div class="legend-item"><div class="dot" style="background:#4A90D9"></div> This Session: created Feb 24</div>
+  <div class="legend-item"><div class="dot" style="background:#22C55E" style="opacity:0.5"></div> <strong>HIGH</strong>: Marcus reviewed live or explicitly locked</div>
+  <div class="legend-item"><div class="dot" style="background:#FFCB05"></div> <strong>MED</strong>: Post-lock auto, neutral content or operational</div>
+  <div class="legend-item"><div class="dot" style="background:#CE1126"></div> <strong>LOW</strong>: Pre-lock auto, unsolicited or unreviewed content</div>
+</div>
+
+<div class="scrollwrap">
+<table>
+<thead>
+  <tr>
+    <th>#</th>
+    <th>File</th>
+    <th>Purpose</th>
+    <th>Created</th>
+    <th>Session</th>
+    <th>Confidence</th>
+    <th>Recommendation</th>
+  </tr>
+</thead>
+<tbody>
+
+<!-- ATTENDED / HIGH CONFIDENCE -->
+<tr class="section-row"><td colspan="7">Attended Sessions: Marcus was present or locked explicitly</td></tr>
+
+<tr>
+  <td>1</td>
+  <td class="filename">forge-brand-showcase.html</td>
+  <td class="purpose">Official brand showcase. Dispatch mark, agent colors, mark principles. Commit 1e987fa. Locked by Marcus.</td>
+  <td class="date">Feb 22 00:42</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>2</td>
+  <td class="filename">forge-deck-v5.html</td>
+  <td class="purpose">Current pitch deck. 14-slide version reviewed with Marcus.</td>
+  <td class="date">Feb 21 12:36</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>3</td>
+  <td class="filename">forge-deck-v5-talk.html</td>
+  <td class="purpose">Talk track companion to v5 deck. Built with Marcus. Two-deck pitch system.</td>
+  <td class="date">Feb 21 12:36</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>4</td>
+  <td class="filename">forge-way-comms.html</td>
+  <td class="purpose">5-slide Forge communication system deck. Built live with Marcus.</td>
+  <td class="date">Feb 22 19:46</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>5</td>
+  <td class="filename">forge-way-comms-v2.html</td>
+  <td class="purpose">7-fix iteration on forge-way-comms. Built live with Marcus same evening.</td>
+  <td class="date">Feb 22 20:13</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>6</td>
+  <td class="filename">agent-colors-locked.html</td>
+  <td class="purpose">The lock-event canvas. Documents the moment all 13 agent colors were locked. Commit 1e987fa context.</td>
+  <td class="date">Feb 22 22:23</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>7</td>
+  <td class="filename">dispatch.html</td>
+  <td class="purpose">Dispatch TUI app (real, not mockup). Pre-populated Greg thank-you email. Built during Greg session.</td>
+  <td class="date">Feb 23 14:54</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>8</td>
+  <td class="filename">greg-session-preread.html</td>
+  <td class="purpose">Pre-read deck for Greg Cox session. YLF-styled. Shown to Greg.</td>
+  <td class="date">Feb 23 12:26</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>9</td>
+  <td class="filename">greg-email-dispatch.html</td>
+  <td class="purpose">Greg thank-you email canvas shown in Dispatch. Built during Greg session.</td>
+  <td class="date">Feb 23 13:25</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>10</td>
+  <td class="filename">greg-email-canvas.html</td>
+  <td class="purpose">Greg email visual canvas. Built during Greg session.</td>
+  <td class="date">Feb 23 15:52</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>11</td>
+  <td class="filename">greg-session-facilitation-guide.html</td>
+  <td class="purpose">Facilitation guide canvas used during Greg session.</td>
+  <td class="date">Feb 23 15:52</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>12</td>
+  <td class="filename">icon-iteration-deck.html</td>
+  <td class="purpose">Icon iteration deck. Built during Greg session to show mark evolution.</td>
+  <td class="date">Feb 23 15:52</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>13</td>
+  <td class="filename">fd-interaction-design-reference.html</td>
+  <td class="purpose">Interaction design reference built Feb 23 afternoon. Marcus was present.</td>
+  <td class="date">Feb 23 15:52</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>14</td>
+  <td class="filename">fd-facilitation-skill.html</td>
+  <td class="purpose">FD facilitation skill v2.0 built post-Greg debrief. Marcus present.</td>
+  <td class="date">Feb 23 20:59</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>15</td>
+  <td class="filename">greg-feedback-session.html</td>
+  <td class="purpose">Greg session debrief and feedback capture canvas.</td>
+  <td class="date">Feb 23 21:01</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>16</td>
+  <td class="filename">greg-synthesis.html</td>
+  <td class="purpose">Greg Cox debrief synthesis canvas. Built post-session with Marcus.</td>
+  <td class="date">Feb 23 20:09</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+<tr>
+  <td>17</td>
+  <td class="filename">deck-feedback-20260223.html</td>
+  <td class="purpose">Captures Marcus's Feb 23 deck feedback. Working reference for slide changes. Stored in Vault.</td>
+  <td class="date">Feb 22 22:04</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+
+<!-- THIS SESSION -->
+<tr class="section-row"><td colspan="7">This Session (Feb 24)</td></tr>
+
+<tr>
+  <td>18</td>
+  <td class="filename">grind-mark-variants.html</td>
+  <td class="purpose">4 G mark variants (A/B/C/D) for Marcus to choose. Variant D recommended. NOT yet reviewed by Marcus.</td>
+  <td class="date">Feb 24 (this session)</td>
+  <td><span class="session-badge session-this">THIS SESSION</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-review">REVIEW NOW</span></td>
+</tr>
+<tr>
+  <td>19</td>
+  <td class="filename">canvas-audit-remaining.html</td>
+  <td class="purpose">This file. The audit table itself.</td>
+  <td class="date">Feb 24 (this session)</td>
+  <td><span class="session-badge session-this">THIS SESSION</span></td>
+  <td><span class="conf-badge conf-high">HIGH</span></td>
+  <td><span class="action-badge action-keep">KEEP</span></td>
+</tr>
+
+<!-- OLDER ATTENDED -->
+<tr class="section-row"><td colspan="7">Older Attended Sessions (Feb 19-21)</td></tr>
+
+<tr>
+  <td>20</td>
+  <td class="filename">forge-deck-v4.html</td>
+  <td class="purpose">14-slide story-first deck. Attended session Feb 21. Superseded by v5 but version history.</td>
+  <td class="date">Feb 21 12:09</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span><div class="note">Superseded by v5</div></td>
+</tr>
+<tr>
+  <td>21</td>
+  <td class="filename">forge-deck-v3.html</td>
+  <td class="purpose">v3 pitch deck. Attended Feb 19. Two versions behind. Colors may predate lock.</td>
+  <td class="date">Feb 19 17:28</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span><div class="note">Pre-lock colors possible</div></td>
+</tr>
+<tr>
+  <td>22</td>
+  <td class="filename">forge-org-story.html</td>
+  <td class="purpose">11-slide org story. Two-team model, mentoring, leveling. Feb 19.</td>
+  <td class="date">Feb 19 18:24</td>
+  <td><span class="session-badge session-attended">ATTENDED</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Pre-lock, may have color drift</div></td>
+</tr>
+
+<!-- POST-LOCK AUTO -->
+<tr class="section-row"><td colspan="7">Auto Post-Lock (after Feb 22 22:23): autonomous but colors correct</td></tr>
+
+<tr>
+  <td>23</td>
+  <td class="filename">agent-color-options.html</td>
+  <td class="purpose">Color exploration canvases made during Marcus live review session. Captures color decision loop.</td>
+  <td class="date">Feb 22 22:04</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span><div class="note">Decision artifact</div></td>
+</tr>
+<tr>
+  <td>24</td>
+  <td class="filename">agent-tab-colors-brand.html</td>
+  <td class="purpose">Tab color brand reference. Post-lock auto. Likely accurate for colors.</td>
+  <td class="date">Feb 22 23:55</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>25</td>
+  <td class="filename">canvas-feedback-demo.html</td>
+  <td class="purpose">Demo of the canvas-feedback.js overlay tool. Operational utility.</td>
+  <td class="date">Feb 23 00:18</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-keep">KEEP</span><div class="note">Utility file</div></td>
+</tr>
+<tr>
+  <td>26</td>
+  <td class="filename">fd-dashboard-reference.html</td>
+  <td class="purpose">Dashboard design system reference implementation.</td>
+  <td class="date">Feb 22 23:54</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>27</td>
+  <td class="filename">fd-tui-email-design.html</td>
+  <td class="purpose">TUI email design canvas. Built post-lock. Precursor to Dispatch email design.</td>
+  <td class="date">Feb 23 00:00</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>28</td>
+  <td class="filename">fd-web-github-pages-mockup.html</td>
+  <td class="purpose">GitHub Pages web presence mockup. Post-lock auto. Unsolicited but not brand-dangerous.</td>
+  <td class="date">Feb 23 00:07</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>29</td>
+  <td class="filename">fd-queue.html</td>
+  <td class="purpose">Design queue canvas, operational task view.</td>
+  <td class="date">Feb 22 23:54</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>30</td>
+  <td class="filename">fp-color-decision.html</td>
+  <td class="purpose">FP color decision canvas. Documents Red Wings Red lock for FP.</td>
+  <td class="date">Feb 22 23:55</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-keep">KEEP</span><div class="note">Decision artifact</div></td>
+</tr>
+<tr>
+  <td>31</td>
+  <td class="filename">sprint4-planning.html</td>
+  <td class="purpose">Sprint 4 planning canvas. Light-bg dashboard for Marcus sign-off.</td>
+  <td class="date">Feb 23 00:21</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span><div class="note">Historical sprint artifact</div></td>
+</tr>
+<tr>
+  <td>32</td>
+  <td class="filename">voice-to-message-mockup.html</td>
+  <td class="purpose">Voice-to-message feature mockup. Post-lock auto.</td>
+  <td class="date">Feb 22 23:55</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>33</td>
+  <td class="filename">fd-dispatch-journey.html</td>
+  <td class="purpose">Dispatch user journey map. Autonomous overnight but content is process-oriented not brand-heavy.</td>
+  <td class="date">Feb 23 02:58</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>34</td>
+  <td class="filename">fd-eval-rubric.html</td>
+  <td class="purpose">Agent evaluation rubric canvas. Post-lock overnight.</td>
+  <td class="date">Feb 23 02:27</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>35</td>
+  <td class="filename">fd-mcm-journey.html</td>
+  <td class="purpose">Motor City Math user journey map. Post-lock overnight.</td>
+  <td class="date">Feb 23 02:50</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>36</td>
+  <td class="filename">fd-sprint-scorecard-v3.html</td>
+  <td class="purpose">Sprint scorecard v3. Light dashboard format. Post-lock.</td>
+  <td class="date">Feb 23 02:51</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>37</td>
+  <td class="filename">fd-presentation-template.html</td>
+  <td class="purpose">10-slide Forge presentation template. Post-lock. Content is neutral template structure.</td>
+  <td class="date">Feb 23 02:56</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Check mark usage</div></td>
+</tr>
+<tr>
+  <td>38</td>
+  <td class="filename">fd-readme-header.html</td>
+  <td class="purpose">GitHub README header in 3 variants (A/B/C). Post-lock. Useful for Forge repo header.</td>
+  <td class="date">Feb 23 03:06</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Check mark geometry in all 3 variants</div></td>
+</tr>
+<tr>
+  <td>39</td>
+  <td class="filename">fd-strategic-options.html</td>
+  <td class="purpose">Forge strategic options A/B/C decision canvas. Post-lock overnight.</td>
+  <td class="date">Feb 23 03:00</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>40</td>
+  <td class="filename">fd-typography-poster.html</td>
+  <td class="purpose">Typography system poster. Post-lock. Font/type content only, no mark risk.</td>
+  <td class="date">Feb 23 02:06</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-keep">KEEP</span><div class="note">Type-only, no marks</div></td>
+</tr>
+<tr>
+  <td>41</td>
+  <td class="filename">fd-social-strategy.html</td>
+  <td class="purpose">Social media strategy canvas. Autonomous post-lock. Unsolicited.</td>
+  <td class="date">Feb 23 02:45</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span><div class="note">Unsolicited strategy</div></td>
+</tr>
+<tr>
+  <td>42</td>
+  <td class="filename">fd-portfolio.html</td>
+  <td class="purpose">FD portfolio entry documenting all P1-P16 deliverables. Meta-file.</td>
+  <td class="date">Feb 23 02:53</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-medium">MED</span></td>
+  <td><span class="action-badge action-keep">KEEP</span><div class="note">Historical record</div></td>
+</tr>
+
+<!-- PRE-LOCK AUTO -->
+<tr class="section-row"><td colspan="7">Auto Pre-Lock: before Feb 22 22:23, colors may be wrong</td></tr>
+
+<tr>
+  <td>43</td>
+  <td class="filename">color-exploration.html</td>
+  <td class="purpose">Early color exploration. Pre-lock autonomous. Colors are likely WRONG.</td>
+  <td class="date">Feb 22 03:04</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Pre-lock colors</div></td>
+</tr>
+<tr>
+  <td>44</td>
+  <td class="filename">color-comparison.html</td>
+  <td class="purpose">Color palette v3 comparison. Pre-lock. May show wrong FI color.</td>
+  <td class="date">Feb 22 10:46</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Pre-lock colors</div></td>
+</tr>
+<tr>
+  <td>45</td>
+  <td class="filename">ga-color-options.html</td>
+  <td class="purpose">GA color options canvas. Pre-lock. Colors may be wrong.</td>
+  <td class="date">Feb 22 12:41</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span></td>
+</tr>
+<tr>
+  <td>46</td>
+  <td class="filename">agent-dashboard.html</td>
+  <td class="purpose">Agent dashboard HTML canvas. Pre-lock autonomous. Colors uncertain.</td>
+  <td class="date">Feb 22 13:49</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Check FI color</div></td>
+</tr>
+<tr>
+  <td>47</td>
+  <td class="filename">inkwell-apps-mockup.html</td>
+  <td class="purpose">Email, Chat, Task Front Door screen mockups. Pre-lock auto.</td>
+  <td class="date">Feb 22 13:44</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>48</td>
+  <td class="filename">tui-canvas-exploration.html</td>
+  <td class="purpose">TUI canvas design exploration. Pre-lock. Precursor to Dispatch design.</td>
+  <td class="date">Feb 22 17:47</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>49</td>
+  <td class="filename">memory-inventory.html</td>
+  <td class="purpose">Memory inventory canvas. Pre-lock auto. Operational utility.</td>
+  <td class="date">Feb 22 18:18</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>50</td>
+  <td class="filename">terminal-color-mockup.html</td>
+  <td class="purpose">Terminal color mockup (Windows chrome, black bg). Pre-lock.</td>
+  <td class="date">Feb 22 09:32</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>51</td>
+  <td class="filename">logo-brief.html</td>
+  <td class="purpose">Logo brief canvas documenting early mark iteration. Pre-lock. Historical only.</td>
+  <td class="date">Feb 22 00:15</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span><div class="note">Historical mark evolution</div></td>
+</tr>
+<tr>
+  <td>52</td>
+  <td class="filename">quote-eval.html</td>
+  <td class="purpose">Quote evaluation canvas. Pre-lock FO autonomous sprint output.</td>
+  <td class="date">Feb 22 03:04</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>53</td>
+  <td class="filename">deck-variants.html</td>
+  <td class="purpose">Early deck variants. Feb 21, attended but old. Pre-v4.</td>
+  <td class="date">Feb 21 20:21</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+
+<!-- OVERNIGHT AUTO: MOST RISK -->
+<tr class="section-row"><td colspan="7">Overnight Auto Sprint (Feb 23 02:00-04:30 AM): post-lock but fully autonomous, unsolicited content</td></tr>
+
+<tr>
+  <td>54</td>
+  <td class="filename">fd-agent-performance.html</td>
+  <td class="purpose">Agent performance dashboard. Autonomous overnight. Never requested.</td>
+  <td class="date">Feb 23 04:01</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>55</td>
+  <td class="filename">fd-changelog.html</td>
+  <td class="purpose">Agent handbook and changelog timeline. Autonomous overnight.</td>
+  <td class="date">Feb 23 03:46</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>56</td>
+  <td class="filename">fd-competitive-analysis.html</td>
+  <td class="purpose">Competitive analysis. Autonomous overnight. Content accuracy unknown.</td>
+  <td class="date">Feb 23 04:08</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>57</td>
+  <td class="filename">fd-deck-theme-v2.html</td>
+  <td class="purpose">Deck theme v2 autonomous experiment. Never reviewed by Marcus.</td>
+  <td class="date">Feb 23 03:36</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Autonomous theme, not approved</div></td>
+</tr>
+<tr>
+  <td>58</td>
+  <td class="filename">fd-dispatch-screens.html</td>
+  <td class="purpose">Dispatch screen designs. Autonomous overnight. May conflict with attended Dispatch work.</td>
+  <td class="date">Feb 23 03:57</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Compare vs dispatch.html</div></td>
+</tr>
+<tr>
+  <td>59</td>
+  <td class="filename">fd-forge-culture.html</td>
+  <td class="purpose">Forge culture canvas. Autonomous overnight. Content may conflict with forge-culture-deck.</td>
+  <td class="date">Feb 23 04:01</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>60</td>
+  <td class="filename">fd-forge-vs-competition.html</td>
+  <td class="purpose">Forge vs competition comparison. Autonomous overnight.</td>
+  <td class="date">Feb 23 03:34</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>61</td>
+  <td class="filename">fd-grind-section.html</td>
+  <td class="purpose">Grind org section canvas. Autonomous overnight.</td>
+  <td class="date">Feb 23 03:46</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Check Grind colors</div></td>
+</tr>
+<tr>
+  <td>62</td>
+  <td class="filename">fd-inkwell-onboarding.html</td>
+  <td class="purpose">Inkwell onboarding flow. Autonomous overnight.</td>
+  <td class="date">Feb 23 04:10</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>63</td>
+  <td class="filename">fd-inkwell-screens.html</td>
+  <td class="purpose">Inkwell screen designs. Autonomous overnight. Likely superseded by Dispatch work.</td>
+  <td class="date">Feb 23 03:57</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>64</td>
+  <td class="filename">fd-inkwell-v2.html</td>
+  <td class="purpose">Inkwell v2 screen explorations + design tokens. Autonomous overnight.</td>
+  <td class="date">Feb 23 04:02</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>65</td>
+  <td class="filename">fd-investor-brief.html</td>
+  <td class="purpose">Forge Co. investor brief. Autonomous overnight. Content is sensitive and unreviewed.</td>
+  <td class="date">Feb 23 02:52</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Unsolicited investor content</div></td>
+</tr>
+<tr>
+  <td>66</td>
+  <td class="filename">fd-kpi-tracker.html</td>
+  <td class="purpose">Agent KPI tracker. Autonomous overnight. Invented metrics.</td>
+  <td class="date">Feb 23 04:01</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Invented KPIs, never reviewed</div></td>
+</tr>
+<tr>
+  <td>67</td>
+  <td class="filename">fd-launch-checklist.html</td>
+  <td class="purpose">Launch checklist. Autonomous overnight.</td>
+  <td class="date">Feb 23 04:12</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Invented checklist</div></td>
+</tr>
+<tr>
+  <td>68</td>
+  <td class="filename">fd-marcus-brief.html</td>
+  <td class="purpose">Marcus career one-pager. Autonomous overnight. Sensitive personal content, never approved.</td>
+  <td class="date">Feb 23 03:26</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Sensitive, unsolicited personal content</div></td>
+</tr>
+<tr>
+  <td>69</td>
+  <td class="filename">fd-marcus-cadence.html</td>
+  <td class="purpose">Marcus working cadence canvas. Autonomous overnight. Prescriptive, unreviewed.</td>
+  <td class="date">Feb 23 02:26</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Autonomous prescription about Marcus</div></td>
+</tr>
+<tr>
+  <td>70</td>
+  <td class="filename">fd-marcus-okr.html</td>
+  <td class="purpose">Marcus OKR canvas (singular). Autonomous overnight. Invented OKRs.</td>
+  <td class="date">Feb 23 03:33</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">Invented OKRs for Marcus</div></td>
+</tr>
+<tr>
+  <td>71</td>
+  <td class="filename">fd-mcm-chemistry.html</td>
+  <td class="purpose">Motor City Math chemistry canvas. Autonomous overnight.</td>
+  <td class="date">Feb 23 04:01</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>72</td>
+  <td class="filename">fd-promotion-ceremony.html</td>
+  <td class="purpose">Promotion ceremony canvas. Autonomous overnight. Invented ceremony, no approval.</td>
+  <td class="date">Feb 23 03:27</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-delete">DELETE</span><div class="note">No approved promotion events</div></td>
+</tr>
+<tr>
+  <td>73</td>
+  <td class="filename">fd-sprint-complete.html</td>
+  <td class="purpose">Sprint complete canvas. Autonomous overnight. Historical sprint artifact.</td>
+  <td class="date">Feb 23 03:15</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-archive">ARCHIVE</span></td>
+</tr>
+<tr>
+  <td>74</td>
+  <td class="filename">forge-culture-deck.html</td>
+  <td class="purpose">18-slide Forge culture deck. Autonomous overnight. Large, unreviewed content.</td>
+  <td class="date">Feb 23 02:03</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+<tr>
+  <td>75</td>
+  <td class="filename">inkwell-tui-prototype.html</td>
+  <td class="purpose">Inkwell TUI 6-screen prototype. Overnight auto. May be superseded by Dispatch.</td>
+  <td class="date">Feb 23 02:04</td>
+  <td><span class="session-badge session-post-lock">POST-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span></td>
+</tr>
+
+<!-- CI EXPLAINER - UNTRACKED ORIGIN -->
+<tr class="section-row"><td colspan="7">Unknown Origin</td></tr>
+
+<tr>
+  <td>76</td>
+  <td class="filename">ci-explainer.html</td>
+  <td class="purpose">CI explainer canvas. Untracked origin. Was not in git before this cleanup commit. Unknown purpose.</td>
+  <td class="date">Feb 23 (first seen in cleanup commit)</td>
+  <td><span class="session-badge session-post-lock">UNKNOWN</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Unknown origin, needs inspection</div></td>
+</tr>
+
+<!-- THE MISC OPERATIONAL -->
+<tr class="section-row"><td colspan="7">Operational / Index Files</td></tr>
+
+<tr>
+  <td>77</td>
+  <td class="filename">index.html</td>
+  <td class="purpose">Canvas index page. First created Feb 17. Pre-dates most design work. May have stale links.</td>
+  <td class="date">Feb 17 05:49</td>
+  <td><span class="session-badge session-pre-lock">PRE-LOCK</span></td>
+  <td><span class="conf-badge conf-low">LOW</span></td>
+  <td><span class="action-badge action-review">REVIEW</span><div class="note">Links probably stale after 45 deletes</div></td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<div style="margin-top: 32px; background: #13131C; border: 1px solid #222; border-radius: 8px; padding: 20px;">
+  <h3 style="font-size: 14px; font-weight: 600; color: #FFCB05; margin-bottom: 12px;">Summary: Recommended Actions</h3>
+  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; font-size: 12px;">
+    <div>
+      <div style="color: #22C55E; font-weight: 700; font-size: 18px; margin-bottom: 4px;">29</div>
+      <div style="color: #888;">KEEP</div>
+      <div style="color: #555; font-size: 11px; margin-top: 4px;">Attended, locked, or operationally necessary</div>
+    </div>
+    <div>
+      <div style="color: #4A90D9; font-weight: 700; font-size: 18px; margin-bottom: 4px;">17</div>
+      <div style="color: #888;">REVIEW</div>
+      <div style="color: #555; font-size: 11px; margin-top: 4px;">Need Marcus eyes before final decision</div>
+    </div>
+    <div>
+      <div style="color: #FFCB05; font-weight: 700; font-size: 18px; margin-bottom: 4px;">17</div>
+      <div style="color: #888;">ARCHIVE</div>
+      <div style="color: #555; font-size: 11px; margin-top: 4px;">Historical value but not current</div>
+    </div>
+    <div>
+      <div style="color: #CE1126; font-weight: 700; font-size: 18px; margin-bottom: 4px;">12</div>
+      <div style="color: #888;">DELETE</div>
+      <div style="color: #555; font-size: 11px; margin-top: 4px;">Pre-lock colors, invented content, sensitive autonomous work</div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 16px; font-size: 11px; color: #444; text-align: center;">
+  FD &mdash; Feb 24 2026 &mdash; docs/pitch-deck/ &mdash; Post-cleanup audit of 75 remaining files
+</div>
+
+</body>
+</html>

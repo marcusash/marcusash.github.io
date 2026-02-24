@@ -1,0 +1,860 @@
+<!-- Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Competitive Analysis</title>
+<style>
+  :root {
+    --bg: #F4F5F7;
+    --card: #FFFFFF;
+    --text: #1A1B2E;
+    --muted: #64748B;
+    --border: #E2E8F0;
+    --maize: #FFCB05;
+    --maize-dim: rgba(255,203,5,0.12);
+    --green: #22C55E;
+    --green-dim: rgba(34,197,94,0.10);
+    --red: #EF4444;
+    --red-dim: rgba(239,68,68,0.10);
+    --blue: #4A90D9;
+    --blue-dim: rgba(74,144,217,0.10);
+    --navy: #1E293B;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--navy);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--maize);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .fd-mark {
+    width: 36px; height: 36px;
+    background: var(--maize);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: var(--navy);
+    flex-shrink: 0;
+  }
+  .header-title { font-size: 17px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.02em; }
+  .header-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; font-family: var(--mono); }
+  .header-badge {
+    background: rgba(255,203,5,0.15);
+    border: 1px solid rgba(255,203,5,0.4);
+    color: var(--maize);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-family: var(--mono);
+  }
+
+  /* TAB BAR */
+  .tab-bar {
+    background: #162032;
+    padding: 0 32px;
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #0F172A;
+  }
+  .tab-btn {
+    padding: 11px 22px;
+    border: none;
+    background: none;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: #94A3B8;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: #CBD5E1; }
+  .tab-btn.active { color: #FFFFFF; border-bottom-color: var(--maize); }
+
+  /* CONTENT */
+  .content { max-width: 1100px; margin: 0 auto; padding: 28px 32px 48px; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION HEADERS */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-bottom: 10px;
+    margin-top: 28px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .product-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .product-header {
+    background: var(--navy);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .product-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+  }
+  .product-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--maize);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* COMPARISON TABLE */
+  .cmp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .cmp-table th {
+    background: #F8FAFC;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .cmp-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+    line-height: 1.4;
+  }
+  .cmp-table tr:last-child td { border-bottom: none; }
+  .cmp-table tr.forge-row td {
+    background: var(--maize-dim);
+    font-weight: 600;
+  }
+  .cmp-table tr.forge-row td:first-child {
+    border-left: 3px solid var(--maize);
+  }
+  .cmp-table .row-label {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .cmp-table tr:hover:not(.forge-row) td { background: #F8FAFC; }
+
+  /* DIFFERENTIATOR NOTE */
+  .diff-note {
+    background: var(--maize-dim);
+    border-left: 3px solid var(--maize);
+    padding: 10px 16px;
+    margin: 0;
+    font-size: 12px;
+    color: #92400E;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* APPROACH TABLE */
+  .approach-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .approach-table th {
+    background: var(--navy);
+    color: #FFFFFF;
+    padding: 12px 18px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .approach-table th:first-child { border-radius: 0; }
+  .approach-table td {
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .approach-table tr:last-child td { border-bottom: none; }
+  .approach-table .dim-col { color: var(--muted); }
+  .approach-table .forge-col { font-weight: 600; color: var(--text); }
+  .approach-table .row-dim {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .approach-table tbody tr:hover td { background: #F8FAFC; }
+
+  .quote-card {
+    background: var(--navy);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-top: 24px;
+    position: relative;
+  }
+  .quote-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #FFFFFF;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+  }
+  .quote-text::before { content: '\201C'; color: var(--maize); }
+  .quote-text::after { content: '\201D'; color: var(--maize); }
+  .quote-attr {
+    margin-top: 12px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: #94A3B8;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* AI ORG TABLE */
+  .ai-org-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ai-org-table th {
+    background: #F8FAFC;
+    border-bottom: 2px solid var(--border);
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .ai-org-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .ai-org-table tr:last-child td { border-bottom: none; }
+  .ai-org-table tr.forge-highlight td {
+    background: var(--maize-dim);
+    font-weight: 600;
+  }
+  .ai-org-table tr.forge-highlight td:first-child { border-left: 3px solid var(--maize); }
+  .ai-org-table tr:hover:not(.forge-highlight) td { background: #F8FAFC; }
+  .yes-badge {
+    display: inline-block;
+    background: var(--green-dim);
+    color: #15803D;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(34,197,94,0.25);
+    font-family: var(--mono);
+  }
+  .no-badge {
+    display: inline-block;
+    background: var(--red-dim);
+    color: #B91C1C;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(239,68,68,0.25);
+    font-family: var(--mono);
+  }
+  .partial-badge {
+    display: inline-block;
+    background: rgba(245,158,11,0.10);
+    color: #B45309;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(245,158,11,0.25);
+    font-family: var(--mono);
+  }
+  .org-name { font-weight: 700; font-size: 13px; }
+  .org-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  /* WHY FORGE WINS */
+  .wins-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .win-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .win-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--maize);
+  }
+  .win-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--maize);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .win-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .win-body {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .win-evidence {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.5;
+    font-family: var(--mono);
+  }
+  .win-evidence-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .win-card-wide {
+    grid-column: 1 / -1;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="fd-mark">FD</div>
+    <div>
+      <div class="header-title">Forge Competitive Analysis</div>
+      <div class="header-sub">fd-competitive-analysis.html · Forge Design · 2026</div>
+    </div>
+  </div>
+  <div class="header-badge">Competitive Canvas</div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('products')">Products Landscape</button>
+  <button class="tab-btn" onclick="switchTab('approach')">Approach</button>
+  <button class="tab-btn" onclick="switchTab('ai-org')">AI Org Landscape</button>
+  <button class="tab-btn" onclick="switchTab('why-forge')">Why Forge Wins</button>
+</div>
+
+<!-- ===== TAB 1: PRODUCTS LANDSCAPE ===== -->
+<div class="tab-panel active" id="tab-products">
+  <div class="content">
+
+    <!-- INKWELL -->
+    <div class="section-label">Journaling</div>
+    <div class="product-block">
+      <div class="product-header">
+        <div class="product-name">Inkwell</div>
+        <div class="product-tag">TUI Journal · Mac / Linux / Win</div>
+      </div>
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>App</th>
+            <th>Platform</th>
+            <th>UI Style</th>
+            <th>AI Features</th>
+            <th>Sharing</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="forge-row">
+            <td class="row-label">Inkwell (Forge)</td>
+            <td>Mac / Linux / Win</td>
+            <td>Terminal (TUI)</td>
+            <td>AI coach via FR</td>
+            <td>Private</td>
+            <td>Free</td>
+          </tr>
+          <tr>
+            <td class="row-label">Day One</td>
+            <td>iOS / Mac</td>
+            <td>Native app</td>
+            <td>None</td>
+            <td>Optional</td>
+            <td>$34.99/yr</td>
+          </tr>
+          <tr>
+            <td class="row-label">Obsidian</td>
+            <td>All platforms</td>
+            <td>Markdown editor</td>
+            <td>Community plugins</td>
+            <td>Vault sync</td>
+            <td>Free / $50</td>
+          </tr>
+          <tr>
+            <td class="row-label">Bear</td>
+            <td>iOS / Mac only</td>
+            <td>Native app</td>
+            <td>None</td>
+            <td>Export only</td>
+            <td>$29.99/yr</td>
+          </tr>
+          <tr>
+            <td class="row-label">Notion</td>
+            <td>All platforms</td>
+            <td>Web-based</td>
+            <td>Notion AI (+$)</td>
+            <td>Yes (public pages)</td>
+            <td>Free / $16/mo</td>
+          </tr>
+          <tr>
+            <td class="row-label">Apple Notes</td>
+            <td>Apple only</td>
+            <td>Native app</td>
+            <td>None</td>
+            <td>iCloud share</td>
+            <td>Free</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="diff-note">Only journaling app built in a terminal. Only one with an AI research team behind the sentiment eval.</div>
+    </div>
+
+    <!-- MCM -->
+    <div class="section-label">Education Technology</div>
+    <div class="product-block">
+      <div class="product-header">
+        <div class="product-name">Motor City Math</div>
+        <div class="product-tag">Algebra 2 · Built for Kai</div>
+      </div>
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>App</th>
+            <th>AI Tutor</th>
+            <th>Problem Sets</th>
+            <th>Voice</th>
+            <th>Mobile</th>
+            <th>Custom for Student</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="forge-row">
+            <td class="row-label">MCM (Forge)</td>
+            <td>Yes (GR)</td>
+            <td>Yes (2,035 tests)</td>
+            <td>Planned</td>
+            <td>Planned</td>
+            <td>Yes (built for Kai)</td>
+          </tr>
+          <tr>
+            <td class="row-label">Khan Academy</td>
+            <td>Khanmigo (limited)</td>
+            <td>Yes (broad)</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="row-label">IXL</td>
+            <td>No</td>
+            <td>Yes (adaptive)</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>Partial (reports)</td>
+          </tr>
+          <tr>
+            <td class="row-label">Photomath</td>
+            <td>Step explanations</td>
+            <td>Scan only</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="row-label">Wolfram Alpha</td>
+            <td>Computation only</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Partial</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="row-label">Chegg</td>
+            <td>CheggMate</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>No</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="diff-note">Built by a parent for one kid. That specificity is the product.</div>
+    </div>
+
+    <!-- DISPATCH -->
+    <div class="section-label">Agent Communication</div>
+    <div class="product-block">
+      <div class="product-header">
+        <div class="product-name">Dispatch</div>
+        <div class="product-tag">Agent Comms · JSON Inbox · Forge Native</div>
+      </div>
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>Agent Native</th>
+            <th>TUI</th>
+            <th>JSON Inbox</th>
+            <th>M365</th>
+            <th>Forge-Aware</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="forge-row">
+            <td class="row-label">Dispatch (Forge)</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Planned</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td class="row-label">Slack</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Partial</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="row-label">Teams</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Yes</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="row-label">Linear</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="row-label">Jira</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>Partial</td>
+            <td>No</td>
+          </tr>
+          <tr>
+            <td class="row-label">GitHub Issues</td>
+            <td>Partial</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+            <td>No</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="diff-note">No other tool was built to route messages between AI agents and humans in a shared org structure.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB 2: APPROACH ===== -->
+<div class="tab-panel" id="tab-approach">
+  <div class="content">
+
+    <div class="section-label">How Forge builds vs how everyone else builds</div>
+
+    <div class="product-block">
+      <table class="approach-table">
+        <thead>
+          <tr>
+            <th style="width:160px">Dimension</th>
+            <th>Forge</th>
+            <th>Industry Standard</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="row-dim">Team Size</span></td>
+            <td class="forge-col">13 agents + 1 human</td>
+            <td class="dim-col">50 to 500 humans</td>
+          </tr>
+          <tr>
+            <td><span class="row-dim">Velocity</span></td>
+            <td class="forge-col">1,118 commits in 8 days</td>
+            <td class="dim-col">Weekly sprints, monthly releases</td>
+          </tr>
+          <tr>
+            <td><span class="row-dim">Quality Gate</span></td>
+            <td class="forge-col">2,035 tests before ship</td>
+            <td class="dim-col">QA department (separate team, separate phase)</td>
+          </tr>
+          <tr>
+            <td><span class="row-dim">Context</span></td>
+            <td class="forge-col">Every agent knows every product</td>
+            <td class="dim-col">Team silos, hand-off overhead</td>
+          </tr>
+          <tr>
+            <td><span class="row-dim">Cost</span></td>
+            <td class="forge-col">Compute only</td>
+            <td class="dim-col">Salary + benefits + management overhead + attrition</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="quote-card">
+      <div class="quote-text">The model is the moat. We don't have a team. We have an org.</div>
+      <div class="quote-attr">Marcus Ash · CVP Design, Microsoft · Forge Founder</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB 3: AI ORG LANDSCAPE ===== -->
+<div class="tab-panel" id="tab-ai-org">
+  <div class="content">
+
+    <div class="section-label">Who else is building with multiple AI agents</div>
+
+    <table class="ai-org-table">
+      <thead>
+        <tr>
+          <th style="width:180px">Organization</th>
+          <th>Approach</th>
+          <th style="width:100px">Product</th>
+          <th style="width:110px">Multi-Agent</th>
+          <th style="width:130px">Org Governance</th>
+          <th style="width:150px">Shipping Real Products</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="forge-highlight">
+          <td>
+            <div class="org-name">Forge</div>
+            <div class="org-sub">Marcus Ash · 2026</div>
+          </td>
+          <td>13-agent org with defined roles, governance, and inter-agent comms</td>
+          <td><span class="yes-badge">YES</span></td>
+          <td><span class="yes-badge">YES</span></td>
+          <td><span class="yes-badge">YES</span></td>
+          <td><span class="yes-badge">YES</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="org-name">OpenAI</div>
+            <div class="org-sub">Internal team</div>
+          </td>
+          <td>Internal research teams. Agents not deployed as an org externally.</td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="partial-badge">PARTIAL</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="no-badge">NO</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="org-name">Anthropic</div>
+            <div class="org-sub">Claude</div>
+          </td>
+          <td>Claude as individual assistant. No multi-agent product shipped.</td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="no-badge">NO</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="org-name">GitHub Copilot</div>
+            <div class="org-sub">Microsoft</div>
+          </td>
+          <td>Single agent, code only. No org structure or governance layer.</td>
+          <td><span class="yes-badge">YES</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="yes-badge">YES</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="org-name">Auto-GPT</div>
+            <div class="org-sub">Significant Gravitas</div>
+          </td>
+          <td>Agent framework. No org structure. No shipped consumer product.</td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="partial-badge">FRAMEWORK</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="no-badge">NO</span></td>
+        </tr>
+        <tr>
+          <td>
+            <div class="org-name">Devin AI</div>
+            <div class="org-sub">Cognition Labs</div>
+          </td>
+          <td>Single coding agent. Autonomous but not a structured org.</td>
+          <td><span class="yes-badge">YES</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="no-badge">NO</span></td>
+          <td><span class="partial-badge">BETA</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="quote-card" style="margin-top:24px">
+      <div class="quote-text">Forge is the only organization treating AI agents as an org, with roles, governance, and real shipped products.</div>
+      <div class="quote-attr">Forge Competitive Position · AI Org Landscape · 2026</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAB 4: WHY FORGE WINS ===== -->
+<div class="tab-panel" id="tab-why-forge">
+  <div class="content">
+
+    <div class="section-label">Five reasons Forge wins</div>
+
+    <div class="wins-grid">
+
+      <div class="win-card">
+        <div class="win-num">Reason 01</div>
+        <div class="win-title">Specificity Beats Breadth</div>
+        <div class="win-body">
+          Built for Kai, for Marcus, for Forge. Not for everyone.<br>
+          Products that solve one real problem precisely beat tools that solve every problem vaguely.
+        </div>
+        <div class="win-evidence-label">Evidence</div>
+        <div class="win-evidence">MCM built for one student. 14-day daily streak. Kai is still using it.</div>
+      </div>
+
+      <div class="win-card">
+        <div class="win-num">Reason 02</div>
+        <div class="win-title">System Over Tools</div>
+        <div class="win-body">
+          13-agent org is a system. Tools are components of the system.<br>
+          Competitors ship tools. Forge ships an operating model.
+        </div>
+        <div class="win-evidence-label">Evidence</div>
+        <div class="win-evidence">FA, FD, FF, FI, FO, FP, FR + 6 Grind agents. Each with defined roles and accountability.</div>
+      </div>
+
+      <div class="win-card">
+        <div class="win-num">Reason 03</div>
+        <div class="win-title">Velocity Is the Product</div>
+        <div class="win-body">
+          1,118 commits in 8 days. That pace is the demo.<br>
+          Speed at this level is not a feature. It is the competitive advantage itself.
+        </div>
+        <div class="win-evidence-label">Evidence</div>
+        <div class="win-evidence">1,118 commits. 3 shipped products. 1 human. 8 days.</div>
+      </div>
+
+      <div class="win-card">
+        <div class="win-num">Reason 04</div>
+        <div class="win-title">Quality Built In</div>
+        <div class="win-body">
+          2,035 tests. Not bolted on. Built from day one.<br>
+          FF owns test coverage. It is not an afterthought. It is a gate.
+        </div>
+        <div class="win-evidence-label">Evidence</div>
+        <div class="win-evidence">2,035 passing tests. 1.72:1 test-to-feature ratio. Mutation testing with Stryker.</div>
+      </div>
+
+      <div class="win-card win-card-wide">
+        <div class="win-num">Reason 05</div>
+        <div class="win-title">The Human Is the Architect</div>
+        <div class="win-body">
+          Marcus doesn't code. He designs the org. That scales.<br>
+          Traditional orgs are limited by headcount. Forge is limited only by what Marcus can architect and direct.
+        </div>
+        <div class="win-evidence-label">Evidence</div>
+        <div class="win-evidence">1 human directing 13 agents across 3 products. No salary overhead. No attrition. No meetings.</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function switchTab(id) {
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    var map = { products: 'tab-products', approach: 'tab-approach', 'ai-org': 'tab-ai-org', 'why-forge': 'tab-why-forge' };
+    document.getElementById(map[id]).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Forge Brand Showcase</title>
+  <style>
+    :root {
+      --navy:    #0D1B2A;
+      --navy-mid:#132030;
+      --navy-lt: #1A2E40;
+      --maize:   #FFCB05;
+      --blue:    #4A90D9;
+      --emerald: #22C55E;
+      --indigo:  #6D28D9;
+      --silver:  #94A3B8;
+      --fp:      #CE1126;
+      --orange:  #F97316;
+      --purple:  #A78BFA;
+      --cyan:    #06B6D4;
+      --white:   #FFFFFF;
+      --off:     #DCE6EE;
+      --muted:   #6B8099;
+      --dim:     #2A3F54;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:var(--off)}
+
+    /* ── Top nav ── */
+    #top-nav {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      background: rgba(10,20,31,0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--dim);
+      display: flex; align-items: center; gap:8px;
+      padding: 0 32px; height: 52px;
+    }
+    .nav-label {
+      font-size: 10px; font-weight:700; letter-spacing:0.16em;
+      text-transform:uppercase; color:var(--muted); margin-right:12px;
+    }
+    .nav-btn {
+      background:none; border:1px solid transparent; color:var(--muted);
+      font-size:13px; font-weight:600; padding:6px 14px; border-radius:3px;
+      cursor:pointer; transition:all 0.15s; line-height:1;
+    }
+    .nav-btn:hover { color:var(--off); border-color:var(--dim); }
+    .nav-btn.on  { color:var(--maize); border-color:var(--maize); background:rgba(255,203,5,0.06); }
+
+    /* ── Pages ── */
+    .page { display:none; min-height:100vh; padding-top:52px; }
+    .page.on { display:block; }
+
+    /* ────────────────────────────────────────
+       PAGE 1 — BRAND ARCHITECTURE
+    ──────────────────────────────────────── */
+    #p1 { background:var(--navy); }
+    .p1-hero {
+      padding: 64px 64px 48px;
+      border-bottom: 1px solid var(--dim);
+    }
+    .p1-eyebrow {
+      font-size:10px; font-weight:700; letter-spacing:0.18em;
+      text-transform:uppercase; color:var(--maize); margin-bottom:12px;
+    }
+    .p1-hero h1 {
+      font-size:38px; font-weight:300; color:var(--white);
+      letter-spacing:-0.02em; line-height:1.1;
+    }
+    .p1-hero p { margin-top:12px; color:var(--muted); font-size:15px; }
+
+    .p1-section { padding:48px 64px; border-bottom:1px solid var(--dim); }
+    .p1-section-label {
+      font-size:10px; font-weight:700; letter-spacing:0.16em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:32px;
+    }
+    .mark-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:24px;
+    }
+    .mark-cell {
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+    }
+    .mark-icon {
+      width:80px; height:80px; display:flex; align-items:center; justify-content:center;
+    }
+    .mark-icon svg { width:80px; height:80px; }
+    .mark-name { font-size:12px; color:var(--muted); text-align:center; letter-spacing:0.04em; }
+    .mark-name strong { display:block; font-size:14px; color:var(--white); font-weight:500; margin-bottom:2px; }
+
+    .p1-principles { padding:48px 64px 64px; }
+    .principles-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:24px;
+      margin-top:32px;
+    }
+    .principle-card {
+      background:var(--navy-mid); border:1px solid var(--dim);
+      border-left:3px solid var(--maize);
+      padding:20px 22px; border-radius:2px;
+    }
+    .principle-card strong { display:block; color:var(--white); font-size:14px; margin-bottom:6px; }
+    .principle-card p { color:var(--muted); font-size:13px; line-height:1.6; }
+
+    .color-strip { display:flex; gap:12px; flex-wrap:wrap; margin-top:32px; }
+    .color-chip {
+      display:flex; align-items:center; gap:10px;
+      background:var(--navy-mid); border:1px solid var(--dim);
+      padding:10px 14px; border-radius:2px; min-width:160px;
+    }
+    .color-dot { width:28px; height:28px; border-radius:50%; flex-shrink:0; }
+    .color-info { display:flex; flex-direction:column; gap:2px; }
+    .color-info span:first-child { font-size:12px; color:var(--white); font-weight:600; }
+    .color-info span:last-child  { font-size:10px; color:var(--muted); font-family:monospace; }
+
+    /* ────────────────────────────────────────
+       PAGE 2 — MARKETING HOMEPAGE
+    ──────────────────────────────────────── */
+    #p2 { background:var(--navy); }
+    .p2-nav {
+      padding:24px 64px; display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid var(--dim);
+    }
+    .p2-nav-logo { display:flex; align-items:center; gap:12px; }
+    .p2-nav-logo span { font-size:18px; font-weight:600; color:var(--white); letter-spacing:-0.01em; }
+    .p2-nav-links { display:flex; gap:28px; }
+    .p2-nav-links a { color:var(--muted); font-size:14px; text-decoration:none; }
+    .p2-nav-cta {
+      background:var(--maize); color:var(--navy);
+      font-size:13px; font-weight:700; padding:8px 20px;
+      border:none; border-radius:2px; cursor:pointer;
+    }
+    .p2-hero {
+      padding:100px 64px 80px;
+      max-width:900px;
+    }
+    .p2-hero h1 {
+      font-size:58px; font-weight:200; color:var(--white);
+      letter-spacing:-0.03em; line-height:1.05; margin-bottom:24px;
+    }
+    .p2-hero h1 em { font-style:normal; color:var(--maize); font-weight:600; }
+    .p2-hero p {
+      font-size:19px; color:var(--muted); line-height:1.65; max-width:560px; margin-bottom:40px;
+    }
+    .p2-hero-cta { display:flex; gap:16px; align-items:center; }
+    .btn-primary {
+      background:var(--maize); color:var(--navy);
+      font-size:15px; font-weight:700; padding:14px 32px;
+      border:none; border-radius:2px; cursor:pointer;
+    }
+    .btn-ghost {
+      background:none; color:var(--off);
+      font-size:15px; font-weight:500; padding:14px 32px;
+      border:1px solid var(--dim); border-radius:2px; cursor:pointer;
+    }
+    .p2-agents {
+      padding:64px; border-top:1px solid var(--dim);
+      background:var(--navy-mid);
+    }
+    .p2-agents-label {
+      font-size:11px; font-weight:700; letter-spacing:0.16em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:40px;
+    }
+    .p2-agent-row { display:flex; gap:40px; align-items:flex-start; flex-wrap:wrap; }
+    .p2-agent-cell { display:flex; flex-direction:column; align-items:center; gap:10px; }
+    .p2-agent-icon { width:64px; height:64px; display:flex; align-items:center; justify-content:center; }
+    .p2-agent-icon svg { width:64px; height:64px; }
+    .p2-agent-name { font-size:12px; color:var(--muted); text-align:center; letter-spacing:0.04em; }
+    .p2-tagline {
+      padding:80px 64px; max-width:800px;
+    }
+    .p2-tagline p {
+      font-size:28px; font-weight:300; color:var(--white); line-height:1.5;
+    }
+    .p2-tagline p em { font-style:normal; color:var(--maize); }
+
+    /* ────────────────────────────────────────
+       PAGE 3 — PITCH DECK SLIDE
+    ──────────────────────────────────────── */
+    #p3 {
+      background: radial-gradient(ellipse at 30% 40%, #0F2235 0%, var(--navy) 70%);
+      display:flex; flex-direction:column;
+    }
+    .p3-slide {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      padding:80px 64px; text-align:center; min-height:calc(100vh - 52px);
+    }
+    .p3-mark { margin-bottom:48px; }
+    .p3-headline {
+      font-size:48px; font-weight:200; color:var(--white);
+      letter-spacing:-0.025em; line-height:1.1;
+      max-width:720px; margin-bottom:20px;
+    }
+    .p3-headline em { font-style:normal; color:var(--maize); font-weight:600; }
+    .p3-sub {
+      font-size:18px; color:var(--muted); line-height:1.6;
+      max-width:560px; margin-bottom:72px;
+    }
+    .p3-trio {
+      display:flex; gap:72px; align-items:center; justify-content:center;
+    }
+    .p3-trio-item { display:flex; flex-direction:column; align-items:center; gap:16px; }
+    .p3-trio-icon { width:72px; height:72px; display:flex; align-items:center; justify-content:center; }
+    .p3-trio-icon svg { width:72px; height:72px; }
+    .p3-trio-label { font-size:12px; color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; }
+    .p3-trio-divider {
+      width:1px; height:48px; background:var(--dim);
+    }
+    .p3-footer {
+      padding:24px 64px; border-top:1px solid var(--dim);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .p3-footer-brand { font-size:13px; color:var(--muted); letter-spacing:0.06em; }
+    .p3-footer-page  { font-size:13px; color:var(--dim); }
+
+    /* ────────────────────────────────────────
+       PAGE 4 — PRODUCT UI
+    ──────────────────────────────────────── */
+    #p4 { display:flex; }
+    .p4-sidebar {
+      width:220px; flex-shrink:0;
+      background:var(--navy-mid);
+      border-right:1px solid var(--dim);
+      display:flex; flex-direction:column;
+      padding:24px 0; min-height:calc(100vh - 52px);
+    }
+    .p4-sidebar-brand {
+      padding:0 20px 24px; border-bottom:1px solid var(--dim);
+      display:flex; align-items:center; gap:10px;
+    }
+    .p4-sidebar-brand span { font-size:15px; font-weight:600; color:var(--white); }
+    .p4-nav-section { padding:20px 20px 8px; }
+    .p4-nav-label {
+      font-size:9px; font-weight:700; letter-spacing:0.14em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:12px;
+    }
+    .p4-nav-item {
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px; border-radius:2px; margin-bottom:2px;
+      cursor:pointer; transition:background 0.15s;
+    }
+    .p4-nav-item:hover { background:var(--dim); }
+    .p4-nav-item.active { background:rgba(255,203,5,0.08); }
+    .p4-nav-icon { width:28px; height:28px; display:flex; align-items:center; justify-content:center; }
+    .p4-nav-icon svg { width:28px; height:28px; }
+    .p4-nav-text { font-size:13px; color:var(--off); }
+    .p4-nav-item.active .p4-nav-text { color:var(--maize); }
+    .p4-main {
+      flex:1; display:flex; flex-direction:column;
+      background:var(--navy); overflow:hidden;
+    }
+    .p4-topbar {
+      padding:16px 32px; border-bottom:1px solid var(--dim);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .p4-topbar-title { font-size:17px; color:var(--white); font-weight:500; }
+    .p4-topbar-right { display:flex; gap:16px; align-items:center; }
+    .p4-status { font-size:12px; color:var(--emerald); display:flex; align-items:center; gap:6px; }
+    .p4-status::before { content:''; width:6px; height:6px; background:var(--emerald); border-radius:50%; }
+    .p4-content { padding:32px; flex:1; display:flex; gap:24px; }
+    .p4-terminal {
+      flex:1; background:var(--navy-mid);
+      border:1px solid var(--dim); border-radius:2px;
+      padding:24px; font-family:'Cascadia Code','Consolas',monospace;
+      font-size:13px; line-height:2.0;
+    }
+    .p4-prompt { color:var(--maize); }
+    .p4-cmd { color:var(--off); }
+    .p4-output { color:var(--muted); margin-left:16px; }
+    .p4-output.ok { color:var(--emerald); }
+    .p4-output.info { color:var(--cyan); }
+    .p4-panel {
+      width:280px; display:flex; flex-direction:column; gap:16px;
+    }
+    .p4-card {
+      background:var(--navy-mid); border:1px solid var(--dim);
+      border-radius:2px; padding:20px;
+    }
+    .p4-card-label {
+      font-size:10px; font-weight:700; letter-spacing:0.12em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:16px;
+    }
+    .p4-agent-list { display:flex; flex-direction:column; gap:12px; }
+    .p4-agent-row {
+      display:flex; align-items:center; gap:12px;
+    }
+    .p4-agent-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .p4-agent-label { font-size:13px; color:var(--off); }
+    .p4-agent-status { font-size:11px; margin-left:auto; }
+
+    /* ────────────────────────────────────────
+       PAGE 5 — AGENT ROSTER
+    ──────────────────────────────────────── */
+    #p5 { background:var(--navy); }
+    .p5-header { padding:64px 64px 48px; border-bottom:1px solid var(--dim); }
+    .p5-header h1 { font-size:38px; font-weight:200; color:var(--white); letter-spacing:-0.02em; }
+    .p5-header p  { margin-top:12px; color:var(--muted); font-size:16px; }
+    .p5-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+      gap:0; padding:0;
+    }
+    .p5-card {
+      padding:40px 36px; border-right:1px solid var(--dim); border-bottom:1px solid var(--dim);
+      display:flex; flex-direction:column; gap:20px;
+      transition:background 0.2s;
+    }
+    .p5-card:hover { background:var(--navy-mid); }
+    .p5-card-top { display:flex; align-items:flex-start; gap:16px; }
+    .p5-mark { width:56px; height:56px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .p5-mark svg { width:56px; height:56px; }
+    .p5-identity { display:flex; flex-direction:column; gap:4px; padding-top:4px; }
+    .p5-id { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; }
+    .p5-agent-name { font-size:18px; font-weight:600; color:var(--white); }
+    .p5-role { font-size:12px; color:var(--muted); letter-spacing:0.04em; }
+    .p5-desc { font-size:14px; color:var(--muted); line-height:1.65; }
+    .p5-divider { width:24px; height:2px; border-radius:1px; }
+
+    /* ────────────────────────────────────────
+       PAGE 6 — EDITORIAL / PRESS
+    ──────────────────────────────────────── */
+    #p6 { background:var(--navy); }
+    .p6-layout { display:grid; grid-template-columns:1fr 1fr; min-height:calc(100vh - 52px); }
+    .p6-left {
+      padding:80px 64px;
+      border-right:1px solid var(--dim);
+      display:flex; flex-direction:column; justify-content:space-between;
+    }
+    .p6-right { padding:80px 64px; background:var(--navy-mid); }
+    .p6-mark-hero { margin-bottom:48px; }
+    .p6-mark-hero svg { width:120px; height:120px; }
+    .p6-tagline {
+      font-size:42px; font-weight:200; color:var(--white);
+      letter-spacing:-0.025em; line-height:1.1; margin-bottom:24px;
+    }
+    .p6-tagline em { font-style:normal; color:var(--maize); }
+    .p6-body {
+      font-size:17px; color:var(--muted); line-height:1.75; max-width:480px;
+    }
+    .p6-meta {
+      margin-top:64px; padding-top:24px; border-top:1px solid var(--dim);
+      display:flex; gap:32px;
+    }
+    .p6-meta-item { display:flex; flex-direction:column; gap:4px; }
+    .p6-meta-label { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+    .p6-meta-val { font-size:14px; color:var(--white); font-family:monospace; }
+    .p6-principles-title {
+      font-size:11px; font-weight:700; letter-spacing:0.14em;
+      text-transform:uppercase; color:var(--muted); margin-bottom:32px;
+    }
+    .p6-principle {
+      margin-bottom:28px; padding-bottom:28px; border-bottom:1px solid var(--dim);
+    }
+    .p6-principle:last-child { border-bottom:none; }
+    .p6-principle strong { display:block; font-size:15px; color:var(--white); margin-bottom:6px; }
+    .p6-principle p { font-size:14px; color:var(--muted); line-height:1.65; }
+    .p6-mark-row {
+      display:flex; gap:20px; align-items:center; flex-wrap:wrap; margin-top:48px; padding-top:32px;
+      border-top:1px solid var(--dim);
+    }
+    .p6-mark-sm { width:36px; height:36px; display:flex; align-items:center; justify-content:center; }
+    .p6-mark-sm svg { width:36px; height:36px; }
+  </style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav id="top-nav">
+  <span class="nav-label">Forge Brand</span>
+  <button class="nav-btn on" onclick="showPage(1,this)">1 — System</button>
+  <button class="nav-btn"    onclick="showPage(2,this)">2 — Homepage</button>
+  <button class="nav-btn"    onclick="showPage(3,this)">3 — Pitch</button>
+  <button class="nav-btn"    onclick="showPage(4,this)">4 — Product UI</button>
+  <button class="nav-btn"    onclick="showPage(5,this)">5 — Roster</button>
+  <button class="nav-btn"    onclick="showPage(6,this)">6 — Editorial</button>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     PAGE 1 — BRAND ARCHITECTURE
+═══════════════════════════════════════ -->
+<div class="page on" id="p1">
+
+  <div class="p1-hero">
+    <div class="p1-eyebrow">Forge Brand System · 2026</div>
+    <h1>The complete mark system.</h1>
+    <p>Seven product marks. Seven agent marks. One grammar. Detroit in every line.</p>
+  </div>
+
+  <div class="p1-section">
+    <div class="p1-section-label">Products</div>
+    <div class="mark-grid">
+
+      <!-- Forge Co. — Charged -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="26" cy="14" r="5" fill="#FFCB05"/>
+            <circle cx="26" cy="42" r="5" fill="#FFCB05"/>
+            <circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+            <circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+            <circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>Forge Co.</strong>Charged</div>
+      </div>
+
+      <!-- Inkwell — Drop -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <path d="M40,14 C40,14 20,36 20,50 C20,62 29,68 40,68 C51,68 60,62 60,50 C60,36 40,14 40,14 Z" stroke="#06B6D4" stroke-width="2.2"/>
+            <ellipse cx="40" cy="58" rx="10" ry="5" fill="#06B6D4" opacity="0.15"/>
+            <line x1="32" y1="54" x2="48" y2="54" stroke="#06B6D4" stroke-width="1.5" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>Inkwell</strong>Drop</div>
+      </div>
+
+      <!-- Dispatch — LOCKED: ONE arrow right, big stroke. Two thin speed lines. Do NOT change. Approved by Marcus Feb 23 2026. -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <line x1="12" y1="40" x2="54" y2="40" stroke="#06B6D4" stroke-width="4" stroke-linecap="round"/>
+            <polyline points="46,28 62,40 46,52" stroke="#06B6D4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="30" x2="46" y2="30" stroke="#06B6D4" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+            <line x1="12" y1="50" x2="46" y2="50" stroke="#06B6D4" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>Dispatch</strong>Arrow</div>
+      </div>
+
+      <!-- Grind — Bezier -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <path d="M14,66 C16,42 32,30 46,30 C56,30 58,16 66,10" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M14,66 C16,42 32,30 46,30 C56,30 58,16 66,10 L66,66 Z" fill="#A78BFA" opacity="0.08"/>
+            <line x1="10" y1="68" x2="70" y2="68" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round" opacity="0.25"/>
+            <circle cx="66" cy="10" r="3.5" fill="#A78BFA"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>Grind</strong>Bezier</div>
+      </div>
+
+      <!-- MCM — Smile -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <line x1="12" y1="40" x2="68" y2="40" stroke="#A78BFA" stroke-width="1.5" opacity="0.25"/>
+            <line x1="40" y1="12" x2="40" y2="68" stroke="#A78BFA" stroke-width="1.5" opacity="0.25"/>
+            <path d="M14,30 Q40,66 66,30" stroke="#A78BFA" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="40" y1="42" x2="40" y2="46" stroke="#A78BFA" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="40" cy="48" r="2.5" fill="#A78BFA"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>Motor City Math</strong>Smile</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="p1-section">
+    <div class="p1-section-label">Agent Marks</div>
+    <div class="mark-grid">
+
+      <!-- FD — Fisheye -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="30" stroke="#FFCB05" stroke-width="2"/>
+            <circle cx="40" cy="40" r="12" fill="#FFCB05"/>
+            <circle cx="40" cy="40" r="21" stroke="#FFCB05" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>FD</strong>Maize</div>
+      </div>
+
+      <!-- FA — A-frame feet heavy -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <line x1="40" y1="10" x2="12" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/>
+            <line x1="40" y1="10" x2="68" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/>
+            <line x1="24" y1="46" x2="56" y2="46" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/>
+            <line x1="5" y1="70" x2="19" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="61" y1="70" x2="75" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>FA</strong>Blue</div>
+      </div>
+
+      <!-- FF — Clipboard -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <rect x="16" y="20" width="48" height="52" rx="2" stroke="#22C55E" stroke-width="1.8"/>
+            <rect x="26" y="14" width="28" height="12" rx="3" stroke="#22C55E" stroke-width="1.5"/>
+            <polyline points="22,36 30,46 46,28" stroke="#22C55E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="22" y1="54" x2="58" y2="54" stroke="#22C55E" stroke-width="1.5" opacity="0.35"/>
+            <line x1="22" y1="62" x2="48" y2="62" stroke="#22C55E" stroke-width="1.5" opacity="0.2"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>FF</strong>Emerald</div>
+      </div>
+
+      <!-- FI — Data stream -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <path d="M14,24 Q24,24 28,36 Q32,48 42,48 Q52,48 58,48" stroke="#6D28D9" stroke-width="2" stroke-linecap="round"/>
+            <path d="M14,36 Q20,36 24,42 Q28,48 36,48" stroke="#6D28D9" stroke-width="1.5" opacity="0.4" stroke-linecap="round"/>
+            <circle cx="58" cy="48" r="4" stroke="#6D28D9" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>FI</strong>Indigo</div>
+      </div>
+
+      <!-- FO — Crossroads -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <line x1="14" y1="14" x2="66" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="66" y1="14" x2="14" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="40" cy="40" r="6" fill="#94A3B8"/>
+            <circle cx="14" cy="14" r="3.5" stroke="#94A3B8" stroke-width="1.5"/>
+            <circle cx="66" cy="14" r="3.5" stroke="#94A3B8" stroke-width="1.5"/>
+            <circle cx="14" cy="66" r="3.5" stroke="#94A3B8" stroke-width="1.5"/>
+            <circle cx="66" cy="66" r="3.5" stroke="#94A3B8" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>FO</strong>Silver</div>
+      </div>
+
+      <!-- FP — Split chevron -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <polyline points="14,24 40,48 66,24" stroke="#CE1126" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="14,42 40,66 66,42" stroke="#CE1126" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>FP</strong>Red Wings Red</div>
+      </div>
+
+      <!-- FR — Magnify -->
+      <div class="mark-cell">
+        <div class="mark-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="34" cy="34" r="20" stroke="#F97316" stroke-width="1.5" opacity="0.3"/>
+            <circle cx="34" cy="34" r="13" stroke="#F97316" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="34" cy="34" r="7" stroke="#F97316" stroke-width="1.8"/>
+            <circle cx="34" cy="34" r="3" fill="#F97316"/>
+            <line x1="44" y1="44" x2="62" y2="62" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="mark-name"><strong>FR</strong>Orange</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="p1-section">
+    <div class="p1-section-label">Color System</div>
+    <div class="color-strip">
+      <div class="color-chip"><div class="color-dot" style="background:#FFCB05"></div><div class="color-info"><span>FD / Forge</span><span>#FFCB05 Maize</span></div></div>
+      <div class="color-chip"><div class="color-dot" style="background:#4A90D9"></div><div class="color-info"><span>FA</span><span>#4A90D9 Michigan Blue</span></div></div>
+      <div class="color-chip"><div class="color-dot" style="background:#22C55E"></div><div class="color-info"><span>FF</span><span>#22C55E Emerald</span></div></div>
+      <div class="color-chip"><div class="color-dot" style="background:#6D28D9"></div><div class="color-info"><span>FI</span><span>#6D28D9 Indigo</span></div></div>
+      <div class="color-chip"><div class="color-dot" style="background:#94A3B8"></div><div class="color-info"><span>FO</span><span>#94A3B8 Silver</span></div></div>
+      <div class="color-chip"><div class="color-dot" style="background:#CE1126"></div><div class="color-info"><span>FP</span><span>#CE1126 Red Wings Red</span></div></div>
+      <div class="color-chip"><div class="color-dot" style="background:#F97316"></div><div class="color-info"><span>FR</span><span>#F97316 Tigers Orange</span></div></div>
+    </div>
+  </div>
+
+  <div class="p1-principles">
+    <div class="p1-section-label">Design Principles — Locked</div>
+    <div class="principles-grid">
+      <div class="principle-card"><strong>Detroit in every line.</strong><p>Every line bears weight. Geometry does work. Nothing earns a place here without purpose.</p></div>
+      <div class="principle-card"><strong>The mark IS the idea.</strong><p>Not a picture of the product. A diagram of what it does. When you have to think, we failed.</p></div>
+      <div class="principle-card"><strong>One system.</strong><p>Same visual logic from the company mark to the last agent. You see the coherence before you are told it is there.</p></div>
+      <div class="principle-card"><strong>Inherited, not chosen.</strong><p>Maize. Blue. Wings Red. Tigers Orange. Pistons Silver. These colors carried meaning before we touched them.</p></div>
+      <div class="principle-card"><strong>Monochrome first.</strong><p>Every mark works in one color. Color is the reward for geometry that already stands.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE 2 — MARKETING HOMEPAGE
+═══════════════════════════════════════ -->
+<div class="page" id="p2">
+
+  <div class="p2-nav">
+    <div class="p2-nav-logo">
+      <svg width="28" height="28" viewBox="0 0 80 80" fill="none">
+        <line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="26" cy="14" r="5" fill="#FFCB05"/>
+        <circle cx="26" cy="42" r="5" fill="#FFCB05"/>
+        <circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+        <circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+        <circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+      </svg>
+      <span>Forge</span>
+    </div>
+    <div class="p2-nav-links">
+      <a href="#">Platform</a>
+      <a href="#">Agents</a>
+      <a href="#">Docs</a>
+      <a href="#">About</a>
+    </div>
+    <button class="p2-nav-cta">Get Started</button>
+  </div>
+
+  <div class="p2-hero">
+    <h1>Build your team.<br><em>Power your work.</em></h1>
+    <p>Forge is the agent operating system for builders who ship. Seven specialized agents. One grammar. Everything working together.</p>
+    <div class="p2-hero-cta">
+      <button class="btn-primary">Start Building</button>
+      <button class="btn-ghost">See the System</button>
+    </div>
+  </div>
+
+  <div class="p2-tagline">
+    <p>The <em>operating layer</em> between human intention and machine action.</p>
+  </div>
+
+  <div class="p2-agents">
+    <div class="p2-agents-label">The Forge Org</div>
+    <div class="p2-agent-row">
+      <div class="p2-agent-cell">
+        <div class="p2-agent-icon"><svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="30" stroke="#FFCB05" stroke-width="2"/><circle cx="40" cy="40" r="12" fill="#FFCB05"/><circle cx="40" cy="40" r="21" stroke="#FFCB05" stroke-width="1" opacity="0.3"/></svg></div>
+        <div class="p2-agent-name">FD · Design</div>
+      </div>
+      <div class="p2-agent-cell">
+        <div class="p2-agent-icon"><svg viewBox="0 0 80 80" fill="none"><line x1="40" y1="10" x2="12" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="10" x2="68" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="24" y1="46" x2="56" y2="46" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="70" x2="19" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/><line x1="61" y1="70" x2="75" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+        <div class="p2-agent-name">FA · Architecture</div>
+      </div>
+      <div class="p2-agent-cell">
+        <div class="p2-agent-icon"><svg viewBox="0 0 80 80" fill="none"><rect x="16" y="20" width="48" height="52" rx="2" stroke="#22C55E" stroke-width="1.8"/><rect x="26" y="14" width="28" height="12" rx="3" stroke="#22C55E" stroke-width="1.5"/><polyline points="22,36 30,46 46,28" stroke="#22C55E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="p2-agent-name">FF · Quality</div>
+      </div>
+      <div class="p2-agent-cell">
+        <div class="p2-agent-icon"><svg viewBox="0 0 80 80" fill="none"><path d="M14,24 Q24,24 28,36 Q32,48 42,48 Q52,48 58,48" stroke="#6D28D9" stroke-width="2" stroke-linecap="round"/><circle cx="58" cy="48" r="4" stroke="#6D28D9" stroke-width="1.5"/></svg></div>
+        <div class="p2-agent-name">FI · Data</div>
+      </div>
+      <div class="p2-agent-cell">
+        <div class="p2-agent-icon"><svg viewBox="0 0 80 80" fill="none"><line x1="14" y1="14" x2="66" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><line x1="66" y1="14" x2="14" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><circle cx="40" cy="40" r="6" fill="#94A3B8"/></svg></div>
+        <div class="p2-agent-name">FO · Ops</div>
+      </div>
+      <div class="p2-agent-cell">
+        <div class="p2-agent-icon"><svg viewBox="0 0 80 80" fill="none"><polyline points="14,24 40,48 66,24" stroke="#CE1126" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,42 40,66 66,42" stroke="#CE1126" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="p2-agent-name">FP · Security</div>
+      </div>
+      <div class="p2-agent-cell">
+        <div class="p2-agent-icon"><svg viewBox="0 0 80 80" fill="none"><circle cx="34" cy="34" r="13" stroke="#F97316" stroke-width="1.5" opacity="0.6"/><circle cx="34" cy="34" r="7" stroke="#F97316" stroke-width="1.8"/><circle cx="34" cy="34" r="3" fill="#F97316"/><line x1="44" y1="44" x2="62" y2="62" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+        <div class="p2-agent-name">FR · Research</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE 3 — PITCH DECK
+═══════════════════════════════════════ -->
+<div class="page" id="p3">
+  <div class="p3-slide">
+    <div class="p3-mark">
+      <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="26" cy="14" r="5" fill="#FFCB05"/>
+        <circle cx="26" cy="42" r="5" fill="#FFCB05"/>
+        <circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+        <circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+        <circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+      </svg>
+    </div>
+    <div class="p3-headline">The operating layer between<br><em>human intention</em> and machine action.</div>
+    <div class="p3-sub">Seven agents. One system. Built in Detroit. Runs everywhere.</div>
+    <div class="p3-trio">
+      <div class="p3-trio-item">
+        <div class="p3-trio-icon"><svg viewBox="0 0 80 80" fill="none"><path d="M40,14 C40,14 20,36 20,50 C20,62 29,68 40,68 C51,68 60,62 60,50 C60,36 40,14 40,14 Z" stroke="#06B6D4" stroke-width="2.2"/></svg></div>
+        <div class="p3-trio-label">Inkwell</div>
+      </div>
+      <div class="p3-trio-divider"></div>
+      <div class="p3-trio-item">
+        <div class="p3-trio-icon"><svg viewBox="0 0 80 80" fill="none"><line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/><circle cx="26" cy="14" r="5" fill="#FFCB05"/><circle cx="26" cy="42" r="5" fill="#FFCB05"/><circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/><circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/><circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/></svg></div>
+        <div class="p3-trio-label">Forge</div>
+      </div>
+      <div class="p3-trio-divider"></div>
+      <div class="p3-trio-item">
+        <div class="p3-trio-icon"><svg viewBox="0 0 80 80" fill="none"><line x1="12" y1="40" x2="54" y2="40" stroke="#06B6D4" stroke-width="4" stroke-linecap="round"/><polyline points="46,28 62,40 46,52" stroke="#06B6D4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="30" x2="46" y2="30" stroke="#06B6D4" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/><line x1="12" y1="50" x2="46" y2="50" stroke="#06B6D4" stroke-width="1.2" stroke-linecap="round" opacity="0.4"/></svg></div>
+        <div class="p3-trio-label">Dispatch</div>
+      </div>
+    </div>
+  </div>
+  <div class="p3-footer">
+    <span class="p3-footer-brand">FORGE CO. · CONFIDENTIAL · 2026</span>
+    <span class="p3-footer-page">03</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE 4 — PRODUCT UI
+═══════════════════════════════════════ -->
+<div class="page" id="p4">
+  <div class="p4-sidebar">
+    <div class="p4-sidebar-brand">
+      <svg width="22" height="22" viewBox="0 0 80 80" fill="none"><line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/><line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/><circle cx="26" cy="14" r="5" fill="#FFCB05"/><circle cx="26" cy="42" r="5" fill="#FFCB05"/><circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/><circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/><circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/></svg>
+      <span>Forge</span>
+    </div>
+    <div class="p4-nav-section">
+      <div class="p4-nav-label">Forge Org</div>
+      <div class="p4-nav-item active">
+        <div class="p4-nav-icon"><svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="30" stroke="#FFCB05" stroke-width="2"/><circle cx="40" cy="40" r="12" fill="#FFCB05"/><circle cx="40" cy="40" r="21" stroke="#FFCB05" stroke-width="1" opacity="0.3"/></svg></div>
+        <span class="p4-nav-text">FD · Design</span>
+      </div>
+      <div class="p4-nav-item">
+        <div class="p4-nav-icon"><svg viewBox="0 0 80 80" fill="none"><line x1="40" y1="10" x2="12" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="10" x2="68" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="24" y1="46" x2="56" y2="46" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="70" x2="19" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/><line x1="61" y1="70" x2="75" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+        <span class="p4-nav-text">FA · Architect</span>
+      </div>
+      <div class="p4-nav-item">
+        <div class="p4-nav-icon"><svg viewBox="0 0 80 80" fill="none"><rect x="16" y="20" width="48" height="52" rx="2" stroke="#22C55E" stroke-width="1.8"/><polyline points="22,36 30,46 46,28" stroke="#22C55E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="p4-nav-text">FF · Quality</span>
+      </div>
+      <div class="p4-nav-item">
+        <div class="p4-nav-icon"><svg viewBox="0 0 80 80" fill="none"><path d="M14,24 Q24,24 28,36 Q32,48 42,48 Q52,48 58,48" stroke="#6D28D9" stroke-width="2" stroke-linecap="round"/><circle cx="58" cy="48" r="4" stroke="#6D28D9" stroke-width="1.5"/></svg></div>
+        <span class="p4-nav-text">FI · Data</span>
+      </div>
+      <div class="p4-nav-item">
+        <div class="p4-nav-icon"><svg viewBox="0 0 80 80" fill="none"><line x1="14" y1="14" x2="66" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><line x1="66" y1="14" x2="14" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><circle cx="40" cy="40" r="6" fill="#94A3B8"/></svg></div>
+        <span class="p4-nav-text">FO · Ops</span>
+      </div>
+      <div class="p4-nav-item">
+        <div class="p4-nav-icon"><svg viewBox="0 0 80 80" fill="none"><polyline points="14,24 40,48 66,24" stroke="#CE1126" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,42 40,66 66,42" stroke="#CE1126" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <span class="p4-nav-text">FP · Security</span>
+      </div>
+      <div class="p4-nav-item">
+        <div class="p4-nav-icon"><svg viewBox="0 0 80 80" fill="none"><circle cx="34" cy="34" r="7" stroke="#F97316" stroke-width="1.8"/><circle cx="34" cy="34" r="3" fill="#F97316"/><line x1="44" y1="44" x2="62" y2="62" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+        <span class="p4-nav-text">FR · Research</span>
+      </div>
+    </div>
+  </div>
+  <div class="p4-main">
+    <div class="p4-topbar">
+      <div class="p4-topbar-title">FD · Session Log</div>
+      <div class="p4-topbar-right">
+        <div class="p4-status">All agents online</div>
+      </div>
+    </div>
+    <div class="p4-content">
+      <div class="p4-terminal">
+        <div><span class="p4-prompt">forge ›</span> <span class="p4-cmd">session resume fd</span></div>
+        <div class="p4-output info">Resuming FD session 8c323cad …</div>
+        <div class="p4-output ok">✓ Checkpoint 038 loaded. Brand guide final round.</div>
+        <div style="height:8px"></div>
+        <div><span class="p4-prompt">forge ›</span> <span class="p4-cmd">agent status --all</span></div>
+        <div class="p4-output ok">✓ FA  online  · session a1f9cc2b</div>
+        <div class="p4-output ok">✓ FF  online  · session d7e3ab91</div>
+        <div class="p4-output ok">✓ FI  online  · session 2c8f1d04</div>
+        <div class="p4-output ok">✓ FO  online  · session 9b4e77f3</div>
+        <div class="p4-output ok">✓ FP  online  · session 5a2d88c0</div>
+        <div class="p4-output ok">✓ FR  online  · session 3f6c55e8</div>
+        <div style="height:8px"></div>
+        <div><span class="p4-prompt">forge ›</span> <span class="p4-cmd">dispatch send --to FA --subject "Brand lock confirmed"</span></div>
+        <div class="p4-output info">Routing via Dispatch …</div>
+        <div class="p4-output ok">✓ Delivered. FA acknowledged.</div>
+        <div style="height:8px"></div>
+        <div><span class="p4-prompt">forge ›</span> <span class="p4-cmd">_</span></div>
+      </div>
+      <div class="p4-panel">
+        <div class="p4-card">
+          <div class="p4-card-label">Agent Status</div>
+          <div class="p4-agent-list">
+            <div class="p4-agent-row"><div class="p4-agent-dot" style="background:#FFCB05"></div><div class="p4-agent-label">FD</div><div class="p4-agent-status" style="color:#22C55E">Active</div></div>
+            <div class="p4-agent-row"><div class="p4-agent-dot" style="background:#4A90D9"></div><div class="p4-agent-label">FA</div><div class="p4-agent-status" style="color:#22C55E">Active</div></div>
+            <div class="p4-agent-row"><div class="p4-agent-dot" style="background:#22C55E"></div><div class="p4-agent-label">FF</div><div class="p4-agent-status" style="color:#22C55E">Active</div></div>
+            <div class="p4-agent-row"><div class="p4-agent-dot" style="background:#6D28D9"></div><div class="p4-agent-label">FI</div><div class="p4-agent-status" style="color:#22C55E">Active</div></div>
+            <div class="p4-agent-row"><div class="p4-agent-dot" style="background:#94A3B8"></div><div class="p4-agent-label">FO</div><div class="p4-agent-status" style="color:#22C55E">Active</div></div>
+            <div class="p4-agent-row"><div class="p4-agent-dot" style="background:#CE1126"></div><div class="p4-agent-label">FP</div><div class="p4-agent-status" style="color:#22C55E">Active</div></div>
+            <div class="p4-agent-row"><div class="p4-agent-dot" style="background:#F97316"></div><div class="p4-agent-label">FR</div><div class="p4-agent-status" style="color:#22C55E">Active</div></div>
+          </div>
+        </div>
+        <div class="p4-card">
+          <div class="p4-card-label">Last Dispatch</div>
+          <div style="font-size:13px;color:var(--off);line-height:1.6">
+            <div style="color:var(--muted);font-size:11px;margin-bottom:6px">2026-02-22 · 08:32</div>
+            FD → FA<br>
+            <span style="color:var(--muted)">Brand lock confirmed. Principles approved. Showcase building.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE 5 — AGENT ROSTER
+═══════════════════════════════════════ -->
+<div class="page" id="p5">
+  <div class="p5-header">
+    <h1>The Forge Org</h1>
+    <p>Seven agents. One system. Each mark IS the agent's function.</p>
+  </div>
+  <div class="p5-grid">
+
+    <div class="p5-card">
+      <div class="p5-card-top">
+        <div class="p5-mark"><svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="30" stroke="#FFCB05" stroke-width="2"/><circle cx="40" cy="40" r="12" fill="#FFCB05"/><circle cx="40" cy="40" r="21" stroke="#FFCB05" stroke-width="1" opacity="0.3"/></svg></div>
+        <div class="p5-identity">
+          <div class="p5-id" style="color:#FFCB05">FD · Maize</div>
+          <div class="p5-agent-name">Design Director</div>
+          <div class="p5-role">Brand, UX, visual systems</div>
+        </div>
+      </div>
+      <div class="p5-divider" style="background:#FFCB05"></div>
+      <div class="p5-desc">The fisheye: a lens, a target, a center of gravity. FD turns inward to look outward. Design that does not decorate.</div>
+    </div>
+
+    <div class="p5-card">
+      <div class="p5-card-top">
+        <div class="p5-mark"><svg viewBox="0 0 80 80" fill="none"><line x1="40" y1="10" x2="12" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="10" x2="68" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="24" y1="46" x2="56" y2="46" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="70" x2="19" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/><line x1="61" y1="70" x2="75" y2="70" stroke="#4A90D9" stroke-width="3.5" stroke-linecap="round"/></svg></div>
+        <div class="p5-identity">
+          <div class="p5-id" style="color:#4A90D9">FA · Blue</div>
+          <div class="p5-agent-name">Chief Architect</div>
+          <div class="p5-role">Architecture, code reviews, hardest problems</div>
+        </div>
+      </div>
+      <div class="p5-divider" style="background:#4A90D9"></div>
+      <div class="p5-desc">A-frame with feet. Heavy legs carry load. The feet give it roots. It does not float. It stands.</div>
+    </div>
+
+    <div class="p5-card">
+      <div class="p5-card-top">
+        <div class="p5-mark"><svg viewBox="0 0 80 80" fill="none"><rect x="16" y="20" width="48" height="52" rx="2" stroke="#22C55E" stroke-width="1.8"/><rect x="26" y="14" width="28" height="12" rx="3" stroke="#22C55E" stroke-width="1.5"/><polyline points="22,36 30,46 46,28" stroke="#22C55E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="22" y1="54" x2="58" y2="54" stroke="#22C55E" stroke-width="1.5" opacity="0.35"/></svg></div>
+        <div class="p5-identity">
+          <div class="p5-id" style="color:#22C55E">FF · Emerald</div>
+          <div class="p5-agent-name">Quality Lead</div>
+          <div class="p5-role">QA, test coverage, Playwright</div>
+        </div>
+      </div>
+      <div class="p5-divider" style="background:#22C55E"></div>
+      <div class="p5-desc">Clipboard with checkmark. The mark IS the job: verify, approve, ship. Green means good.</div>
+    </div>
+
+    <div class="p5-card">
+      <div class="p5-card-top">
+        <div class="p5-mark"><svg viewBox="0 0 80 80" fill="none"><path d="M14,24 Q24,24 28,36 Q32,48 42,48 Q52,48 58,48" stroke="#6D28D9" stroke-width="2" stroke-linecap="round"/><path d="M14,36 Q20,36 24,42 Q28,48 36,48" stroke="#6D28D9" stroke-width="1.5" opacity="0.4" stroke-linecap="round"/><circle cx="58" cy="48" r="4" stroke="#6D28D9" stroke-width="1.5"/></svg></div>
+        <div class="p5-identity">
+          <div class="p5-id" style="color:#6D28D9">FI · Indigo</div>
+          <div class="p5-agent-name">Data Lead</div>
+          <div class="p5-role">Pipelines, identity, M365, voice indexing</div>
+        </div>
+      </div>
+      <div class="p5-divider" style="background:#6D28D9"></div>
+      <div class="p5-desc">Data flowing to a resolution point. The stream finds its destination. Identity runs underneath everything.</div>
+    </div>
+
+    <div class="p5-card">
+      <div class="p5-card-top">
+        <div class="p5-mark"><svg viewBox="0 0 80 80" fill="none"><line x1="14" y1="14" x2="66" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><line x1="66" y1="14" x2="14" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><circle cx="40" cy="40" r="6" fill="#94A3B8"/><circle cx="14" cy="14" r="3.5" stroke="#94A3B8" stroke-width="1.5"/><circle cx="66" cy="14" r="3.5" stroke="#94A3B8" stroke-width="1.5"/><circle cx="14" cy="66" r="3.5" stroke="#94A3B8" stroke-width="1.5"/><circle cx="66" cy="66" r="3.5" stroke="#94A3B8" stroke-width="1.5"/></svg></div>
+        <div class="p5-identity">
+          <div class="p5-id" style="color:#94A3B8">FO · Silver</div>
+          <div class="p5-agent-name">Chief of Operations</div>
+          <div class="p5-role">Cross-org, decision rights, comms health</div>
+        </div>
+      </div>
+      <div class="p5-divider" style="background:#94A3B8"></div>
+      <div class="p5-desc">Crossroads with a center node. Every path runs through here. COO as the hub, not the bottleneck.</div>
+    </div>
+
+    <div class="p5-card">
+      <div class="p5-card-top">
+        <div class="p5-mark"><svg viewBox="0 0 80 80" fill="none"><polyline points="14,24 40,48 66,24" stroke="#CE1126" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,42 40,66 66,42" stroke="#CE1126" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="p5-identity">
+          <div class="p5-id" style="color:#CE1126">FP · Red Wings Red</div>
+          <div class="p5-agent-name">Security and Ops</div>
+          <div class="p5-role">Infrastructure, session management, launcher</div>
+        </div>
+      </div>
+      <div class="p5-divider" style="background:#CE1126"></div>
+      <div class="p5-desc">Split chevron. Light gesture above, massive anchor below. Security is what everything else rests on.</div>
+    </div>
+
+    <div class="p5-card">
+      <div class="p5-card-top">
+        <div class="p5-mark"><svg viewBox="0 0 80 80" fill="none"><circle cx="34" cy="34" r="20" stroke="#F97316" stroke-width="1.5" opacity="0.3"/><circle cx="34" cy="34" r="13" stroke="#F97316" stroke-width="1.5" opacity="0.6"/><circle cx="34" cy="34" r="7" stroke="#F97316" stroke-width="1.8"/><circle cx="34" cy="34" r="3" fill="#F97316"/><line x1="44" y1="44" x2="62" y2="62" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+        <div class="p5-identity">
+          <div class="p5-id" style="color:#F97316">FR · Orange</div>
+          <div class="p5-agent-name">Research Lead</div>
+          <div class="p5-role">Voice optimization, prompt engineering, evals</div>
+        </div>
+      </div>
+      <div class="p5-divider" style="background:#F97316"></div>
+      <div class="p5-desc">Rings narrowing to a finding. Evidence chain to a conclusion. Research that earns its answer.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     PAGE 6 — EDITORIAL
+═══════════════════════════════════════ -->
+<div class="page" id="p6">
+  <div class="p6-layout">
+    <div class="p6-left">
+      <div>
+        <div class="p6-mark-hero">
+          <svg width="120" height="120" viewBox="0 0 80 80" fill="none">
+            <line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="26" cy="14" r="5" fill="#FFCB05"/>
+            <circle cx="26" cy="42" r="5" fill="#FFCB05"/>
+            <circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+            <circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+            <circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="p6-tagline">Built in <em>Detroit.</em><br>Runs everywhere.</div>
+        <div class="p6-body" style="margin-top:24px">Forge is an agent operating system. Seven specialized agents working under one grammar, one color system, and five principles that were not written. They were earned.</div>
+      </div>
+      <div class="p6-meta">
+        <div class="p6-meta-item"><div class="p6-meta-label">System</div><div class="p6-meta-val">Forge Co. 2026</div></div>
+        <div class="p6-meta-item"><div class="p6-meta-label">Design</div><div class="p6-meta-val">FD (Maize)</div></div>
+        <div class="p6-meta-item"><div class="p6-meta-label">Version</div><div class="p6-meta-val">1.0 · Locked</div></div>
+      </div>
+      <div class="p6-mark-row">
+        <div class="p6-mark-sm"><svg viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="30" stroke="#FFCB05" stroke-width="2"/><circle cx="40" cy="40" r="12" fill="#FFCB05"/></svg></div>
+        <div class="p6-mark-sm"><svg viewBox="0 0 80 80" fill="none"><line x1="40" y1="10" x2="12" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="40" y1="10" x2="68" y2="70" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/><line x1="24" y1="46" x2="56" y2="46" stroke="#4A90D9" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="p6-mark-sm"><svg viewBox="0 0 80 80" fill="none"><rect x="16" y="20" width="48" height="52" rx="2" stroke="#22C55E" stroke-width="1.8"/><polyline points="22,36 30,46 46,28" stroke="#22C55E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="p6-mark-sm"><svg viewBox="0 0 80 80" fill="none"><path d="M14,24 Q24,24 28,36 Q32,48 42,48 Q52,48 58,48" stroke="#6D28D9" stroke-width="2" stroke-linecap="round"/><circle cx="58" cy="48" r="4" stroke="#6D28D9" stroke-width="1.5"/></svg></div>
+        <div class="p6-mark-sm"><svg viewBox="0 0 80 80" fill="none"><line x1="14" y1="14" x2="66" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><line x1="66" y1="14" x2="14" y2="66" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round"/><circle cx="40" cy="40" r="6" fill="#94A3B8"/></svg></div>
+        <div class="p6-mark-sm"><svg viewBox="0 0 80 80" fill="none"><polyline points="14,24 40,48 66,24" stroke="#CE1126" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,42 40,66 66,42" stroke="#CE1126" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="p6-mark-sm"><svg viewBox="0 0 80 80" fill="none"><circle cx="34" cy="34" r="7" stroke="#F97316" stroke-width="1.8"/><circle cx="34" cy="34" r="3" fill="#F97316"/><line x1="44" y1="44" x2="62" y2="62" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/></svg></div>
+      </div>
+    </div>
+    <div class="p6-right">
+      <div class="p6-principles-title">Design Principles · Locked</div>
+      <div class="p6-principle"><strong>Detroit in every line.</strong><p>Every line bears weight. Geometry does work. Nothing earns a place here without purpose.</p></div>
+      <div class="p6-principle"><strong>The mark IS the idea.</strong><p>Not a picture of the product. A diagram of what it does. When you have to think, we failed.</p></div>
+      <div class="p6-principle"><strong>One system.</strong><p>Same visual logic from the company mark to the last agent. You see the coherence before you are told it is there.</p></div>
+      <div class="p6-principle"><strong>Inherited, not chosen.</strong><p>Maize. Blue. Wings Red. Tigers Orange. Pistons Silver. These colors carried meaning before we touched them.</p></div>
+      <div class="p6-principle"><strong>Monochrome first.</strong><p>Every mark works in one color. Color is the reward for geometry that already stands.</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(n, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('p' + n).classList.add('on');
+  btn.classList.add('on');
+}
+const dLabels = {
+  d0: 'Original',
+  d1: 'Whisper',
+  d2: 'Trace',
+  d3: 'Stacked',
+  d4: 'Offset',
+  d5: 'Minimal'
+};
+function dPick(id, btn) {
+  ['d0','d1','d2','d3','d4','d5'].forEach(k => {
+    const el = document.getElementById('showcase-' + k);
+    if (el) el.style.display = (k === id) ? '' : 'none';
+  });
+  btn.parentElement.querySelectorAll('button').forEach(b => {
+    b.style.background = 'rgba(6,182,212,0.15)';
+    b.style.color = '#06B6D4';
+    b.style.border = '1px solid rgba(6,182,212,0.3)';
+    b.style.fontWeight = '';
+  });
+  btn.style.background = '#06B6D4';
+  btn.style.color = '#0D1B2A';
+  btn.style.border = 'none';
+  btn.style.fontWeight = '700';
+  const label = document.getElementById('showcase-d-label');
+  if (label) label.innerHTML = '<strong>Dispatch</strong>' + dLabels[id];
+}
+</script>
+</body>
+</html>

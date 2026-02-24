@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FD — Canvas Feedback System Demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0A0A0F; --surface: #0F172A; --border: #1E293B;
+    --text: #E2E8F0; --muted: #64748B; --subtle: #94A3B8;
+    --maize: #FFCB05; --navy: #1E293B;
+    --font: 'Segoe UI Variable','Segoe UI',Arial,sans-serif;
+    --mono: 'Cascadia Code','Consolas',monospace;
+  }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font);
+    padding: 48px 64px;
+    display: flex; flex-direction: column; gap: 48px;
+    min-height: 100vh;
+  }
+
+  .header {
+    display: flex; align-items: baseline; gap: 14px;
+    border-bottom: 1px solid var(--border); padding-bottom: 16px;
+  }
+  .badge { background: var(--maize); color: var(--bg); font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 0.12em; padding: 3px 10px; border-radius: 4px; }
+  .header h1 { font-size: 20px; font-weight: 600; color: #F8FAFC; letter-spacing: -0.02em; }
+  .ts { margin-left: auto; font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  .section-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--subtle);
+    padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 18px;
+  }
+
+  /* How-to-use callout */
+  .usage-block {
+    background: #1A1600; border: 1px solid #3A2E00; border-left: 3px solid var(--maize);
+    border-radius: 8px; padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .usage-title { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--maize); letter-spacing: 0.1em; text-transform: uppercase; }
+  .usage-code { font-family: var(--mono); font-size: 12px; color: #CBD5E1; background: #0F172A; border: 1px solid var(--border); border-radius: 5px; padding: 8px 12px; }
+  .usage-desc { font-size: 13px; color: #78350F; line-height: 1.6; }
+
+  /* Simulated slides for demo */
+  .slides { display: flex; flex-direction: column; gap: 24px; }
+
+  .slide {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 36px 40px; position: relative; overflow: hidden;
+  }
+  .slide::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: var(--maize);
+  }
+  .slide-num {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    color: var(--maize); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .slide h2 { font-size: 22px; font-weight: 700; color: #F8FAFC; letter-spacing: -0.02em; margin-bottom: 10px; }
+  .slide p  { font-size: 14px; color: var(--muted); line-height: 1.65; max-width: 60ch; }
+
+  /* Feature grid */
+  .feature-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .feat {
+    background: #0A0A0F; border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .feat-icon { font-size: 20px; }
+  .feat-name { font-size: 13px; font-weight: 600; color: #E2E8F0; }
+  .feat-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  .kbd {
+    font-family: var(--mono); font-size: 10px; background: var(--border);
+    color: #CBD5E1; padding: 1px 5px; border-radius: 3px; border: 1px solid #334155;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="badge">FD</div>
+  <h1>Canvas Feedback System — Demo</h1>
+  <div class="ts">2026-02-23</div>
+</div>
+
+<div>
+  <div class="section-label">How to Add to Any Canvas</div>
+  <div class="usage-block">
+    <div class="usage-title">One-line drop-in · Add before &lt;/body&gt;</div>
+    <div class="usage-code">&lt;script src="canvas-feedback.js"&gt;&lt;/script&gt;</div>
+    <div class="usage-desc">
+      That's it. The yellow FD button appears bottom-right on every canvas. Click it to open the feedback drawer.
+      Voice input, text area, submit, export. No server required. All feedback lives in the browser session.
+    </div>
+  </div>
+</div>
+
+<div>
+  <div class="section-label">Features</div>
+  <div class="feature-grid">
+    <div class="feat">
+      <div class="feat-icon">🎙️</div>
+      <div class="feat-name">Voice input</div>
+      <div class="feat-desc">Hold the mic button to speak. Uses Web Speech API. Transcribes directly into the text field. Works in Chrome and Edge.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📍</div>
+      <div class="feat-name">Auto context</div>
+      <div class="feat-desc">Detects which slide or section you're looking at from visible DOM elements. Updates as you scroll. You never have to say "on slide 12…"</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📤</div>
+      <div class="feat-name">Export report</div>
+      <div class="feat-desc">One click generates a compiled HTML feedback report — all items, context labels, timestamps — downloaded as a file ready to send to any agent inbox.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⌨️</div>
+      <div class="feat-name">Keyboard shortcuts</div>
+      <div class="feat-desc"><span class="kbd">Ctrl+Enter</span> to submit · <span class="kbd">Esc</span> to close. Never need to reach for the mouse mid-review.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🔢</div>
+      <div class="feat-name">Live count badge</div>
+      <div class="feat-desc">The FD button shows a red count badge when feedback is waiting to be exported. You can see at a glance how much you've collected.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🔒</div>
+      <div class="feat-name">Zero dependencies</div>
+      <div class="feat-desc">Pure vanilla JS. No CDN, no Node, no build step. Drop the file next to any canvas HTML and it works offline, on any machine.</div>
+    </div>
+  </div>
+</div>
+
+<div class="slides">
+  <div class="section-label">Sample Slides — Try Leaving Feedback on These</div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 01 — Hero</div>
+    <h2>Forge</h2>
+    <p>The autonomous design and engineering org. Built on agents. Shipped on discipline.</p>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 07 — Problem</div>
+    <h2>The problem with AI tooling today</h2>
+    <p>Every AI tool ships the same generic interface. Nobody has designed for the autonomous workflow — the one where your agents are actually doing work while you sleep. Forge is that interface.</p>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 14 — Traction</div>
+    <h2>3,008 verified problems</h2>
+    <p>Motor City Math: Kai's personalized Algebra 2 system. 10 exams. 94% latest score. Not a demo. Live and deployed on GitHub Pages.</p>
+  </div>
+
+</div>
+
+<!-- CANVAS FEEDBACK SYSTEM — drop-in -->
+<script src="canvas-feedback.js"></script>
+</body>
+</html>

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voice to Message — Day One</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f3f3f3;
+    font-family: "Segoe UI Variable", "Segoe UI", -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .window {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+    width: 100%;
+    max-width: 680px;
+    overflow: hidden;
+  }
+
+  /* Title bar */
+  .titlebar {
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .titlebar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mic-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .titlebar h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.01em;
+  }
+
+  .history-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 500;
+    transition: background 0.12s;
+  }
+  .history-btn:hover { background: #f5f5f5; }
+
+  /* Stepper */
+  .stepper {
+    background: #fff;
+    border-bottom: 1px solid #ebebeb;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+  }
+
+  .step-item:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: calc(50% + 18px);
+    right: calc(-50% + 18px);
+    top: 50%;
+    height: 2px;
+    background: #e0e0e0;
+    transform: translateY(-50%);
+  }
+
+  .step-item.done::after { background: #107c10; }
+  .step-item.active::after { background: #0f6cbd; }
+
+  .step-indicator {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-item.done  .step-indicator { background: #107c10; color: white; font-size: 14px; }
+  .step-item.active .step-indicator { background: #0f6cbd; color: white; width: 10px; height: 10px; box-shadow: 0 0 0 9px #ddeeff; }
+  .step-item.future .step-indicator { background: #e5e5e5; color: #888; }
+
+  .step-label {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .step-item.done   .step-label { color: #107c10; }
+  .step-item.active .step-label { color: #0f6cbd; }
+  .step-item.future .step-label { color: #999; }
+
+  /* Body */
+  .app-body {
+    padding: 28px 28px 20px;
+  }
+
+  .ready-heading {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .ready-sub {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 16px;
+  }
+
+  .message-area {
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    padding: 16px 18px;
+    min-height: 220px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #1a1a1a;
+    background: #fafafa;
+    position: relative;
+  }
+
+  .message-area::-webkit-scrollbar { width: 6px; }
+  .message-area::-webkit-scrollbar-thumb { background: #d0d0d0; border-radius: 3px; }
+
+  .msg-section { margin-bottom: 14px; }
+  .msg-section:last-child { margin-bottom: 0; }
+
+  .msg-heading {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .msg-body {
+    font-size: 13.5px;
+    color: #333;
+    line-height: 1.65;
+  }
+
+  .msg-quote {
+    font-size: 13.5px;
+    color: #555;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  /* Footer actions */
+  .app-footer {
+    padding: 16px 28px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s;
+    border: 1px solid transparent;
+  }
+
+  .btn-primary {
+    background: #0f6cbd;
+    color: white;
+    border-color: #0f6cbd;
+  }
+  .btn-primary:hover { background: #0d5ea6; }
+
+  .btn-secondary {
+    background: #fff;
+    color: #333;
+    border-color: #d0d0d0;
+  }
+  .btn-secondary:hover { background: #f5f5f5; }
+
+  .btn-new {
+    margin-left: auto;
+    background: #fff;
+    color: #333;
+    border-color: #d0d0d0;
+  }
+  .btn-new:hover { background: #f5f5f5; }
+
+  .copied-status {
+    width: 100%;
+    padding: 0 0 4px 2px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #107c10;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* Label overlay */
+  .day-label {
+    text-align: center;
+    margin-top: 32px;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #aaa;
+    font-weight: 600;
+  }
+
+  .day-label span {
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 6px 20px;
+  }
+</style>
+</head>
+<body>
+
+<div>
+  <div class="window">
+
+    <!-- Title bar -->
+    <div class="titlebar">
+      <div class="titlebar-left">
+        <div class="mic-icon">🎙️</div>
+        <h1>Voice to Message</h1>
+      </div>
+      <button class="history-btn">🗒️ History</button>
+    </div>
+
+    <!-- Stepper -->
+    <div class="stepper">
+      <div class="step-item done">
+        <div class="step-indicator">✓</div>
+        <div class="step-label">Record</div>
+      </div>
+      <div class="step-item done">
+        <div class="step-indicator">✓</div>
+        <div class="step-label">Transcribe</div>
+      </div>
+      <div class="step-item done">
+        <div class="step-indicator">✓</div>
+        <div class="step-label">Generate</div>
+      </div>
+      <div class="step-item active">
+        <div class="step-indicator"></div>
+        <div class="step-label">Review</div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="app-body">
+      <div class="ready-heading">Your message is ready</div>
+      <div class="ready-sub">Edit below, then copy or save.</div>
+
+      <div class="message-area">
+        <div class="msg-quote">"Sometimes, when I'm alone, I think to myself, what a wonderful world." — Louis Armstrong</div>
+
+        <div class="msg-section">
+          <div class="msg-heading">🚀 Show Up, Be Your Best</div>
+          <div class="msg-body">Every day, we have the privilege to bring our best selves to the table. It's not just about showing up — it's about showing up excited, ready to push the boundaries, and determined to make a real impact. We get to build, create, and shape the frontier together.</div>
+        </div>
+
+        <div class="msg-section">
+          <div class="msg-heading">🔥 Opportunity Is Everywhere</div>
+          <div class="msg-body">Whether it's tackling a new challenge, shipping a product, or finding innovative solutions, every moment is a chance to level up. This team is filled with makers, builders, and dreamers who choose to step up and own the moment.</div>
+        </div>
+
+        <div class="msg-section">
+          <div class="msg-heading">🌐 Unlocking Our Potential</div>
+          <div class="msg-body">When we collaborate and build like this — anything is possible.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="app-footer">
+      <div class="copied-status">✓ Copied to clipboard</div>
+      <button class="btn btn-primary">🗒️ Copy to Clipboard</button>
+      <button class="btn btn-secondary">💾 Save</button>
+      <button class="btn btn-secondary">↺ Regenerate</button>
+      <button class="btn btn-new">🎙️ New Message</button>
+    </div>
+
+  </div>
+
+  <div class="day-label">
+    <span>Valentine's Day · February 14 · 9:00 AM — Day One</span>
+  </div>
+</div>
+
+</body>
+</html>

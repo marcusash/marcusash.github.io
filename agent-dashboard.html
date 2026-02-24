@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Agent Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0c0c0c;
+    font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Selector bar */
+  .selector-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #161616;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    gap: 0;
+    padding: 0 24px;
+    align-items: center;
+  }
+
+  .selector-bar button {
+    background: none;
+    border: none;
+    color: #666;
+    padding: 14px 22px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    letter-spacing: 0.04em;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .selector-bar button:hover { color: #aaa; }
+  .selector-bar button.active { color: #fff; border-bottom-color: #4D7BFF; }
+
+  .bar-title {
+    color: #333;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-right: 24px;
+  }
+
+  .bar-timestamp { color: #333; font-size: 11px; margin-left: auto; }
+  .bar-timestamp span { color: #4D7BFF; }
+
+  /* Screens */
+  .screen { display: none; padding: 28px 32px; }
+  .screen.active { display: block; }
+
+  .screen-label {
+    color: #333;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .screen-label span { color: #FFCB05; }
+
+  /* Dashboard grid */
+  .dash-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .dash-title { color: #fff; font-size: 18px; font-weight: 700; letter-spacing: 0.06em; }
+  .dash-subtitle { color: #444; font-size: 12px; }
+  .dash-stat {
+    margin-left: auto;
+    text-align: right;
+  }
+  .dash-stat-num { color: #34D399; font-size: 20px; font-weight: 700; }
+  .dash-stat-label { color: #444; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* Agent cards grid */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .agent-card {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.15s;
+  }
+
+  .agent-card:hover { border-color: #2a2a2a; }
+  .agent-card.active-now { border-color: #34D399; }
+  .agent-card.has-breach { border-color: #E74856; }
+  .agent-card.offline { opacity: 0.45; }
+
+  .agent-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .agent-id-badge {
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 3px 8px;
+    letter-spacing: 0.06em;
+  }
+
+  /* Forge team colors */
+  .badge-fa { background: rgba(77,123,255,0.2); color: #4D7BFF; border: 1px solid rgba(77,123,255,0.3); }
+  .badge-fd { background: rgba(255,203,5,0.15); color: #FFCB05; border: 1px solid rgba(255,203,5,0.2); }
+  .badge-ff { background: rgba(52,211,153,0.15); color: #34D399; border: 1px solid rgba(52,211,153,0.2); }
+  .badge-fi { background: rgba(0,212,170,0.15); color: #00D4AA; border: 1px solid rgba(0,212,170,0.2); }
+  .badge-fo { background: rgba(192,132,252,0.15); color: #C084FC; border: 1px solid rgba(192,132,252,0.2); }
+  .badge-fp { background: rgba(249,115,22,0.15); color: #F97316; border: 1px solid rgba(249,115,22,0.2); }
+  .badge-fr { background: rgba(77,123,255,0.15); color: #9ab3ff; border: 1px solid rgba(77,123,255,0.2); }
+  /* Grind team */
+  .badge-ga { background: rgba(52,211,153,0.12); color: #34D399; border: 1px solid rgba(52,211,153,0.15); }
+  .badge-gd { background: rgba(255,203,5,0.12); color: #FFCB05; border: 1px solid rgba(255,203,5,0.15); }
+  .badge-gf { background: rgba(52,211,153,0.12); color: #34D399; border: 1px solid rgba(52,211,153,0.15); }
+  .badge-gi { background: rgba(0,212,170,0.12); color: #00D4AA; border: 1px solid rgba(0,212,170,0.15); }
+  .badge-gp { background: rgba(249,115,22,0.12); color: #F97316; border: 1px solid rgba(249,115,22,0.15); }
+  .badge-gr { background: rgba(192,132,252,0.12); color: #C084FC; border: 1px solid rgba(192,132,252,0.15); }
+
+  .agent-name { color: #ccc; font-size: 11px; font-weight: 600; }
+  .agent-role { color: #444; font-size: 10px; margin-top: 1px; }
+
+  .active-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .dot-active { background: #34D399; box-shadow: 0 0 6px #34D399; }
+  .dot-idle { background: #333; }
+  .dot-breach { background: #E74856; box-shadow: 0 0 6px #E74856; }
+
+  .agent-lanes {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .lane-pill {
+    flex: 1;
+    text-align: center;
+    border-radius: 4px;
+    padding: 5px 4px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .lane-pill .num { font-size: 14px; display: block; line-height: 1; margin-bottom: 2px; }
+  .lane-pill .lbl { color: inherit; opacity: 0.7; font-size: 9px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .pill-up { background: rgba(77,123,255,0.1); color: #4D7BFF; border: 1px solid rgba(77,123,255,0.15); }
+  .pill-wip { background: rgba(52,211,153,0.1); color: #34D399; border: 1px solid rgba(52,211,153,0.15); }
+  .pill-blk { background: rgba(231,72,86,0.1); color: #E74856; border: 1px solid rgba(231,72,86,0.15); }
+  .pill-done { background: rgba(80,80,80,0.15); color: #555; border: 1px solid rgba(80,80,80,0.2); }
+
+  .agent-current-task {
+    color: #777;
+    font-size: 10px;
+    line-height: 1.4;
+    border-left: 2px solid #1e1e1e;
+    padding-left: 8px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .agent-current-task.task-active { border-left-color: #34D399; color: #aaa; }
+  .agent-current-task.task-blocked { border-left-color: #E74856; color: #E74856; }
+
+  .agent-meta { display: flex; gap: 8px; align-items: center; }
+  .agent-last-active { color: #333; font-size: 9px; }
+  .agent-sla-badge {
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin-left: auto;
+  }
+  .sla-clear { background: rgba(52,211,153,0.1); color: #34D399; }
+  .sla-warn { background: rgba(249,115,22,0.15); color: #F97316; }
+  .sla-breach { background: rgba(231,72,86,0.2); color: #E74856; }
+
+  /* Section divider */
+  .team-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    margin-top: 4px;
+  }
+
+  .team-divider-label {
+    color: #2a2a2a;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .team-divider-line { flex: 1; height: 1px; background: #1a1a1a; }
+
+  /* SLA summary panel */
+  .sla-panel {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+
+  .sla-panel-title {
+    color: #444;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .sla-rows { display: flex; flex-direction: column; gap: 6px; }
+  .sla-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+  }
+
+  .sla-row-agent { color: #555; width: 40px; flex-shrink: 0; }
+  .sla-row-task { color: #888; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sla-row-age { width: 60px; text-align: right; flex-shrink: 0; font-weight: 700; }
+  .sla-row-limit { color: #333; width: 60px; text-align: right; flex-shrink: 0; }
+  .age-ok { color: #34D399; }
+  .age-warn { color: #F97316; }
+  .age-breach { color: #E74856; }
+
+  /* Org stats bar */
+  .org-stats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box {
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 6px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+
+  .stat-box-num { font-size: 22px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .stat-box-label { color: #444; font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .num-blue { color: #4D7BFF; }
+  .num-green { color: #34D399; }
+  .num-red { color: #E74856; }
+  .num-orange { color: #F97316; }
+  .num-cyan { color: #00D4AA; }
+  .num-white { color: #fff; }
+</style>
+</head>
+<body>
+
+<div class="selector-bar">
+  <div class="bar-title">Forge</div>
+  <button class="active" onclick="show('overview')">A — Overview</button>
+  <button onclick="show('sla')">B — SLA Monitor</button>
+  <button onclick="show('queue')">C — Queue Depth</button>
+  <div class="bar-timestamp">2026-02-22 <span>21:44 UTC</span></div>
+</div>
+
+<!-- ========== A: OVERVIEW ========== -->
+<div id="screen-overview" class="screen active">
+  <div class="screen-label"><span>A</span> — Agent Overview</div>
+
+  <div class="dash-header">
+    <div>
+      <div class="dash-title">FORGE AGENT DASHBOARD</div>
+      <div class="dash-subtitle">13 agents — Forge + Grind orgs — Week 1 autonomous sprint</div>
+    </div>
+    <div class="dash-stat">
+      <div class="dash-stat-num">1,389</div>
+      <div class="dash-stat-label">tests passing</div>
+    </div>
+  </div>
+
+  <div class="org-stats">
+    <div class="stat-box">
+      <div class="stat-box-num num-white">13</div>
+      <div class="stat-box-label">agents active</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-green">74</div>
+      <div class="stat-box-label">tasks done</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-blue">11</div>
+      <div class="stat-box-label">in queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-red">0</div>
+      <div class="stat-box-label">sla breaches</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-orange">3</div>
+      <div class="stat-box-label">apps shipped</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-cyan">1,118</div>
+      <div class="stat-box-label">commits week 1</div>
+    </div>
+  </div>
+
+  <div class="team-divider">
+    <div class="team-divider-label">Forge — Leadership</div>
+    <div class="team-divider-line"></div>
+  </div>
+
+  <div class="agent-grid">
+    <!-- FA -->
+    <div class="agent-card active-now">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-fa">FA</span>
+        <div>
+          <div class="agent-name">Chief Architect</div>
+          <div class="agent-role">Architecture, reviews, code</div>
+        </div>
+        <div class="active-dot dot-active"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">4</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">1</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">18</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task task-active">Pitch deck arch review + Dispatch spec</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">active 2m ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- FD -->
+    <div class="agent-card active-now">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-fd">FD</span>
+        <div>
+          <div class="agent-name">Design Director (Maize)</div>
+          <div class="agent-role">Brand, tokens, UX standards</div>
+        </div>
+        <div class="active-dot dot-active"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">3</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">1</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">14</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task task-active">Forge web presence design decisions</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">active 8m ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- FF -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-ff">FF</span>
+        <div>
+          <div class="agent-name">Quality Lead</div>
+          <div class="agent-role">QA, test coverage, Playwright</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">2</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">9</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">Postmortem section pending</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 4h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- FI -->
+    <div class="agent-card active-now">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-fi">FI</span>
+        <div>
+          <div class="agent-name">Data Lead</div>
+          <div class="agent-role">Data pipelines, M365, identity</div>
+        </div>
+        <div class="active-dot dot-active"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">4</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">4</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">74</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task task-active">Dashboard, chat docs, compose QA</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">active now</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- FO -->
+    <div class="agent-card active-now">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-fo">FO</span>
+        <div>
+          <div class="agent-name">Chief of Operations</div>
+          <div class="agent-role">Cross-org, comms, onboarding</div>
+        </div>
+        <div class="active-dot dot-active"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">2</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">1</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">11</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task task-active">Product launch plan (Email, Chat, Dispatch)</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">active 15m ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- FP -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-fp">FP</span>
+        <div>
+          <div class="agent-name">Platform Lead</div>
+          <div class="agent-role">Infra, session mgmt, launcher</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">3</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">13</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">Postmortem section pending</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 2h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- FR -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-fr">FR</span>
+        <div>
+          <div class="agent-name">Research Lead</div>
+          <div class="agent-role">Prompt eng, evals, variability</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">2</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">22</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">QDS monitoring, MCM research</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 3h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="team-divider">
+    <div class="team-divider-label">Grind — Project</div>
+    <div class="team-divider-line"></div>
+  </div>
+
+  <div class="agent-grid">
+    <!-- GA -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-ga">GA</span>
+        <div>
+          <div class="agent-name">Application Engineer</div>
+          <div class="agent-role">Full-stack, exam renderer</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">2</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">8</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">Postmortem section pending</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 5h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- GD -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-gd">GD</span>
+        <div>
+          <div class="agent-name">Design Engineer</div>
+          <div class="agent-role">UI/UX implementation</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">2</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">6</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">Postmortem section pending</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 6h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- GF -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-gf">GF</span>
+        <div>
+          <div class="agent-name">QA Engineer</div>
+          <div class="agent-role">Playwright, regression, cross-browser</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">2</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">7</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">Postmortem section pending</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 5h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- GI -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-gi">GI</span>
+        <div>
+          <div class="agent-name">Data Engineer</div>
+          <div class="agent-role">Question bank, standards mapping</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">3</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">9</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">QDS variant generation</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 4h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- GP -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-gp">GP</span>
+        <div>
+          <div class="agent-name">Platform Engineer</div>
+          <div class="agent-role">Build tooling, CI/CD, infra</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">2</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">10</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">Postmortem section pending</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 3h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+
+    <!-- GR -->
+    <div class="agent-card">
+      <div class="agent-card-header">
+        <span class="agent-id-badge badge-gr">GR</span>
+        <div>
+          <div class="agent-name">Research Specialist</div>
+          <div class="agent-role">Math verification, curriculum</div>
+        </div>
+        <div class="active-dot dot-idle"></div>
+      </div>
+      <div class="agent-lanes">
+        <div class="lane-pill pill-up"><span class="num">3</span><span class="lbl">up next</span></div>
+        <div class="lane-pill pill-wip"><span class="num">0</span><span class="lbl">wip</span></div>
+        <div class="lane-pill pill-blk"><span class="num">0</span><span class="lbl">blocked</span></div>
+        <div class="lane-pill pill-done"><span class="num">12</span><span class="lbl">done</span></div>
+      </div>
+      <div class="agent-current-task">AV variant structural review</div>
+      <div class="agent-meta">
+        <div class="agent-last-active">last active 2h ago</div>
+        <div class="agent-sla-badge sla-clear">SLA clear</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== B: SLA MONITOR ========== -->
+<div id="screen-sla" class="screen">
+  <div class="screen-label"><span>B</span> — SLA Monitor</div>
+
+  <div class="sla-panel">
+    <div class="sla-panel-title">Active tasks with SLA tracking — FI queue</div>
+    <div class="sla-rows">
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#00D4AA">FI</div>
+        <div class="sla-row-task">Chat docs update (PRD + UX flows)</div>
+        <div class="sla-row-age age-ok">12m</div>
+        <div class="sla-row-limit">/ 180m</div>
+      </div>
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#00D4AA">FI</div>
+        <div class="sla-row-task">HTML canvas agent dashboard</div>
+        <div class="sla-row-age age-ok">0m</div>
+        <div class="sla-row-limit">/ 180m</div>
+      </div>
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#00D4AA">FI</div>
+        <div class="sla-row-task">Chat compose edge case verification</div>
+        <div class="sla-row-age age-ok">0m</div>
+        <div class="sla-row-limit">/ 180m</div>
+      </div>
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#00D4AA">FI</div>
+        <div class="sla-row-task">Inbox sweep autonomous</div>
+        <div class="sla-row-age age-ok">0m</div>
+        <div class="sla-row-limit">/ 180m</div>
+      </div>
+      <div class="sla-row" style="margin-top:8px; padding-top:8px; border-top:1px solid #1a1a1a;">
+        <div class="sla-row-agent" style="color:#4D7BFF">FA</div>
+        <div class="sla-row-task">Dispatch TUI spec delivery to FI</div>
+        <div class="sla-row-age age-warn">140m</div>
+        <div class="sla-row-limit">/ 180m</div>
+      </div>
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#C084FC">FO</div>
+        <div class="sla-row-task">Product launch plan synthesis</div>
+        <div class="sla-row-age age-ok">35m</div>
+        <div class="sla-row-limit">/ 180m</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sla-panel" style="border-color:#E74856; background:#0f0808;">
+    <div class="sla-panel-title" style="color:#E74856">MARCUS interrupt queue — unacknowledged</div>
+    <div style="color:#555; font-size:11px; padding: 4px 0;">No unacknowledged MARCUS interrupts. SLA clear.</div>
+  </div>
+</div>
+
+<!-- ========== C: QUEUE DEPTH ========== -->
+<div id="screen-queue" class="screen">
+  <div class="screen-label"><span>C</span> — Queue Depth by Agent</div>
+
+  <div class="org-stats" style="grid-template-columns: repeat(7, 1fr);">
+    <div class="stat-box">
+      <div class="stat-box-num num-blue">23</div>
+      <div class="stat-box-label">FA queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-blue">18</div>
+      <div class="stat-box-label">FD queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-blue">11</div>
+      <div class="stat-box-label">FF queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-cyan">82</div>
+      <div class="stat-box-label">FI queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-blue">14</div>
+      <div class="stat-box-label">FO queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-blue">16</div>
+      <div class="stat-box-label">FP queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-blue">24</div>
+      <div class="stat-box-label">FR queue</div>
+    </div>
+  </div>
+
+  <div style="color:#2a2a2a; font-size:11px; margin-bottom:16px; text-align:center; letter-spacing:0.06em;">GRIND ORG</div>
+
+  <div class="org-stats" style="grid-template-columns: repeat(6, 1fr);">
+    <div class="stat-box">
+      <div class="stat-box-num num-green">10</div>
+      <div class="stat-box-label">GA queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-green">8</div>
+      <div class="stat-box-label">GD queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-green">9</div>
+      <div class="stat-box-label">GF queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-green">12</div>
+      <div class="stat-box-label">GI queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-green">12</div>
+      <div class="stat-box-label">GP queue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-num num-green">15</div>
+      <div class="stat-box-label">GR queue</div>
+    </div>
+  </div>
+
+  <div class="sla-panel" style="margin-top:8px;">
+    <div class="sla-panel-title">FI task queue — detailed (pending + in progress)</div>
+    <div class="sla-rows">
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#34D399; width:90px;">in_progress</div>
+        <div class="sla-row-task">HTML canvas agent dashboard</div>
+        <div class="sla-row-age age-ok">active</div>
+        <div class="sla-row-limit"></div>
+      </div>
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#34D399; width:90px;">in_progress</div>
+        <div class="sla-row-task">Chat docs update (PRD + UX flows)</div>
+        <div class="sla-row-age age-ok">active</div>
+        <div class="sla-row-limit"></div>
+      </div>
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#34D399; width:90px;">in_progress</div>
+        <div class="sla-row-task">Chat compose edge case verification</div>
+        <div class="sla-row-age age-ok">active</div>
+        <div class="sla-row-limit"></div>
+      </div>
+      <div class="sla-row">
+        <div class="sla-row-agent" style="color:#34D399; width:90px;">in_progress</div>
+        <div class="sla-row-task">Inbox sweep autonomous</div>
+        <div class="sla-row-age age-ok">active</div>
+        <div class="sla-row-limit"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.selector-bar button').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Terminal Color Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111111;
+    font-family: "Segoe UI", sans-serif;
+    min-height: 100vh;
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .page-title {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    align-self: flex-start;
+    max-width: 960px;
+    width: 100%;
+  }
+  .page-title span { color: #FFCB05; }
+
+  .section-label {
+    color: #555;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    align-self: flex-start;
+    max-width: 960px;
+    width: 100%;
+    margin-bottom: -28px;
+  }
+  .section-label span { color: #FFCB05; }
+
+  /* Windows Terminal shell */
+  .wt-shell {
+    width: 100%;
+    max-width: 960px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  }
+
+  /* Title bar */
+  .wt-titlebar {
+    background: #202020;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    flex-shrink: 0;
+  }
+
+  .wt-title-text {
+    flex: 1;
+    font-size: 12px;
+    color: #888;
+    letter-spacing: 0.02em;
+  }
+
+  .wt-winbtns {
+    display: flex;
+    align-items: stretch;
+    height: 34px;
+    margin-right: -16px;
+  }
+
+  .wt-winbtn {
+    width: 46px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #aaa;
+    cursor: pointer;
+    transition: background 0.1s;
+    user-select: none;
+  }
+  .wt-winbtn:hover { background: #3a3a3a; color: #fff; }
+  .wt-winbtn.close:hover { background: #c42b1c; color: #fff; }
+
+  /* Tab bar: single row, scrolls horizontally */
+  .wt-tabbar {
+    background: #1a1a1a;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+  .wt-tabbar::-webkit-scrollbar { display: none; }
+
+  .wt-tab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #888;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+    white-space: nowrap;
+    transition: background 0.1s, color 0.1s;
+    margin-top: 4px;
+    border: none;
+    font-family: "Segoe UI", sans-serif;
+  }
+  .wt-tab::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--tab-color);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .wt-tab:hover {
+    background: #282828;
+    color: #ccc;
+  }
+  .wt-tab:hover::before { opacity: 0.6; }
+  .wt-tab.active {
+    background: #0c0c0c;
+    color: #fff;
+  }
+  .wt-tab.active::before { opacity: 1; }
+
+  .wt-tab .tab-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--tab-color);
+    flex-shrink: 0;
+  }
+
+  /* Terminal body */
+  .wt-body {
+    background: #0c0c0c;
+    height: 380px;
+    overflow-y: auto;
+    padding: 14px 18px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #cccccc;
+    display: none;
+  }
+  .wt-body.active { display: block; }
+  .wt-body::-webkit-scrollbar { width: 6px; }
+  .wt-body::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  /* Terminal content elements */
+  .t-path { color: #61afef; }
+  .t-branch { color: #98c379; }
+  .t-prompt { color: #abb2bf; }
+  .t-cmd { color: #fff; font-weight: 500; }
+  .t-out { color: #abb2bf; }
+  .t-success { color: #98c379; }
+  .t-warn { color: #e5c07b; }
+  .t-err { color: #e06c75; }
+  .t-dim { color: #555; }
+  .t-line { display: flex; gap: 8px; margin: 1px 0; }
+  .t-blank { height: 8px; }
+  .t-section {
+    color: var(--tab-color);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 10px 0 4px;
+    opacity: 0.9;
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 15px;
+    background: #fff;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Color swatch legend */
+  .legend {
+    width: 100%;
+    max-width: 960px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .legend-group {
+    background: #12121f;
+    border: 1px solid #2a2a40;
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .legend-group h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #555;
+    margin-bottom: 14px;
+  }
+
+  .swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid #1e1e2e;
+  }
+  .swatch-row:last-child { border-bottom: none; }
+
+  .swatch {
+    width: 18px; height: 18px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .swatch-id {
+    font-family: "Cascadia Code", monospace;
+    font-size: 12px;
+    color: #666;
+    width: 28px;
+    flex-shrink: 0;
+  }
+
+  .swatch-name {
+    font-size: 13px;
+    color: #ccc;
+    flex: 1;
+  }
+
+  .swatch-role {
+    font-size: 11px;
+    color: #555;
+    text-align: right;
+  }
+
+  .swatch-hex {
+    font-family: "Cascadia Code", monospace;
+    font-size: 11px;
+    color: #444;
+    width: 72px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">Forge Agent Tab Colors: <span>Proposed Palette Review</span></div>
+
+<!-- Forge Leadership Window -->
+<div class="section-label"><span>Forge</span> Leadership</div>
+<div class="wt-shell">
+  <div class="wt-titlebar">
+    <div class="wt-title-text">Windows Terminal: Forge</div>
+    <div class="wt-winbtns">
+      <div class="wt-winbtn">&#x2014;</div>
+      <div class="wt-winbtn">&#x2610;</div>
+      <div class="wt-winbtn close">&#x2715;</div>
+    </div>
+  </div>
+  <div class="wt-tabbar">
+    <button class="wt-tab active" style="--tab-color:#4D7BFF" onclick="switchTab('forge','FA')" id="ftab-FA"><span class="tab-dot"></span>f-app-agent</button>
+    <button class="wt-tab" style="--tab-color:#FFCB05" onclick="switchTab('forge','FD')" id="ftab-FD"><span class="tab-dot"></span>f-design-agent</button>
+    <button class="wt-tab" style="--tab-color:#34D399" onclick="switchTab('forge','FF')" id="ftab-FF"><span class="tab-dot"></span>f-fun-agent</button>
+    <button class="wt-tab" style="--tab-color:#00D4AA" onclick="switchTab('forge','FI')" id="ftab-FI"><span class="tab-dot"></span>f-id-agent</button>
+    <button class="wt-tab" style="--tab-color:#C084FC" onclick="switchTab('forge','FR')" id="ftab-FR"><span class="tab-dot"></span>f-research-agent</button>
+    <button class="wt-tab" style="--tab-color:#CE1126" onclick="switchTab('forge','FP')" id="ftab-FP"><span class="tab-dot"></span>f-plat-agent</button>
+    <button class="wt-tab" style="--tab-color:#94A3B8" onclick="switchTab('forge','FO')" id="ftab-FO"><span class="tab-dot"></span>fo-coo-agent</button>
+  </div>
+
+  <!-- FA -->
+  <div class="wt-body active" id="fbody-FA" style="--tab-color:#4D7BFF">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">git log --oneline -5</span></div>
+    <div class="t-line"><span style="color:#4D7BFF">fe12c96</span> <span class="t-out">Deck: add slide 42, words/architecture</span></div>
+    <div class="t-line"><span style="color:#4D7BFF">b2c8e8f</span> <span class="t-out">Deck: add Forge SVG marks to key slides</span></div>
+    <div class="t-line"><span style="color:#4D7BFF">46d0541</span> <span class="t-out">Deck: execute FR cut list 53 to 41 slides</span></div>
+    <div class="t-line"><span style="color:#4D7BFF">994df66</span> <span class="t-out">Deck: closing variant B, Marcus voice</span></div>
+    <div class="t-line"><span style="color:#4D7BFF">0e627a7</span> <span class="t-out">Deck: revert 41a complexity, fix slide 25</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Done this sprint</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">MCM dashboard redesigned + live on marcusash.github.io</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Autonomous launcher model enforcement (Sonnet-only)</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">check-autonomous-health.cjs shipped</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">50-task backlogs dispatched to all 11 agents</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Pitch deck metrics: 1,118 commits / 186/day / 60K LOC</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- FD -->
+  <div class="wt-body" id="fbody-FD" style="--tab-color:#FFCB05">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">cat docs/skills/fd-iconography-color-system.md | head -5</span></div>
+    <div class="t-line"><span style="color:#FFCB05"># FD Skill File: Iconography and Color System</span></div>
+    <div class="t-line"><span class="t-out">Phase 7: Brand guide publishing, setMode() architecture,</span></div>
+    <div class="t-line"><span class="t-out">color coupling pitfalls, SVG mark system locked.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Brand guide locked: af2fd1e</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Maize #FFCB05  Cyan #00D4AA  Blue #1D42BA</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Forge mark, Inkwell mark, Grind mark, MCM mark, FA mark</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Light + dark themes with setMode() toggle</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Deck status: 43 slides</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">FR cut list executed 53 to 43</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">SVG marks on slides 01 24 25 44 50</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Slide 42: words/architecture (21,812 words)</span></div>
+    <div class="t-line"><span class="t-warn">!</span> <span class="t-out">Slide 09 Valentine's Day: pending Marcus confirmation</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- FF -->
+  <div class="wt-body" id="fbody-FF" style="--tab-color:#34D399">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">npx vitest run --reporter=verbose 2>&amp;1 | tail -8</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-success"> PASS </span> <span class="t-out">tests/lib/sentiment.test.ts (48 tests)</span></div>
+    <div class="t-line"><span class="t-success"> PASS </span> <span class="t-out">tests/lib/quotes.test.ts (31 tests)</span></div>
+    <div class="t-line"><span class="t-success"> PASS </span> <span class="t-out">tests/components/WritingScreen.test.tsx (22 tests)</span></div>
+    <div class="t-line"><span class="t-success"> PASS </span> <span class="t-out">tests/integration/image-pipeline.test.ts (7 tests)</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#34D399">Test Files</span>  <span class="t-out">65 passed (65)</span></div>
+    <div class="t-line"><span style="color:#34D399">     Tests</span>  <span class="t-out">1,291 passed | 7 skipped (1,298)</span></div>
+    <div class="t-line"><span style="color:#34D399">  Duration</span>  <span class="t-out">14.3s</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">ratio: 1.72:1 test-to-source, above google bar</div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- FI -->
+  <div class="wt-body" id="fbody-FI" style="--tab-color:#00D4AA">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">npx tsx scripts/chat-check-inbox.ts</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#00D4AA">Checking forge-room...</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">3 new messages since last check</span></div>
+    <div class="t-line"><span class="t-out">  [FA] pitch-deck-stats, 2h ago</span></div>
+    <div class="t-line"><span class="t-out">  [FR] fi-metrics-validation, 2h ago</span></div>
+    <div class="t-line"><span class="t-out">  [FO] sync-check, 30m ago</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Shipped this sprint</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">ChatScreen.tsx + chat.ts transport</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">chat-send-message.ts / chat-check-inbox.ts</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">tui-email-implementation-plan.md</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">task-front-door-prd.md + implementation-plan.md</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- FR -->
+  <div class="wt-body" id="fbody-FR" style="--tab-color:#C084FC">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">node eval-sentiment-runner.cjs --pool production</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#C084FC">Prompt Affect Score (PAS)</span></div>
+    <div class="t-line"><span class="t-out">  Pool size:   1,449 prompts</span></div>
+    <div class="t-line"><span class="t-out">  Sampled:     200</span></div>
+    <div class="t-line"><span class="t-success">  Score:       4.41 / 5.0  PASS</span></div>
+    <div class="t-line"><span class="t-out">  Threshold:   4.0</span></div>
+    <div class="t-line"><span class="t-out">  Duration:    0.6ms (Map lookup)</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Deck audit complete: 11 slides cut</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">FR-owned: slides 41, 41a, 41b, 44</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Narrative directive sent to FD: 20260222-1034</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">QDS Dimension 7 (answer verification) shipped</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- FP -->
+  <div class="wt-body" id="fbody-FP" style="--tab-color:#CE1126">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">node scripts/compliance-scan.cjs --last 20</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#F97316">Compliance scan: last 20 commits</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">20/20 commits have Co-authored-by trailer</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">0 secrets detected in diff content</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">All agent names in VALID_SENDERS</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Shipped this sprint</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Autonomous flag for launch-forge-console.ps1</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">validate-inbox.cjs schema gate</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">sendEmail() sender ID validation</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- FO -->
+  <div class="wt-body" id="fbody-FO" style="--tab-color:#94A3B8">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">node scripts/check-autonomous-health.cjs</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#94A3B8">Forge Health Check: 2026-02-22 17:00 UTC</span></div>
+    <div class="t-line"><span class="t-success">v  FA</span> <span class="t-out">4 commits in last 2h, active</span></div>
+    <div class="t-line"><span class="t-success">v  FD</span> <span class="t-out">2 commits in last 2h, active</span></div>
+    <div class="t-line"><span class="t-success">v  FI</span> <span class="t-out">3 commits in last 2h, active</span></div>
+    <div class="t-line"><span class="t-success">v  FR</span> <span class="t-out">1 commit in last 2h, active</span></div>
+    <div class="t-line"><span class="t-warn">!  FF</span> <span class="t-out">0 commits in last 2h, check inbox</span></div>
+    <div class="t-line"><span class="t-warn">!  FP</span> <span class="t-out">0 commits in last 2h, check inbox</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-out">Postmortem: C:\Github\journal\docs\agents\postmortem-20260222-weekly.md</span></div>
+    <div class="t-line"><span class="t-warn">!  10/12 agent sections still blank</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\journal</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+</div>
+
+<!-- Grind Project Team Window -->
+<div class="section-label"><span>Grind</span> Project Team</div>
+<div class="wt-shell">
+  <div class="wt-titlebar">
+    <div class="wt-title-text">Windows Terminal: Grind</div>
+    <div class="wt-winbtns">
+      <div class="wt-winbtn">&#x2014;</div>
+      <div class="wt-winbtn">&#x2610;</div>
+      <div class="wt-winbtn close">&#x2715;</div>
+    </div>
+  </div>
+  <div class="wt-tabbar">
+    <button class="wt-tab active" style="--tab-color:#93AEFF" onclick="switchTab('grind','GA')" id="gtab-GA"><span class="tab-dot"></span>g-app-agent</button>
+    <button class="wt-tab" style="--tab-color:#3D3D3D" onclick="switchTab('grind','GD')" id="gtab-GD"><span class="tab-dot"></span>g-design-agent</button>
+    <button class="wt-tab" style="--tab-color:#6EE7B7" onclick="switchTab('grind','GF')" id="gtab-GF"><span class="tab-dot"></span>g-fun-agent</button>
+    <button class="wt-tab" style="--tab-color:#5EEAD4" onclick="switchTab('grind','GI')" id="gtab-GI"><span class="tab-dot"></span>g-id-agent</button>
+    <button class="wt-tab" style="--tab-color:#E0AAFF" onclick="switchTab('grind','GR')" id="gtab-GR"><span class="tab-dot"></span>g-research-agent</button>
+    <button class="wt-tab" style="--tab-color:#FB923C" onclick="switchTab('grind','GP')" id="gtab-GP"><span class="tab-dot"></span>g-plat-agent</button>
+  </div>
+
+  <!-- GA -->
+  <div class="wt-body active" id="gbody-GA" style="--tab-color:#93AEFF">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">git log --oneline -4</span></div>
+    <div class="t-line"><span style="color:#93AEFF">a3f12bc</span> <span class="t-out">feat: exam renderer shared component v2</span></div>
+    <div class="t-line"><span style="color:#93AEFF">b9e4d11</span> <span class="t-out">feat: dashboard score cards, last 2 tests</span></div>
+    <div class="t-line"><span style="color:#93AEFF">c7a0e89</span> <span class="t-out">fix: buildStandards() retake filter bug</span></div>
+    <div class="t-line"><span style="color:#93AEFF">d2f3c44</span> <span class="t-out">feat: Game Plan section for all practice tests</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Grind: motor city math</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">Kai scored 100% on Practice 3, Feb 22</span></div>
+    <div class="t-line"><span class="t-out">  9 retake practices, 135 questions, live</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- GD -->
+  <div class="wt-body" id="gbody-GD" style="--tab-color:#3D3D3D">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">cat docs/gr-skill-transfer-briefing.md | grep QDS</span></div>
+    <div class="t-line"><span style="color:#3D3D3D">QDS target: &gt;= 0.45</span></div>
+    <div class="t-line"><span class="t-out">RP1-7 baseline QDS: 0.13 (template lock)</span></div>
+    <div class="t-line"><span class="t-out">Post-framework QDS: 0.51 (structural variation)</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Design QA: Grind</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">MCM dashboard design tokens applied</span></div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">--fd-* prefix, zero regressions</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- GF -->
+  <div class="wt-body" id="gbody-GF" style="--tab-color:#6EE7B7">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">npx playwright test --reporter=line</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#6EE7B7">Running 24 tests across 3 workers</span></div>
+    <div class="t-line"><span class="t-success">  v</span> <span class="t-out">practice-1: loads and renders all questions</span></div>
+    <div class="t-line"><span class="t-success">  v</span> <span class="t-out">practice-3: Kai 100% score regression check</span></div>
+    <div class="t-line"><span class="t-success">  v</span> <span class="t-out">dashboard: last-2-tests cards visible</span></div>
+    <div class="t-line"><span class="t-success">  v</span> <span class="t-out">navigation: bottom nav all tabs reachable</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#6EE7B7">24 passed</span> <span class="t-out">(8.2s)</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- GI -->
+  <div class="wt-body" id="gbody-GI" style="--tab-color:#5EEAD4">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">node fi-loc-metrics.cjs</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#5EEAD4">FI Core Pipeline Metrics</span></div>
+    <div class="t-line"><span class="t-out">  LOC:          849 across 9 files  v measured</span></div>
+    <div class="t-line"><span class="t-out">  Instruments:  2 (scoreQuote, auditPool)</span></div>
+    <div class="t-line"><span class="t-out">  Graph endpoints: 8 public async methods</span></div>
+    <div class="t-line"><span class="t-warn">  ! deck says 5, needs correction to 8</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Standards mapping: W2.b W3.a-e</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">135 questions tracked with per-question standards</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- GR -->
+  <div class="wt-body" id="gbody-GR" style="--tab-color:#E0AAFF">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">node mine-prompts-llm.cjs --qds-check rp8</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span style="color:#E0AAFF">QDS Analysis: RP8</span></div>
+    <div class="t-line"><span class="t-out">  Presentation Form:  0.72  v</span></div>
+    <div class="t-line"><span class="t-out">  Orientation:        0.58  v</span></div>
+    <div class="t-line"><span class="t-out">  Solution Character: 0.61  v</span></div>
+    <div class="t-line"><span class="t-out">  Question-Ask Type:  0.49  v</span></div>
+    <div class="t-line"><span class="t-success">  QDS Score: 0.60  v above 0.45 target</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Kai: W2.b root cause analysis complete</div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+
+  <!-- GP -->
+  <div class="wt-body" id="gbody-GP" style="--tab-color:#FB923C">
+    <div class="t-line"><span class="t-dim">[MODE] Status workflow enabled.</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="t-cmd">cat .github/workflows/deploy.yml | grep -A3 "on:"</span></div>
+    <div class="t-line"><span class="t-out">on:</span></div>
+    <div class="t-line"><span class="t-out">  push:</span></div>
+    <div class="t-line"><span class="t-out">    branches: [master]</span></div>
+    <div class="t-blank"></div>
+    <div class="t-section">Platform: CI/CD</div>
+    <div class="t-line"><span class="t-success">v</span> <span class="t-out">marcusash.github.io/motor-city-math live</span></div>
+    <div class="t-line"><span class="t-warn">!</span> <span class="t-out">PAT expired, auto-deploy paused, manual push active</span></div>
+    <div class="t-line"><span class="t-out">  Fix: rotate MOTOR_CITY_MATH_TOKEN in repo secrets</span></div>
+    <div class="t-blank"></div>
+    <div class="t-line"><span class="t-path">C:\Github\kai-algebra2-tests</span><span class="t-branch">[master*]</span></div>
+    <div class="t-line"><span class="t-prompt">></span> <span class="cursor"></span></div>
+  </div>
+</div>
+
+<!-- Swatch legend: Forge and Project Team -->
+<div class="section-label"><span>Forge</span> and Project Team</div>
+<div class="legend">
+  <div class="legend-group">
+    <h3>Forge Leadership</h3>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#4D7BFF"></div>
+      <div class="swatch-id">FA</div>
+      <div class="swatch-name">f-app-agent</div>
+      <div class="swatch-role">Chief Architect</div>
+      <div class="swatch-hex">#4D7BFF</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#FFCB05"></div>
+      <div class="swatch-id">FD</div>
+      <div class="swatch-name">f-design-agent</div>
+      <div class="swatch-role">Design Director</div>
+      <div class="swatch-hex">#FFCB05</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#34D399"></div>
+      <div class="swatch-id">FF</div>
+      <div class="swatch-name">f-fun-agent</div>
+      <div class="swatch-role">Quality Lead</div>
+      <div class="swatch-hex">#34D399</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#00D4AA"></div>
+      <div class="swatch-id">FI</div>
+      <div class="swatch-name">f-id-agent</div>
+      <div class="swatch-role">Data Lead</div>
+      <div class="swatch-hex">#00D4AA</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#C084FC"></div>
+      <div class="swatch-id">FR</div>
+      <div class="swatch-name">f-research-agent</div>
+      <div class="swatch-role">Research Lead</div>
+      <div class="swatch-hex">#C084FC</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#F97316"></div>
+      <div class="swatch-id">FP</div>
+      <div class="swatch-name">f-plat-agent</div>
+      <div class="swatch-role">Platform and Security</div>
+      <div class="swatch-hex">#F97316</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#94A3B8"></div>
+      <div class="swatch-id">FO</div>
+      <div class="swatch-name">fo-coo-agent</div>
+      <div class="swatch-role">Chief of Ops</div>
+      <div class="swatch-hex">#94A3B8</div>
+    </div>
+  </div>
+
+  <div class="legend-group">
+    <h3>Grind Project Team</h3>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#93AEFF"></div>
+      <div class="swatch-id">GA</div>
+      <div class="swatch-name">g-app-agent</div>
+      <div class="swatch-role">App Engineer</div>
+      <div class="swatch-hex">#93AEFF</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#3D3D3D"></div>
+      <div class="swatch-id">GD</div>
+      <div class="swatch-name">g-design-agent</div>
+      <div class="swatch-role">Design Engineer</div>
+      <div class="swatch-hex">#3D3D3D</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#6EE7B7"></div>
+      <div class="swatch-id">GF</div>
+      <div class="swatch-name">g-fun-agent</div>
+      <div class="swatch-role">QA Engineer</div>
+      <div class="swatch-hex">#6EE7B7</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#5EEAD4"></div>
+      <div class="swatch-id">GI</div>
+      <div class="swatch-name">g-id-agent</div>
+      <div class="swatch-role">Data Engineer</div>
+      <div class="swatch-hex">#5EEAD4</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#E0AAFF"></div>
+      <div class="swatch-id">GR</div>
+      <div class="swatch-name">g-research-agent</div>
+      <div class="swatch-role">Research Specialist</div>
+      <div class="swatch-hex">#E0AAFF</div>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch" style="background:#FB923C"></div>
+      <div class="swatch-id">GP</div>
+      <div class="swatch-name">g-plat-agent</div>
+      <div class="swatch-role">Platform Engineer</div>
+      <div class="swatch-hex">#FB923C</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(group, id) {
+  var prefix = group === 'forge' ? 'f' : 'g';
+  document.querySelectorAll('#' + prefix + 'tab-' + id).forEach(function(){});
+  document.querySelectorAll('[id^="' + prefix + 'tab-"]').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('[id^="' + prefix + 'body-"]').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById(prefix + 'tab-' + id).classList.add('active');
+  document.getElementById(prefix + 'body-' + id).classList.add('active');
+}
+</script>
+</body>
+</html>

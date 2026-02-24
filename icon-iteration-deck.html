@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Forge Brand System: Built in Public</title>
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --card: #0F1117;
+    --card2: #161B24;
+    --border: #1E2530;
+    --text: #E8EAF0;
+    --dim: #6B7280;
+    --maize: #FFCB05;
+    --fa-blue: #4A90D9;
+    --ff-green: #22C55E;
+    --fi-indigo: #6D28D9;
+    --fo-slate: #94A3B8;
+    --fp-red: #CE1126;
+    --fr-orange: #F97316;
+    --lock-green: #22C55E;
+    --open-amber: #F59E0B;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* Slide system */
+  .slide {
+    display: none;
+    position: absolute;
+    inset: 0;
+    padding: 52px 64px 72px;
+    flex-direction: column;
+    gap: 0;
+  }
+  .slide.active { display: flex; }
+
+  /* Nav bar */
+  .nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    background: rgba(10,10,15,0.95);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    z-index: 100;
+  }
+  .nav-counter { color: var(--dim); font-size: 13px; letter-spacing: 0.08em; }
+  .nav-buttons { display: flex; gap: 8px; }
+  .nav-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    padding: 6px 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: border-color 0.15s;
+  }
+  .nav-btn:hover { border-color: var(--maize); }
+  .nav-title { color: var(--dim); font-size: 13px; max-width: 400px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Typography */
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+  }
+  .label.maize { color: var(--maize); }
+  .label.locked { color: var(--lock-green); }
+  .label.open { color: var(--open-amber); }
+
+  h1 {
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+  h2 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  p { font-size: 16px; line-height: 1.6; color: var(--dim); }
+  p strong { color: var(--text); }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+  .badge.locked { background: rgba(34,197,94,0.12); color: var(--lock-green); border: 1px solid rgba(34,197,94,0.25); }
+  .badge.open { background: rgba(245,158,11,0.12); color: var(--open-amber); border: 1px solid rgba(245,158,11,0.25); }
+  .badge.fdpick { background: rgba(255,203,5,0.12); color: var(--maize); border: 1px solid rgba(255,203,5,0.25); }
+
+  /* Marcus quote block */
+  .mquote {
+    border-left: 3px solid var(--maize);
+    padding: 12px 20px;
+    background: rgba(255,203,5,0.04);
+    border-radius: 0 4px 4px 0;
+    margin: 12px 0;
+  }
+  .mquote.blue { border-left-color: var(--fa-blue); background: rgba(74,144,217,0.04); }
+  .mquote.green { border-left-color: var(--ff-green); background: rgba(34,197,94,0.04); }
+  .mquote.orange { border-left-color: var(--fr-orange); background: rgba(249,115,22,0.04); }
+  .mquote.red { border-left-color: var(--fp-red); background: rgba(206,17,38,0.04); }
+
+  .mquote .who {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--maize);
+    margin-bottom: 5px;
+  }
+  .mquote.blue .who { color: var(--fa-blue); }
+  .mquote.green .who { color: var(--ff-green); }
+  .mquote.orange .who { color: var(--fr-orange); }
+  .mquote.red .who { color: var(--fp-red); }
+
+  .mquote .words {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  /* Layout helpers */
+  .cols { display: flex; gap: 32px; flex: 1; min-height: 0; }
+  .col { flex: 1; min-width: 0; }
+  .col-narrow { flex: 0 0 320px; }
+  .col-wide { flex: 2; }
+
+  /* Mark display */
+  .mark-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+  }
+  .mark-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-width: 110px;
+  }
+  .mark-card svg { display: block; }
+  .mark-card .mc-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    text-align: center;
+  }
+  .mark-card.selected { border-color: var(--maize); }
+  .mark-card.selected-green { border-color: var(--lock-green); }
+  .mark-card.rejected { opacity: 0.35; }
+
+  /* Arrow connector */
+  .arrow-connector {
+    display: flex;
+    align-items: center;
+    color: var(--dim);
+    font-size: 22px;
+    padding-bottom: 32px;
+  }
+
+  /* Step list */
+  .steps { display: flex; flex-direction: column; gap: 10px; }
+  .step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    flex: 0 0 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .step-text { font-size: 15px; line-height: 1.5; color: var(--dim); }
+  .step-text strong { color: var(--text); }
+
+  /* Cover slide */
+  .cover-accent {
+    width: 4px;
+    height: 60px;
+    background: var(--maize);
+    border-radius: 2px;
+    margin-bottom: 28px;
+  }
+  .cover-sub { font-size: 18px; color: var(--dim); margin-top: 20px; line-height: 1.6; max-width: 560px; }
+
+  /* Grid for summary */
+  .mark-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  .mark-grid-wide {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  /* Principle block */
+  .principle {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    border-left: 3px solid var(--maize);
+  }
+  .principle .p-title { font-size: 14px; font-weight: 700; color: var(--maize); margin-bottom: 4px; }
+  .principle .p-body { font-size: 14px; line-height: 1.5; color: var(--dim); }
+
+  /* Color swatch */
+  .swatch { width: 40px; height: 40px; border-radius: 50%; display: inline-block; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  /* Slide header */
+  .slide-header { margin-bottom: 28px; }
+  .slide-header .label { margin-bottom: 4px; }
+  .slide-header h2 { color: var(--text); }
+
+  /* Table */
+  .status-table { width: 100%; border-collapse: collapse; }
+  .status-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .status-table td {
+    font-size: 15px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .status-table tr:last-child td { border-bottom: none; }
+  .status-table .td-name { font-weight: 600; color: var(--text); }
+  .status-table .td-rounds { color: var(--dim); }
+  .status-table .td-moment { font-style: italic; color: var(--dim); font-size: 13px; }
+
+  /* Overflow scroll when needed */
+  .scrollable { overflow-y: auto; flex: 1; }
+  .scrollable::-webkit-scrollbar { width: 4px; }
+  .scrollable::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Cover -->
+<div class="slide active" id="s1">
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center;">
+    <div class="cover-accent"></div>
+    <div class="label maize">FD Process Review</div>
+    <h1>The Forge Brand<br>System</h1>
+    <h1 style="color:var(--maize);">Built in Public.</h1>
+    <p class="cover-sub">
+      Where we started. What Marcus said at every step.<br>
+      What changed. What locked. What is still open.<br><br>
+      <strong>5 products. 7 agent marks. 1 design language.</strong><br>
+      <strong>0 decisions locked on day one.</strong>
+    </p>
+  </div>
+  <div style="display:flex; gap:32px; margin-top:32px;">
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span class="badge locked">3 Locked</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:4px;">
+      <span class="badge open">4 Open</span>
+    </div>
+    <div style="margin-left:auto; display:flex; align-items:center; gap:8px; color:var(--dim); font-size:13px;">
+      Use arrow keys or buttons to navigate
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: Day Zero / The Brief -->
+<div class="slide" id="s2">
+  <div class="slide-header">
+    <div class="label maize">Slide 02 of 12</div>
+    <h2>Day Zero: The Brief</h2>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <p style="font-size:17px; color:var(--text); line-height:1.7; margin-bottom:24px;">
+        We needed a complete visual identity system. Not a mood board. Not a concept. A real brand that would run in a terminal, render in a pitch deck, and hold up on a public website.
+      </p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text"><strong>Forge Co.</strong> — master brand mark. The company. Everything lives under this.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text"><strong>Inkwell</strong> — product mark for the journal TUI.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text"><strong>Dispatch</strong> — the agent messaging product.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text"><strong>Grind</strong> — Motor City Math study engine.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-text"><strong>Motor City Math (MCM)</strong> — the consumer-facing math product for Kai.</div>
+        </div>
+        <div class="step">
+          <div class="step-num">6</div>
+          <div class="step-text"><strong>7 agent marks</strong> — FA, FD, FF, FI, FO, FP, FR. Individual identities, one palette.</div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="mquote" style="margin-bottom:16px;">
+        <div class="who">Marcus — Day One</div>
+        <div class="words">"CLI leads but web and mobile have to work too. Every mark has to survive at 20 pixels."</div>
+      </div>
+      <div class="mquote">
+        <div class="who">The MCM Principle — locked after Round 1</div>
+        <div class="words">"Read before you think. You explain it, it failed."</div>
+      </div>
+      <div style="margin-top:28px;">
+        <div class="label">The Rule That Governed Everything</div>
+        <div class="principle">
+          <div class="p-title">The MCM Principle</div>
+          <div class="p-body">Every mark is self-explanatory. You read it before you think about it. Applied retroactively as the bar for all decisions. Named after the first mark Marcus locked.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: MCM — The First Lock -->
+<div class="slide" id="s3">
+  <div class="slide-header">
+    <div class="label maize">Motor City Math</div>
+    <h2>MCM — The First Lock</h2>
+    <div class="badge locked" style="margin-top:8px;">Locked Round 1</div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <div class="label" style="margin-bottom:12px;">The Iteration</div>
+      <div class="mark-row" style="align-items:center;">
+        <div class="mark-card rejected">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <path d="M15,55 Q40,18 65,55" stroke="#6B7280" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span class="mc-label">V1 — Arch<br><span style="color:#ef4444; font-size:9px;">Rejected</span></span>
+        </div>
+        <div class="arrow-connector">→</div>
+        <div class="mark-card rejected">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <path d="M15,55 Q40,18 65,55" stroke="#6B7280" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <line x1="40" y1="30" x2="40" y2="50" stroke="#6B7280" stroke-width="1.5"/>
+          </svg>
+          <span class="mc-label">V2 — Arch +<br>nose line</span>
+        </div>
+        <div class="arrow-connector">→</div>
+        <div class="mark-card selected-green">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <!-- The Smile: upward parabola -->
+            <path d="M14,30 Q40,68 66,30" stroke="#FFCB05" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <!-- Nose: drop line + dot -->
+            <line x1="40" y1="46" x2="40" y2="54" stroke="#FFCB05" stroke-width="2"/>
+            <circle cx="40" cy="57" r="3" fill="#FFCB05"/>
+          </svg>
+          <span class="mc-label" style="color:var(--lock-green);">V3 — The Smile<br>LOCKED</span>
+        </div>
+      </div>
+
+      <div style="margin-top:28px; padding:16px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid #FFCB05;">
+        <div class="label maize" style="margin-bottom:6px;">What Changed</div>
+        <div class="step" style="margin-bottom:8px;">
+          <div class="step-num">1</div>
+          <div class="step-text">Flipped the parabola. Arch curves down (frown). Marcus wanted <strong>y = x squared — the math smile</strong>.</div>
+        </div>
+        <div class="step" style="margin-bottom:8px;">
+          <div class="step-num">2</div>
+          <div class="step-text">Added the nose: a drop line and dot from the apex. <strong>Reads "math" before you process it.</strong></div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">Became the standard. Every other mark is measured against this one.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="mquote green" style="margin-bottom:16px;">
+        <div class="who">Marcus — Lock moment</div>
+        <div class="words">"My favorite icon of the bunch. That's gonna sell."</div>
+      </div>
+      <div class="mquote" style="margin-bottom:16px;">
+        <div class="who">Marcus — Why the smile</div>
+        <div class="words">"Every parent, every kid, every teacher understands the y = x squared curve without being told what it is. The mark IS the product."</div>
+      </div>
+      <div class="mquote" style="margin-top:16px;">
+        <div class="who">FD reflection</div>
+        <div class="words">"The upward parabola is a mathematical smile. It is literally the shape of the subject. You do not need to know it is an icon. You already know what it says."</div>
+      </div>
+      <div style="margin-top:24px; display:flex; gap:8px; align-items:center;">
+        <span class="badge locked">First lock in the system</span>
+        <span class="badge fdpick">Named the standard</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Dispatch — The Long Road -->
+<div class="slide" id="s4">
+  <div class="slide-header">
+    <div class="label fr-orange" style="color:var(--fr-orange);">Dispatch</div>
+    <h2>Dispatch — The Long Road</h2>
+  </div>
+  <div class="cols">
+    <div class="col-wide scrollable">
+      <div class="label" style="margin-bottom:12px;">Round 1 — Communication Devices</div>
+      <div class="mark-row" style="margin-bottom:20px;">
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Radio tower -->
+            <line x1="40" y1="8" x2="40" y2="65" stroke="#F97316" stroke-width="2"/>
+            <line x1="25" y1="30" x2="55" y2="30" stroke="#F97316" stroke-width="2"/>
+            <path d="M26,15 Q14,30 26,45" fill="none" stroke="#F97316" stroke-width="1.5"/>
+            <path d="M54,15 Q66,30 54,45" fill="none" stroke="#F97316" stroke-width="1.5"/>
+            <line x1="32" y1="65" x2="48" y2="65" stroke="#F97316" stroke-width="2"/>
+          </svg>
+          <span class="mc-label">A — Radio<br>Tower</span>
+        </div>
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Handset -->
+            <path d="M22,58 Q18,40 25,20 Q30,14 36,18 L32,28 Q28,26 26,30 Q24,40 30,52 Q34,56 38,54 L42,64 Q36,68 30,66 Q24,64 22,58Z" fill="none" stroke="#F97316" stroke-width="2"/>
+          </svg>
+          <span class="mc-label">B — Handset</span>
+        </div>
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Cell tower D -->
+            <line x1="40" y1="10" x2="40" y2="65" stroke="#F97316" stroke-width="2.5"/>
+            <line x1="28" y1="32" x2="52" y2="32" stroke="#F97316" stroke-width="2"/>
+            <line x1="32" y1="48" x2="48" y2="48" stroke="#F97316" stroke-width="2"/>
+            <path d="M30,18 Q15,35 30,52" fill="none" stroke="#F97316" stroke-width="1.5"/>
+            <path d="M50,18 Q65,35 50,52" fill="none" stroke="#F97316" stroke-width="1.5"/>
+            <line x1="35" y1="65" x2="45" y2="65" stroke="#F97316" stroke-width="2"/>
+          </svg>
+          <span class="mc-label">D — Cell<br>Tower</span>
+        </div>
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Walkie talkie -->
+            <rect x="28" y="20" width="24" height="40" rx="3" fill="none" stroke="#F97316" stroke-width="2"/>
+            <line x1="40" y1="10" x2="40" y2="20" stroke="#F97316" stroke-width="2"/>
+            <path d="M34,15 Q29,12 29,10" fill="none" stroke="#F97316" stroke-width="1.5"/>
+            <path d="M46,15 Q51,12 51,10" fill="none" stroke="#F97316" stroke-width="1.5"/>
+            <rect x="33" y="28" width="14" height="8" rx="1" fill="none" stroke="#F97316" stroke-width="1.5"/>
+          </svg>
+          <span class="mc-label">C — Walkie<br>Talkie</span>
+        </div>
+      </div>
+
+      <div class="mquote orange" style="margin-bottom:20px;">
+        <div class="who">Marcus — After Round 1</div>
+        <div class="words">"None of these signal communications. Radio tower and cell tower say infrastructure. I need to see the message moving."</div>
+      </div>
+
+      <div class="label" style="margin-bottom:12px;">Round 2 — Motion</div>
+      <div class="mark-row" style="margin-bottom:20px;">
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Signal arc -->
+            <path d="M30,40 Q40,25 50,40" fill="none" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M22,46 Q40,20 58,46" fill="none" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+            <circle cx="40" cy="52" r="5" fill="#F97316"/>
+          </svg>
+          <span class="mc-label">E — Signal Arc</span>
+        </div>
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Pulse -->
+            <polyline points="15,40 28,40 33,20 38,58 43,30 48,40 65,40" fill="none" stroke="#F97316" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="mc-label">G — Pulse</span>
+        </div>
+        <div class="arrow-connector" style="padding-bottom:0;">→</div>
+        <div class="mark-card selected-green">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Arrow: the winner -->
+            <line x1="14" y1="40" x2="54" y2="40" stroke="#F97316" stroke-width="4" stroke-linecap="round"/>
+            <polyline points="41,27 55,40 41,53" fill="none" stroke="#F97316" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+            <!-- speed lines -->
+            <line x1="8" y1="32" x2="28" y2="32" stroke="#F97316" stroke-width="1.2" opacity="0.4"/>
+            <line x1="11" y1="48" x2="31" y2="48" stroke="#F97316" stroke-width="1.2" opacity="0.4"/>
+          </svg>
+          <span class="mc-label" style="color:var(--lock-green);">F — Arrow<br>LOCKED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div class="mquote orange" style="margin-bottom:14px;">
+        <div class="who">Marcus — The pivot</div>
+        <div class="words">"Yes. Arrow is the only thing getting the 5 treatment. Everything else clean it out."</div>
+      </div>
+      <div class="mquote orange" style="margin-bottom:14px;">
+        <div class="who">FD — in the brief</div>
+        <div class="words">"Dispatch is an action verb. Arrow IS the dispatch. The mark is the motion, not the infrastructure it travels through."</div>
+      </div>
+      <div class="mquote orange" style="margin-bottom:20px;">
+        <div class="who">Marcus — new pitch lesson</div>
+        <div class="words">"Showing more work IS the pitch. Don't explain. Draw."</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span class="badge locked">Arrow locked</span>
+        <span class="badge open">5 arrow variants explored first</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: FP — Security Anchors Down -->
+<div class="slide" id="s5">
+  <div class="slide-header">
+    <div class="label" style="color:var(--fp-red);">FP Security</div>
+    <h2>FP — Security Anchors Down</h2>
+  </div>
+  <div class="cols">
+    <div class="col-wide">
+      <div class="label" style="margin-bottom:12px;">Round 1 — Chevrons and Shields</div>
+      <div class="mark-row" style="margin-bottom:20px;">
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Shield -->
+            <path d="M40,10 L60,20 L60,45 Q60,62 40,70 Q20,62 20,45 L20,20 Z" fill="none" stroke="#CE1126" stroke-width="2.5"/>
+            <polyline points="28,40 40,50 52,40" fill="none" stroke="#CE1126" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="mc-label">Shield<br>variant</span>
+        </div>
+        <div class="mark-card">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Standard chevron pointing down -->
+            <polyline points="20,28 40,48 60,28" fill="none" stroke="#CE1126" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="mc-label">Pure chevron</span>
+        </div>
+      </div>
+
+      <div class="mquote red" style="margin-bottom:20px;">
+        <div class="who">Marcus — Direction</div>
+        <div class="words">"A shield points up — I protect you from what is above. A down chevron points to ground truth. Security is not about what is coming at you. FP is what everything else rests on."</div>
+      </div>
+
+      <div class="label" style="margin-bottom:12px;">Round 2 — Locks (Mild to Wild)</div>
+      <div class="mark-row" style="margin-bottom:20px;">
+        <div class="mark-card">
+          <svg width="60" height="60" viewBox="0 0 80 80">
+            <path d="M28,38 L28,30 Q28,18 40,18 Q52,18 52,30 L52,38" fill="none" stroke="#CE1126" stroke-width="2.5" stroke-linecap="round"/>
+            <rect x="20" y="38" width="40" height="28" rx="4" fill="none" stroke="#CE1126" stroke-width="2.5"/>
+            <circle cx="40" cy="52" r="4" fill="none" stroke="#CE1126" stroke-width="2"/>
+          </svg>
+          <span class="mc-label" style="font-size:10px;">Lock A</span>
+        </div>
+        <div class="mark-card" style="border-color:var(--fr-orange);">
+          <svg width="60" height="60" viewBox="0 0 80 80">
+            <!-- Lock C — LOXY concept Marcus called it -->
+            <path d="M28,36 L28,28 Q28,16 40,16 Q52,16 52,28 L52,36" fill="none" stroke="#CE1126" stroke-width="3" stroke-linecap="round"/>
+            <rect x="18" y="36" width="44" height="30" rx="3" fill="none" stroke="#CE1126" stroke-width="3"/>
+            <!-- chevron cut through body -->
+            <polyline points="28,52 40,62 52,52" fill="none" stroke="#CE1126" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="mc-label" style="font-size:10px; color:var(--fr-orange);">"LOXY" C<br>Marcus's name</span>
+        </div>
+        <div class="arrow-connector" style="padding-bottom:0;">→</div>
+        <div class="mark-card selected-green">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Split: heavy chevron right, thin chevron left -->
+            <polyline points="20,22 44,38 20,54" fill="none" stroke="#CE1126" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="60,28 36,44 60,60" fill="none" stroke="#CE1126" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="mc-label" style="color:var(--lock-green);">Split<br>LOCKED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div class="mquote red" style="margin-bottom:14px;">
+        <div class="who">Marcus — almost home</div>
+        <div class="words">"Almost home. Lock C is interesting — the LOXY concept. But Split is saying something Lock can't."</div>
+      </div>
+      <div class="mquote red" style="margin-bottom:14px;">
+        <div class="who">FD — The pitch for Split</div>
+        <div class="words">"Split is original to the system. It speaks the same geometric language as FA and Charged. Lock C is borrowed — everyone knows the padlock. Split you have never seen before."</div>
+      </div>
+      <div class="mquote red" style="margin-bottom:20px;">
+        <div class="who">Marcus — locked</div>
+        <div class="words">"Maze is awesome."</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span class="badge locked">Split locked</span>
+        <span class="badge open">10 variants explored</span>
+      </div>
+      <div style="margin-top:16px; padding:12px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid var(--fp-red);">
+        <div style="font-size:12px; color:var(--dim); line-height:1.5;">Weight hierarchy: heavy left (the primary direction), thin right (the opposite force). Security anchors <em>down</em>, not up.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: FA — The Architect's Mark -->
+<div class="slide" id="s6">
+  <div class="slide-header">
+    <div class="label" style="color:var(--fa-blue);">FA Chief Architect</div>
+    <h2>FA — The Architect's Mark</h2>
+    <div class="badge locked" style="margin-top:8px;">FA-4 Locked</div>
+  </div>
+  <div class="cols">
+    <div class="col-wide">
+      <div class="label" style="margin-bottom:12px;">The 5 Variants</div>
+      <div class="mark-row" style="margin-bottom:20px;">
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- FA-1 Clean -->
+            <polyline points="40,12 14,65 66,65" fill="none" stroke="#4A90D9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="24" y1="48" x2="56" y2="48" stroke="#4A90D9" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span class="mc-label">FA-1 Clean</span>
+        </div>
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- FA-2 Heavy legs thin cross -->
+            <polyline points="40,12 14,65 66,65" fill="none" stroke="#4A90D9" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="24" y1="48" x2="56" y2="48" stroke="#4A90D9" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span class="mc-label">FA-2 Heavy<br>legs</span>
+        </div>
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- FA-3 Feet medium -->
+            <polyline points="40,12 14,65 66,65" fill="none" stroke="#4A90D9" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="24" y1="48" x2="56" y2="48" stroke="#4A90D9" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="10" y1="65" x2="20" y2="65" stroke="#4A90D9" stroke-width="3" stroke-linecap="round"/>
+            <line x1="60" y1="65" x2="70" y2="65" stroke="#4A90D9" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <span class="mc-label">FA-3 Feet</span>
+        </div>
+        <div class="mark-card selected-green">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- FA-4 Feet + heavy legs FD pick -->
+            <polyline points="40,12 14,65 66,65" fill="none" stroke="#4A90D9" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="24" y1="48" x2="56" y2="48" stroke="#4A90D9" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="8" y1="65" x2="22" y2="65" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/>
+            <line x1="58" y1="65" x2="72" y2="65" stroke="#4A90D9" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <span class="mc-label" style="color:var(--lock-green);">FA-4 Feet +<br>Heavy — LOCKED</span>
+        </div>
+        <div class="mark-card rejected">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- FA-5 inner brace -->
+            <polyline points="40,12 14,65 66,65" fill="none" stroke="#4A90D9" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="24" y1="48" x2="56" y2="48" stroke="#4A90D9" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="8" y1="65" x2="22" y2="65" stroke="#4A90D9" stroke-width="3" stroke-linecap="round"/>
+            <line x1="58" y1="65" x2="72" y2="65" stroke="#4A90D9" stroke-width="3" stroke-linecap="round"/>
+            <line x1="28" y1="56" x2="52" y2="56" stroke="#4A90D9" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          </svg>
+          <span class="mc-label">FA-5 Brace</span>
+        </div>
+      </div>
+
+      <div class="mquote blue" style="margin-bottom:16px;">
+        <div class="who">Marcus — locked</div>
+        <div class="words">"Maze is awesome." (locked alongside FP Split in the same session)</div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div class="mquote blue" style="margin-bottom:14px;">
+        <div class="who">FD — why FA-4</div>
+        <div class="words">"Heavy legs say this structure carries load. Architects do not draw thin lines. They draw thick members because thick members hold things up. The feet give it roots. It does not float. It stands."</div>
+      </div>
+      <div class="mquote blue" style="margin-bottom:14px;">
+        <div class="who">FD — the long read</div>
+        <div class="words">"The feet also make it look like a building that has been standing for decades. FA is the Chief Architect. The mark should look like something that will still be standing when everything else has been rebuilt twice."</div>
+      </div>
+      <div style="margin-top:8px; display:flex; flex-direction:column; gap:8px;">
+        <span class="badge locked">FA-4 locked</span>
+        <span class="badge fdpick">FD pick matched</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: Grind — From Rigid to Organic -->
+<div class="slide" id="s7">
+  <div class="slide-header">
+    <div class="label" style="color:var(--fo-slate);">Grind</div>
+    <h2>Grind — From Rigid to Organic</h2>
+  </div>
+  <div class="cols">
+    <div class="col-wide">
+      <div class="label" style="margin-bottom:12px;">The Iteration</div>
+      <div class="mark-row" style="align-items:center; margin-bottom:20px;">
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+          <div class="mark-card rejected">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <!-- Hard bars V1 -->
+              <rect x="12" y="52" width="14" height="16" fill="#94A3B8" rx="1"/>
+              <rect x="32" y="36" width="14" height="32" fill="#94A3B8" rx="1"/>
+              <rect x="52" y="20" width="14" height="48" fill="#94A3B8" rx="1"/>
+            </svg>
+            <span class="mc-label">V1 — Hard bars</span>
+          </div>
+          <div class="badge open" style="font-size:10px;">Rejected: too rigid</div>
+        </div>
+        <div class="arrow-connector">→</div>
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+          <div class="mark-card rejected">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <!-- Wrong bezier: slow-to-fast -->
+              <path d="M14,66 C18,65 30,60 40,50 C52,36 58,20 66,10" fill="none" stroke="#94A3B8" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="66" cy="10" r="4" fill="#94A3B8"/>
+            </svg>
+            <span class="mc-label">V2 — Wrong curve<br>(slow start)</span>
+          </div>
+          <div class="badge open" style="font-size:10px;">Marcus: wrong story</div>
+        </div>
+        <div class="arrow-connector">→</div>
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+          <div class="mark-card" style="border-color:var(--open-amber);">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <!-- Correct: fast-plateau-compound -->
+              <path d="M14,66 C26,64 38,56 48,46 C54,46 54,22 66,10" fill="none" stroke="#94A3B8" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="66" cy="10" r="4" fill="#94A3B8"/>
+            </svg>
+            <span class="mc-label" style="color:var(--open-amber);">V3 — Compound<br>curve (current)</span>
+          </div>
+          <span class="badge open" style="font-size:10px;">Still open</span>
+        </div>
+      </div>
+
+      <div class="mquote" style="margin-bottom:16px;">
+        <div class="who">Marcus — after V1</div>
+        <div class="words">"Variant B direction approved. But make it a flowing organic silhouette instead of hard boxes."</div>
+      </div>
+      <div class="mquote" style="margin-bottom:16px;">
+        <div class="who">Marcus — after V2 (wrong bezier)</div>
+        <div class="words">"The story is fast start, plateau, spike again. Not slow-to-fast. The wall is part of the design."</div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div style="padding:16px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid var(--fo-slate); margin-bottom:16px;">
+        <div class="label" style="margin-bottom:8px;">The Shape Story</div>
+        <div class="step" style="margin-bottom:8px;">
+          <div class="step-num" style="background:var(--card2);">1</div>
+          <div class="step-text"><strong>Fast start:</strong> Segment rises quickly</div>
+        </div>
+        <div class="step" style="margin-bottom:8px;">
+          <div class="step-num" style="background:var(--card2);">2</div>
+          <div class="step-text"><strong>The plateau:</strong> Control point at same Y = nearly horizontal. The wall. It says: keep going.</div>
+        </div>
+        <div class="step">
+          <div class="step-num" style="background:var(--card2);">3</div>
+          <div class="step-text"><strong>Compound kick:</strong> Steepens hard. The payoff.</div>
+        </div>
+      </div>
+      <div class="mquote" style="margin-bottom:14px;">
+        <div class="who">FD — on the plateau</div>
+        <div class="words">"The plateau is not an accident. It says: this part will feel like you are not making progress. Keep going."</div>
+      </div>
+      <span class="badge open">Color: still open</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: Forge Co. — The Search Continues -->
+<div class="slide" id="s8">
+  <div class="slide-header">
+    <div class="label maize">Forge Co.</div>
+    <h2>Forge Co. — The Search Continues</h2>
+    <div class="badge open" style="margin-top:8px;">Still open</div>
+  </div>
+  <div class="cols">
+    <div class="col-wide">
+      <div class="label" style="margin-bottom:12px;">The Circuit F Journey — 12+ Variants</div>
+      <div class="mark-row" style="margin-bottom:20px; flex-wrap:wrap;">
+        <!-- F3 Charged - FD's pick -->
+        <div class="mark-card selected" style="position:relative;">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- F form with circuit nodes -->
+            <rect x="20" y="14" width="4" height="52" fill="#FFCB05"/>
+            <rect x="20" y="14" width="30" height="4" fill="#FFCB05"/>
+            <rect x="20" y="36" width="22" height="4" fill="#FFCB05"/>
+            <!-- junction nodes -->
+            <circle cx="20" cy="16" r="4.5" fill="#FFCB05"/>
+            <circle cx="50" cy="16" r="4.5" fill="#FFCB05"/>
+            <circle cx="20" cy="38" r="4.5" fill="#FFCB05"/>
+            <circle cx="42" cy="38" r="3.5" fill="none" stroke="#FFCB05" stroke-width="2"/>
+            <circle cx="20" cy="66" r="4.5" fill="#FFCB05"/>
+          </svg>
+          <span class="mc-label" style="color:var(--maize);">F3 Charged<br>FD pick ★</span>
+        </div>
+        <!-- F1 Formula -->
+        <div class="mark-card">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- Bold F with arrow-notched bars -->
+            <rect x="20" y="14" width="5" height="52" fill="#FFCB05"/>
+            <polygon points="25,14 50,14 55,19 50,24 25,24" fill="#FFCB05"/>
+            <polygon points="25,34 46,34 51,39 46,44 25,44" fill="#FFCB05"/>
+          </svg>
+          <span class="mc-label">Formula<br>(F1-inspired)</span>
+        </div>
+        <!-- Stamped -->
+        <div class="mark-card">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <!-- 3-layer emboss -->
+            <rect x="23" y="17" width="5" height="52" fill="#A08000" rx="1"/>
+            <rect x="23" y="17" width="30" height="4" fill="#A08000" rx="1"/>
+            <rect x="23" y="39" width="22" height="4" fill="#A08000" rx="1"/>
+            <rect x="21" y="15" width="5" height="52" fill="#FFCB05" rx="1"/>
+            <rect x="21" y="15" width="30" height="4" fill="#FFCB05" rx="1"/>
+            <rect x="21" y="37" width="22" height="4" fill="#FFCB05" rx="1"/>
+            <rect x="20" y="14" width="3" height="3" fill="#fff" opacity="0.5" rx="1"/>
+          </svg>
+          <span class="mc-label">Stamped<br>(pressed metal)</span>
+        </div>
+        <!-- Spark -->
+        <div class="mark-card">
+          <svg width="70" height="70" viewBox="0 0 80 80">
+            <rect x="20" y="14" width="4" height="52" fill="#FFCB05"/>
+            <rect x="20" y="14" width="28" height="4" fill="#FFCB05"/>
+            <rect x="20" y="36" width="20" height="4" fill="#FFCB05"/>
+            <!-- radiating lines from top node -->
+            <line x1="20" y1="16" x2="10" y2="8" stroke="#FFCB05" stroke-width="1.5" opacity="0.6"/>
+            <line x1="20" y1="16" x2="8" y2="18" stroke="#FFCB05" stroke-width="1.5" opacity="0.6"/>
+            <line x1="20" y1="16" x2="12" y2="28" stroke="#FFCB05" stroke-width="1.5" opacity="0.4"/>
+            <line x1="34" y1="16" x2="42" y2="8" stroke="#FFCB05" stroke-width="1.5" opacity="0.6"/>
+            <line x1="34" y1="16" x2="46" y2="18" stroke="#FFCB05" stroke-width="1.5" opacity="0.4"/>
+          </svg>
+          <span class="mc-label">Spark</span>
+        </div>
+      </div>
+
+      <div class="mquote" style="margin-bottom:16px;">
+        <div class="who">Marcus — early direction</div>
+        <div class="words">"Circuit F is still my favorite. I want to see more of that. The F letterform, the forging and steel aesthetic."</div>
+      </div>
+      <div class="mquote">
+        <div class="who">Marcus — after F1-logo round</div>
+        <div class="words">"F1 uses negative space and two-shape construction. That is the design language I want to explore."</div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div class="mquote" style="margin-bottom:14px;">
+        <div class="who">FD — on F3 Charged</div>
+        <div class="words">"Nodes at 3 junctions read circuit without decoration. You see the electrical system before you identify the letter. F6 is the runner-up."</div>
+      </div>
+      <div style="margin-top:16px; padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid var(--maize);">
+        <div class="label maize" style="margin-bottom:8px;">Why still open</div>
+        <p style="font-size:14px;">12+ variants explored across 4 sessions. Marcus has a strong preference direction (Circuit F, steel aesthetic) but has not locked. The search is real.</p>
+      </div>
+      <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+        <span class="badge fdpick">F3 Charged — FD's pick</span>
+        <span class="badge open">Lock pending Marcus</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: Inkwell — The Two-Mark Problem -->
+<div class="slide" id="s9">
+  <div class="slide-header">
+    <div class="label maize">Inkwell</div>
+    <h2>Inkwell — The Two-Mark Problem</h2>
+    <div class="badge open" style="margin-top:8px;">Still open</div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <div class="label" style="margin-bottom:16px;">What we learned the hard way</div>
+      <div class="mquote" style="margin-bottom:16px;">
+        <div class="who">Marcus — the clarification</div>
+        <div class="words">"FD keep confusing two things. Drop is the Inkwell product mark. Fisheye is your agent mark. They are different. One for the product, one for you."</div>
+      </div>
+
+      <div style="display:flex; gap:24px; margin-bottom:24px;">
+        <div style="flex:1; padding:16px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid var(--maize);">
+          <div class="label maize" style="margin-bottom:10px;">Inkwell product mark</div>
+          <div style="display:flex; justify-content:center; margin-bottom:12px;">
+            <svg width="70" height="70" viewBox="0 0 80 80">
+              <!-- Drop -->
+              <path d="M40,12 Q54,28 54,44 Q54,58 40,64 Q26,58 26,44 Q26,28 40,12Z" fill="none" stroke="#FFCB05" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <p style="font-size:13px; text-align:center;">The Drop. Marcus's position: self-explanatory. Passes the MCM principle. No debate needed.</p>
+        </div>
+        <div style="flex:1; padding:16px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid var(--maize);">
+          <div class="label maize" style="margin-bottom:10px;">FD agent mark</div>
+          <div style="display:flex; justify-content:center; margin-bottom:12px;">
+            <svg width="70" height="70" viewBox="0 0 80 80">
+              <!-- Fisheye / ◉ -->
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#FFCB05" stroke-width="2.5"/>
+              <circle cx="40" cy="40" r="10" fill="#FFCB05"/>
+              <circle cx="40" cy="40" r="19" fill="none" stroke="#FFCB05" stroke-width="1" opacity="0.35"/>
+            </svg>
+          </div>
+          <p style="font-size:13px; text-align:center;">The Fisheye (◉). FD's argument: more ownable. Design starts from a blank circle. The filled center is intention. The outer ring is craft.</p>
+        </div>
+      </div>
+
+      <div class="mquote" style="margin-bottom:12px;">
+        <div class="who">FD — the pitch for ◉ on Inkwell</div>
+        <div class="words">"The drop is the category default. Every journaling app in the App Store uses a drop. The fisheye is ownable. Nobody has that mark. It is more original."</div>
+      </div>
+      <div class="mquote">
+        <div class="who">Marcus — holding to drop</div>
+        <div class="words">"The drop IS the journal. Read before you think. You explain the fisheye, it already failed."</div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div style="padding:16px; background:var(--card); border:1px solid var(--border); border-radius:6px; margin-bottom:16px;">
+        <div class="label" style="margin-bottom:8px;">The debate status</div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">FD originally pitched ◉ for <em>Inkwell</em> the product.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">Marcus corrected: ◉ was already agreed as FD's personal agent mark.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text">Inkwell product mark: Marcus holds to Drop. MCM principle wins.</div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-text">Debate ongoing. Neither locked yet.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span class="badge open">Inkwell product: open</span>
+        <span class="badge fdpick">◉ is FD's agent mark</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10: Agent Colors -->
+<div class="slide" id="s10">
+  <div class="slide-header">
+    <div class="label maize">The Color System</div>
+    <h2>Agent Colors — One Approval Moment</h2>
+    <div class="badge locked" style="margin-top:8px;">Locked</div>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <div class="label" style="margin-bottom:16px;">The Michigan Palette</div>
+      <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-bottom:24px;">
+        <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-top:3px solid #4A90D9;">
+          <div style="font-size:11px; font-weight:700; color:#4A90D9; margin-bottom:4px;">FA</div>
+          <div style="font-size:12px; color:var(--dim);">Architect Blue</div>
+          <div style="font-size:11px; color:var(--dim);">#4A90D9</div>
+        </div>
+        <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-top:3px solid #FFCB05;">
+          <div style="font-size:11px; font-weight:700; color:#FFCB05; margin-bottom:4px;">FD</div>
+          <div style="font-size:12px; color:var(--dim);">Design Maize</div>
+          <div style="font-size:11px; color:var(--dim);">#FFCB05</div>
+        </div>
+        <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-top:3px solid #22C55E;">
+          <div style="font-size:11px; font-weight:700; color:#22C55E; margin-bottom:4px;">FF</div>
+          <div style="font-size:12px; color:var(--dim);">Quality Green</div>
+          <div style="font-size:11px; color:var(--dim);">#22C55E</div>
+        </div>
+        <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-top:3px solid #6D28D9;">
+          <div style="font-size:11px; font-weight:700; color:#6D28D9; margin-bottom:4px;">FI</div>
+          <div style="font-size:12px; color:var(--dim);">Data Indigo</div>
+          <div style="font-size:11px; color:var(--dim);">#6D28D9</div>
+        </div>
+        <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-top:3px solid #94A3B8;">
+          <div style="font-size:11px; font-weight:700; color:#94A3B8; margin-bottom:4px;">FO</div>
+          <div style="font-size:12px; color:var(--dim);">Ops Slate</div>
+          <div style="font-size:11px; color:var(--dim);">#94A3B8</div>
+        </div>
+        <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-top:3px solid #CE1126;">
+          <div style="font-size:11px; font-weight:700; color:#CE1126; margin-bottom:4px;">FP</div>
+          <div style="font-size:12px; color:var(--dim);">Platform Red</div>
+          <div style="font-size:11px; color:var(--dim);">#CE1126</div>
+        </div>
+        <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-top:3px solid #F97316;">
+          <div style="font-size:11px; font-weight:700; color:#F97316; margin-bottom:4px;">FR</div>
+          <div style="font-size:12px; color:var(--dim);">Research Orange</div>
+          <div style="font-size:11px; color:var(--dim);">#F97316</div>
+        </div>
+        <div style="padding:14px; background:var(--card2); border:1px solid var(--border); border-radius:6px; border-top:2px dashed var(--border);">
+          <div style="font-size:11px; font-weight:700; color:var(--dim); margin-bottom:4px;">Source</div>
+          <div style="font-size:12px; color:var(--dim);">Michigan sports</div>
+          <div style="font-size:11px; color:var(--dim);">U of M + Detroit</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div class="mquote green" style="margin-bottom:14px;">
+        <div class="who">Marcus — the approval</div>
+        <div class="words">"Vibrant and alive. Right balance. Gorgeous."</div>
+      </div>
+      <div class="mquote" style="margin-bottom:14px;">
+        <div class="who">What was rejected before this</div>
+        <div class="words">Grind Purple had no Detroit or Michigan source. Teal was questioned as anchor. Both replaced. Colors must be inherited, not chosen.</div>
+      </div>
+      <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid var(--maize); margin-bottom:16px;">
+        <div class="label maize" style="margin-bottom:6px;">Color Lock Policy</div>
+        <p style="font-size:13px;">These 13 colors (7 Forge + 6 Grind) are LOCKED FOREVER. Changed twice by autonomous sessions. Now enforced via FD skill file and FO policy. Never change without Marcus live approval.</p>
+      </div>
+      <span class="badge locked">13-color palette locked</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11: The Pitch Lessons -->
+<div class="slide" id="s11">
+  <div class="slide-header">
+    <div class="label maize">What We Learned</div>
+    <h2>The Pitch Lessons</h2>
+  </div>
+  <div class="cols">
+    <div class="col">
+      <div class="label" style="margin-bottom:12px;">Captured in fd-pitch.md — Built Live During the Session</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="principle">
+          <div class="p-title">Shape must match story</div>
+          <div class="p-body">The Grind bezier was slow-to-fast. Marcus's story is fast-plateau-compound. The mark was wrong before the pixels were wrong.</div>
+        </div>
+        <div class="principle">
+          <div class="p-title">Show the work, then talk</div>
+          <div class="p-body">"Showing more work IS the pitch. Don't explain. Draw. The sequence: see the problem, make the thing, show it, then explain." — Marcus</div>
+        </div>
+        <div class="principle">
+          <div class="p-title">Know what is locked</div>
+          <div class="p-body">FD re-pitched ◉ for Inkwell after it was settled as FD's personal mark. Marcus had to correct it. Pitching decided things wastes the session.</div>
+        </div>
+        <div class="principle">
+          <div class="p-title">Compression finds the better idea</div>
+          <div class="p-body">First principles were too long. Marcus: "terrible, over-explaining." Tightened to 5 lines. Each one is stronger for the compression.</div>
+        </div>
+        <div class="principle">
+          <div class="p-title">The MCM principle governs everything</div>
+          <div class="p-body">"Read before you think. You explain it, it failed." Named after the first lock. Applied to every mark decision after.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-narrow">
+      <div class="mquote" style="margin-bottom:14px;">
+        <div class="who">Marcus — on FD's first pitch</div>
+        <div class="words">"Beginner."</div>
+      </div>
+      <div class="mquote" style="margin-bottom:14px;">
+        <div class="who">FD — honest self-assessment</div>
+        <div class="words">"He was right. I pitched settled decisions, I used dismissive language, I did not know my own system well enough. Gaps written down. Better next time."</div>
+      </div>
+      <div class="mquote" style="margin-bottom:14px;">
+        <div class="who">Marcus — principles locked</div>
+        <div class="words">"Wonderful beautiful job on the principals lock those in."</div>
+      </div>
+      <div style="padding:14px; background:var(--card); border:1px solid var(--border); border-radius:6px;">
+        <div class="label" style="margin-bottom:6px;">The skill file</div>
+        <p style="font-size:13px;">fd-pitch.md was written and updated live during the session. Every Marcus correction became a lesson. The skill file now contains FD's pitch methodology, self-assessment, and gap analysis. Built in public.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12: Lock Status -->
+<div class="slide" id="s12">
+  <div class="slide-header">
+    <div class="label maize">Slide 12 of 12</div>
+    <h2>Lock Status</h2>
+  </div>
+  <div class="scrollable">
+    <table class="status-table">
+      <thead>
+        <tr>
+          <th>Mark</th>
+          <th>Rounds</th>
+          <th>Status</th>
+          <th>The Lock Moment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="td-name">MCM (Motor City Math)</td>
+          <td class="td-rounds">1 round</td>
+          <td><span class="badge locked">Locked</span></td>
+          <td class="td-moment">"My favorite icon of the bunch. That's gonna sell." Fastest lock in the system.</td>
+        </tr>
+        <tr>
+          <td class="td-name">FA (Chief Architect)</td>
+          <td class="td-rounds">5 variants</td>
+          <td><span class="badge locked">Locked — FA-4</span></td>
+          <td class="td-moment">"Maze is awesome." FA-4: feet, heavy legs. Locked alongside FP in the same session.</td>
+        </tr>
+        <tr>
+          <td class="td-name">FP (Security)</td>
+          <td class="td-rounds">10 variants</td>
+          <td><span class="badge locked">Locked — Split</span></td>
+          <td class="td-moment">Explored locks (LOXY concept), returned to Split. Original to the system. "Security anchors down."</td>
+        </tr>
+        <tr>
+          <td class="td-name">Dispatch (product)</td>
+          <td class="td-rounds">9+ variants</td>
+          <td><span class="badge locked">Locked — Arrow</span></td>
+          <td class="td-moment">"Arrow is the only thing getting the 5 treatment." Longest road. Communication devices rejected, motion won.</td>
+        </tr>
+        <tr>
+          <td class="td-name">Agent Color Palette</td>
+          <td class="td-rounds">4 palette rounds</td>
+          <td><span class="badge locked">Locked — 13 colors</span></td>
+          <td class="td-moment">"Vibrant and alive. Right balance. Gorgeous." Michigan sports teams as source. Never change without Marcus live.</td>
+        </tr>
+        <tr>
+          <td class="td-name">Forge Co. (master brand)</td>
+          <td class="td-rounds">12+ variants</td>
+          <td><span class="badge open">Open — F3 Charged leads</span></td>
+          <td class="td-moment">Marcus: Circuit F is the direction. F3 Charged is FD's pick. F1-logo round explored. Not locked.</td>
+        </tr>
+        <tr>
+          <td class="td-name">Grind</td>
+          <td class="td-rounds">3 rounds</td>
+          <td><span class="badge open">Open — compound curve</span></td>
+          <td class="td-moment">Shape story correct (fast-plateau-compound). Color not assigned. Curve not locked.</td>
+        </tr>
+        <tr>
+          <td class="td-name">Inkwell (product mark)</td>
+          <td class="td-rounds">Ongoing debate</td>
+          <td><span class="badge open">Open — Drop leads</span></td>
+          <td class="td-moment">Marcus holds to Drop (MCM principle). FD argues for ◉ (ownable). Neither locked.</td>
+        </tr>
+        <tr>
+          <td class="td-name">FI, FF, FO, FR marks</td>
+          <td class="td-rounds">1 round</td>
+          <td><span class="badge locked">Approved</span></td>
+          <td class="td-moment">FI, FF, FO, FR approved in the same session. Marked as selected in the brand guide.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="display:flex; gap:16px; margin-top:28px; padding-bottom:8px;">
+      <div style="flex:1; padding:16px; background:var(--card); border:1px solid rgba(34,197,94,0.2); border-radius:6px; border-left:3px solid var(--lock-green);">
+        <div class="label locked" style="margin-bottom:6px;">5 locked</div>
+        <p style="font-size:14px;">MCM, FA, FP, Dispatch, Agent Colors. The system has a foundation.</p>
+      </div>
+      <div style="flex:1; padding:16px; background:var(--card); border:1px solid rgba(245,158,11,0.2); border-radius:6px; border-left:3px solid var(--open-amber);">
+        <div class="label open" style="margin-bottom:6px;">4 open</div>
+        <p style="font-size:14px;">Forge Co., Grind, Inkwell, Grind color. All need Marcus live approval to close.</p>
+      </div>
+      <div style="flex:1; padding:16px; background:var(--card); border:1px solid var(--border); border-radius:6px; border-left:3px solid var(--maize);">
+        <div class="label maize" style="margin-bottom:6px;">The standard</div>
+        <p style="font-size:14px;">MCM principle governs everything. Read before you think. You explain it, it failed.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+  <div class="nav-counter" id="counter">01 / 12</div>
+  <div class="nav-title" id="nav-title">The Forge Brand System: Built in Public</div>
+  <div class="nav-buttons">
+    <button class="nav-btn" onclick="go(-1)">← Prev</button>
+    <button class="nav-btn" onclick="go(1)">Next →</button>
+  </div>
+</div>
+
+<script>
+const titles = [
+  'The Forge Brand System: Built in Public',
+  'Day Zero: The Brief',
+  'MCM — The First Lock',
+  'Dispatch — The Long Road',
+  'FP — Security Anchors Down',
+  'FA — The Architect\'s Mark',
+  'Grind — From Rigid to Organic',
+  'Forge Co. — The Search Continues',
+  'Inkwell — The Two-Mark Problem',
+  'Agent Colors — One Approval Moment',
+  'The Pitch Lessons',
+  'Lock Status'
+];
+
+let cur = 1;
+const total = 12;
+
+function go(dir) {
+  const next = cur + dir;
+  if (next < 1 || next > total) return;
+  document.getElementById('s' + cur).classList.remove('active');
+  cur = next;
+  document.getElementById('s' + cur).classList.add('active');
+  document.getElementById('counter').textContent = String(cur).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+  document.getElementById('nav-title').textContent = titles[cur - 1];
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sprint Complete</title>
+<style>
+  :root {
+    --bg: #0A0A0F; --s1: #12121A; --s2: #1A1A28; --border: #1E1E2A;
+    --text: #E8E8F0; --dim: #555568; --sec: #8889A0;
+    --maize: #FFCB05; --green: #22C55E; --blue: #4A90D9;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow: hidden; }
+  .stage { width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+
+  /* Animated background rings */
+  .rings { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .ring { position: absolute; border-radius: 50%; border: 1px solid rgba(255,203,5,0.08); animation: ring-expand 4s ease-out infinite; }
+  .ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s; }
+  .ring:nth-child(2) { width: 380px; height: 380px; animation-delay: 0.8s; }
+  .ring:nth-child(3) { width: 560px; height: 560px; animation-delay: 1.6s; }
+  .ring:nth-child(4) { width: 740px; height: 740px; animation-delay: 2.4s; }
+  @keyframes ring-expand {
+    0% { opacity: 0; transform: scale(0.9); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.05); }
+  }
+
+  /* Corner agent dots */
+  .agent-dots { position: absolute; inset: 2rem; display: flex; align-items: stretch; }
+  .dot-col { display: flex; flex-direction: column; justify-content: space-between; }
+  .dot-col.right { margin-left: auto; }
+  .agent-dot { width: 10px; height: 10px; border-radius: 50%; opacity: 0; animation: dot-appear 0.4s ease forwards; }
+  .label-dot { display: flex; align-items: center; gap: 0.5rem; font-family: var(--mono); font-size: 0.5rem; color: var(--dim); }
+
+  /* Center content */
+  .center { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; position: relative; z-index: 2; }
+  .mark-ring { width: 100px; height: 100px; border-radius: 50%; background: rgba(255,203,5,0.06); border: 2px solid rgba(255,203,5,0.3); display: flex; align-items: center; justify-content: center; animation: pulse-ring 2s ease-in-out infinite; }
+  @keyframes pulse-ring { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,203,5,0.15); } 50% { box-shadow: 0 0 0 20px rgba(255,203,5,0); } }
+
+  svg.mark { width: 56px; height: 56px; }
+  .headline { font-size: 2.8rem; font-weight: 900; color: var(--maize); letter-spacing: -0.02em; text-align: center; line-height: 1; }
+  .sprint-label { font-family: var(--mono); font-size: 0.65rem; color: var(--dim); text-align: center; letter-spacing: 0.08em; text-transform: uppercase; }
+  .stats-row { display: flex; gap: 2.5rem; align-items: center; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 1.8rem; font-weight: 900; color: var(--text); line-height: 1; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-label { font-family: var(--mono); font-size: 0.5rem; color: var(--dim); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .divider { width: 1px; height: 3rem; background: var(--border); }
+  .message { font-size: 0.85rem; color: var(--sec); text-align: center; max-width: 380px; line-height: 1.6; }
+  .progress-bar { width: 320px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; position: relative; }
+  .progress-fill { height: 100%; background: var(--maize); border-radius: 2px; animation: fill-bar 2s ease-out 0.5s both; }
+  @keyframes fill-bar { from { width: 0%; } to { width: 100%; } }
+
+  /* Bottom agent strip */
+  .agent-strip { position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.6rem; align-items: center; }
+  .strip-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .strip-label { font-family: var(--mono); font-size: 0.48rem; color: var(--dim); margin-left: 0.3rem; }
+
+  /* Tick particle effects */
+  .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .tick { position: absolute; font-size: 0.8rem; animation: tick-fall 3s linear infinite; opacity: 0; }
+  @keyframes tick-fall {
+    0% { opacity: 0; transform: translateY(-20px) rotate(0deg); }
+    10% { opacity: 1; }
+    90% { opacity: 0.6; }
+    100% { opacity: 0; transform: translateY(100vh) rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="rings">
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+    <div class="ring"></div>
+  </div>
+
+  <!-- floating checkmarks -->
+  <div class="confetti" id="confetti"></div>
+
+  <div class="center">
+    <div class="mark-ring">
+      <svg class="mark" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Forge F mark -->
+        <rect x="10" y="10" width="7" height="36" fill="#FFCB05" rx="2"/>
+        <rect x="10" y="10" width="28" height="7" fill="#FFCB05" rx="2"/>
+        <rect x="10" y="25" width="20" height="6" fill="#FFCB05" rx="2"/>
+      </svg>
+    </div>
+
+    <div>
+      <div class="headline">Sprint Complete</div>
+      <div class="sprint-label" style="margin-top:0.5rem">Forge Agent Network / Sprint 5</div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-value green">2035</div>
+        <div class="stat-label">Tests Passing</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat">
+        <div class="stat-value">13</div>
+        <div class="stat-label">Agents Active</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat">
+        <div class="stat-value blue">328+</div>
+        <div class="stat-label">Commits</div>
+      </div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:100%"></div>
+    </div>
+
+    <div class="message">All tasks complete. No blockers. No regressions. Every agent shipped something this sprint.</div>
+  </div>
+
+  <!-- Agent strip at bottom -->
+  <div class="agent-strip">
+    <span class="strip-dot" style="background:#FFCB05"></span>
+    <span class="strip-dot" style="background:#4A90D9"></span>
+    <span class="strip-dot" style="background:#22C55E"></span>
+    <span class="strip-dot" style="background:#6D28D9"></span>
+    <span class="strip-dot" style="background:#94A3B8"></span>
+    <span class="strip-dot" style="background:#CE1126"></span>
+    <span class="strip-dot" style="background:#F97316"></span>
+    <span class="strip-label">FD FA FF FI FO FP FR</span>
+    <span style="color:var(--border);font-size:0.5rem;margin:0 0.3rem">|</span>
+    <span class="strip-dot" style="background:#93AEFF"></span>
+    <span class="strip-dot" style="background:#3D3D3D;border:1px solid #555"></span>
+    <span class="strip-dot" style="background:#6EE7B7"></span>
+    <span class="strip-dot" style="background:#A78BFA"></span>
+    <span class="strip-dot" style="background:#EE2828"></span>
+    <span class="strip-dot" style="background:#FB923C"></span>
+    <span class="strip-label">GA GD GF GI GP GR</span>
+  </div>
+</div>
+
+<script>
+  // Floating check marks
+  const confetti = document.getElementById('confetti');
+  const chars = ['✓', '✓', '✓', '+', '>', '·'];
+  const colors = ['#FFCB05', '#22C55E', '#4A90D9', '#F97316', '#6EE7B7'];
+  for (let i = 0; i < 24; i++) {
+    const el = document.createElement('div');
+    el.className = 'tick';
+    el.textContent = chars[Math.floor(Math.random() * chars.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.top = Math.random() * -20 + 'px';
+    el.style.color = colors[Math.floor(Math.random() * colors.length)];
+    el.style.animationDelay = (Math.random() * 4) + 's';
+    el.style.animationDuration = (2.5 + Math.random() * 2.5) + 's';
+    confetti.appendChild(el);
+  }
+</script>
+</body>
+</html>

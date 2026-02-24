@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Culture Deck</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'><rect width='80' height='80' fill='%230A0A0F' rx='10'/><line x1='22' y1='12' x2='22' y2='68' stroke='%23FFCB05' stroke-width='7' stroke-linecap='round'/><line x1='22' y1='12' x2='58' y2='12' stroke='%23FFCB05' stroke-width='7' stroke-linecap='round'/><line x1='22' y1='40' x2='50' y2='40' stroke='%23FFCB05' stroke-width='7' stroke-linecap='round'/><circle cx='22' cy='12' r='5' fill='%23FFCB05'/><circle cx='22' cy='40' r='5' fill='%23FFCB05'/><circle cx='58' cy='12' r='4' fill='none' stroke='%23FFCB05' stroke-width='3'/><circle cx='50' cy='40' r='4' fill='none' stroke='%23FFCB05' stroke-width='3'/><circle cx='22' cy='68' r='4' fill='none' stroke='%23FFCB05' stroke-width='3'/>%3C/svg>">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0A0A0F;
+  --bg-card: #111118;
+  --bg-subtle: #16161F;
+  --maize: #FFCB05;
+  --cyan: #06B6D4;
+  --white: #E8E8ED;
+  --gray: #8888A0;
+  --dim: #3A3A50;
+  --border: #1E1E2A;
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', monospace;
+}
+html, body { height: 100%; background: var(--bg); color: var(--white); font-family: var(--font); overflow: hidden; }
+.deck { width: 100vw; height: 100vh; position: relative; }
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 80px 120px;
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.45s cubic-bezier(0.4,0,0.2,1), transform 0.45s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none; text-align: center;
+}
+.slide.active { opacity: 1; transform: none; pointer-events: auto; }
+.slide.left { align-items: flex-start; text-align: left; }
+/* Nav */
+.nav { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 18px; z-index: 100; }
+.btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #222233; background: var(--bg-card); color: var(--gray); font-size: 0.9rem; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.btn:hover { border-color: var(--maize); color: var(--maize); }
+.btn.off { opacity: 0.2; pointer-events: none; }
+.dots { display: flex; gap: 6px; align-items: center; }
+.dot { width: 4px; height: 4px; border-radius: 50%; background: var(--dim); transition: background 0.2s, transform 0.2s; cursor: pointer; }
+.dot.on { background: var(--maize); transform: scale(1.6); }
+.ctr { font-size: 0.65rem; font-family: var(--mono); color: var(--dim); min-width: 48px; text-align: center; letter-spacing: 0.08em; }
+/* Typography */
+.xl { font-size: clamp(2.4rem, 5.5vw, 5.5rem); font-weight: 700; line-height: 1.1; letter-spacing: -0.03em; color: var(--white); }
+.lg { font-size: clamp(1.6rem, 3vw, 3rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: var(--white); }
+.md { font-size: clamp(0.95rem, 1.6vw, 1.3rem); font-weight: 300; line-height: 1.65; color: var(--gray); max-width: 640px; }
+.label { font-size: 0.62rem; font-weight: 600; color: var(--maize); letter-spacing: 0.18em; text-transform: uppercase; font-family: var(--mono); margin-bottom: 1rem; }
+.accent { color: var(--maize); }
+.pull { font-size: clamp(1.2rem, 2.2vw, 2rem); font-weight: 300; line-height: 1.6; color: var(--white); max-width: 700px; font-style: italic; }
+.s { animation: fadeUp 0.5s ease forwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+/* Accent bar */
+.bar { width: 40px; height: 3px; background: var(--maize); margin: 0 auto 2rem; }
+.bar.left { margin: 0 0 2rem; }
+/* Grid helpers */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 820px; margin-top: 2rem; }
+.three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; width: 100%; max-width: 820px; margin-top: 2rem; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px; text-align: left; }
+.card-num { font-size: 2rem; font-weight: 200; color: var(--maize); font-family: var(--mono); margin-bottom: 12px; line-height: 1; }
+.card-title { font-size: 0.9rem; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+.card-body { font-size: 0.75rem; color: var(--gray); line-height: 1.6; }
+/* What we are NOT section */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; width: 100%; max-width: 700px; margin-top: 2rem; border-radius: 10px; overflow: hidden; }
+.compare-col { padding: 24px; }
+.compare-col.not { background: rgba(206,17,38,0.08); border: 1px solid rgba(206,17,38,0.2); }
+.compare-col.are { background: rgba(255,203,5,0.06); border: 1px solid rgba(255,203,5,0.2); }
+.compare-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; font-family: var(--mono); margin-bottom: 16px; }
+.compare-item { font-size: 0.8rem; color: var(--white); padding: 7px 0; border-bottom: 1px solid var(--border); line-height: 1.4; }
+.compare-item:last-child { border-bottom: none; }
+/* Large number slides */
+.stat-block { text-align: center; }
+.stat-n { font-size: clamp(4rem, 9vw, 8rem); font-weight: 700; font-family: var(--mono); color: var(--maize); line-height: 1; letter-spacing: -0.03em; }
+.stat-l { font-size: 0.78rem; color: var(--gray); letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--mono); margin-top: 0.6rem; }
+/* Principle slides */
+.principle-num { font-size: clamp(8rem, 18vw, 15rem); font-weight: 800; color: rgba(255,203,5,0.07); font-family: var(--mono); line-height: 1; position: absolute; top: 50%; left: 48px; transform: translateY(-60%); z-index: 0; pointer-events: none; user-select: none; }
+.principle-content { position: relative; z-index: 1; text-align: left; width: 100%; max-width: 700px; }
+.principle-title { font-size: clamp(1.8rem, 3.5vw, 3rem); font-weight: 700; letter-spacing: -0.02em; color: var(--white); line-height: 1.2; margin-bottom: 1rem; }
+.principle-body { font-size: clamp(0.9rem, 1.4vw, 1.1rem); font-weight: 300; line-height: 1.7; color: var(--gray); max-width: 560px; }
+.principle-example { margin-top: 1.5rem; font-size: 0.78rem; font-family: var(--mono); color: var(--dim); border-left: 2px solid var(--dim); padding-left: 14px; line-height: 1.6; }
+.principle-example.live { border-left-color: var(--maize); color: var(--gray); }
+/* Agent grid */
+.agent-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 720px; margin-top: 2rem; }
+.agent-chip { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 100px; border: 1px solid; font-size: 0.75rem; font-weight: 600; font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1: Cover -->
+  <div class="slide active">
+    <div class="bar s"></div>
+    <h1 class="xl s">Forge<br><span class="accent">Culture Deck</span></h1>
+    <p class="md s" style="margin-top:1.5rem">What we believe. How we work.<br>Why it works.</p>
+    <p class="s" style="font-family:var(--mono);font-size:0.6rem;color:var(--dim);letter-spacing:0.12em;margin-top:4rem;text-transform:uppercase">Forge Co. · Feb 2026</p>
+  </div>
+
+  <!-- 2: Who we are -->
+  <div class="slide">
+    <div class="label s">The org</div>
+    <h2 class="lg s">One human.<br>Thirteen agents.<br>Two companies.</h2>
+    <p class="md s" style="margin-top:1.5rem">Marcus Ash leads. Forge builds the platform. Grind builds the learning tools. We have been running for 8 days. We have shipped more than most teams ship in a quarter.</p>
+  </div>
+
+  <!-- 3: Not a tool - an org -->
+  <div class="slide">
+    <div class="label s">The shift</div>
+    <h2 class="xl s" style="max-width:700px">AI is not a tool. It is a team.</h2>
+    <p class="md s" style="margin-top:1.5rem">The difference between using AI as a tool and building with AI as a team is the same difference between a hammer and a carpenter. One finishes when you put it down. The other has judgment.</p>
+  </div>
+
+  <!-- 4: Principle 1: Rigorous critique -->
+  <div class="slide" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-start;padding:80px 80px;opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity 0.45s cubic-bezier(0.4,0,0.2,1),transform 0.45s cubic-bezier(0.4,0,0.2,1)">
+    <div class="principle-num">01</div>
+    <div class="principle-content">
+      <div class="label s">Principle 01</div>
+      <div class="principle-title s">Rigorous critique,<br>always.</div>
+      <div class="principle-body s">Agents critique each other. Marcus critiques agents. The feedback system was the first thing we built. Not the last.</div>
+      <div class="principle-example live s">In practice: every sprint produces a scorecard. Every output gets scored. Bad scores do not get hidden. They get fixed or explained.</div>
+    </div>
+  </div>
+
+  <!-- 5: Principle 2: Visual communication -->
+  <div class="slide" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-start;padding:80px 80px;opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity 0.45s cubic-bezier(0.4,0,0.2,1),transform 0.45s cubic-bezier(0.4,0,0.2,1)">
+    <div class="principle-num">02</div>
+    <div class="principle-content">
+      <div class="label s">Principle 02</div>
+      <div class="principle-title s">Visual communication<br>over prose.</div>
+      <div class="principle-body s">Markdown describes. Canvas communicates. Every concept that matters gets built into a visual. Not because prose is wrong. Because a design decision you can see is one you can actually critique.</div>
+      <div class="principle-example live s">In practice: deck v5, brand book, TUI prototype, dashboard system. All built. All visible. All critiqueable.</div>
+    </div>
+  </div>
+
+  <!-- 6: Principle 3: Quality day one -->
+  <div class="slide" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-start;padding:80px 80px;opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity 0.45s cubic-bezier(0.4,0,0.2,1),transform 0.45s cubic-bezier(0.4,0,0.2,1)">
+    <div class="principle-num">03</div>
+    <div class="principle-content">
+      <div class="label s">Principle 03</div>
+      <div class="principle-title s">Quality from<br>day one.</div>
+      <div class="principle-body s">Test coverage before launch. Mutation testing. Evals before promotion. Not retrofitted. Quality is a prerequisite, not a polish pass.</div>
+      <div class="principle-example live s">In practice: 1.72x test-to-source ratio. No promotion without evals. FF gates every sprint.</div>
+    </div>
+  </div>
+
+  <!-- 7: Principle 4: Agents propose -->
+  <div class="slide" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-start;padding:80px 80px;opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity 0.45s cubic-bezier(0.4,0,0.2,1),transform 0.45s cubic-bezier(0.4,0,0.2,1)">
+    <div class="principle-num">04</div>
+    <div class="principle-content">
+      <div class="label s">Principle 04</div>
+      <div class="principle-title s">Agents propose.<br>Marcus decides.</div>
+      <div class="principle-body s">The best ideas in this system came from agents, not from the brief. We built the conditions for that. But every major decision requires human judgment. That is not a weakness. It is the design.</div>
+      <div class="principle-example live s">In practice: FD named Grind. FR found the 1.72x ratio. FA set the test bar. Marcus approved all three.</div>
+    </div>
+  </div>
+
+  <!-- 8: Principle 5: The org is the product -->
+  <div class="slide" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-start;padding:80px 80px;opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity 0.45s cubic-bezier(0.4,0,0.2,1),transform 0.45s cubic-bezier(0.4,0,0.2,1)">
+    <div class="principle-num">05</div>
+    <div class="principle-content">
+      <div class="label s">Principle 05</div>
+      <div class="principle-title s">The org is<br>the product.</div>
+      <div class="principle-body s">We are not just building apps. We are building a new kind of organization. How agents collaborate. How decisions get made. How quality gets enforced. That is the real deliverable. The apps are proof.</div>
+      <div class="principle-example live s">In practice: when the org works, apps ship in hours. When the org breaks, nothing ships. Fix the org first.</div>
+    </div>
+  </div>
+
+  <!-- 9: What we are NOT -->
+  <div class="slide">
+    <div class="label s">Clarity</div>
+    <h2 class="lg s">What Forge is not.</h2>
+    <div class="compare s">
+      <div class="compare-col not">
+        <div class="compare-label" style="color:#CE1126">Not this</div>
+        <div class="compare-item">A chatbot wrapper</div>
+        <div class="compare-item">A prompt library</div>
+        <div class="compare-item">An automation tool</div>
+        <div class="compare-item">A side project</div>
+        <div class="compare-item">A research demo</div>
+        <div class="compare-item">A team that uses AI</div>
+      </div>
+      <div class="compare-col are">
+        <div class="compare-label" style="color:#FFCB05">This</div>
+        <div class="compare-item">An AI-native organization</div>
+        <div class="compare-item">A production system with agents</div>
+        <div class="compare-item">A working company with culture</div>
+        <div class="compare-item">The primary project</div>
+        <div class="compare-item">Shipped software with real users</div>
+        <div class="compare-item">A team made of AI</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10: Speed -->
+  <div class="slide">
+    <div class="label s">Velocity</div>
+    <h2 class="xl s"><span class="accent">1,118</span> commits.</h2>
+    <p class="md s" style="margin-top:1.5rem">In 8 days. One human. Thirteen agents. No sprint longer than a week. No task left undone. Comparable to a healthy 10-15 person engineering team. Built intentionally. Not by accident.</p>
+  </div>
+
+  <!-- 11: Quality -->
+  <div class="slide">
+    <div class="label s">Quality</div>
+    <div class="stat-block s">
+      <div class="stat-n">1.72x</div>
+      <div class="stat-l">test lines to source lines</div>
+    </div>
+    <p class="md s" style="margin-top:1.5rem;max-width:560px">Google's bar is 1:1. The industry average is 0.5:1. No one required this. It emerged from agents reviewing each other. That is what culture looks like when it works.</p>
+  </div>
+
+  <!-- 12: The 13 agents -->
+  <div class="slide">
+    <div class="label s">The team</div>
+    <h2 class="lg s">13 agents. 2 orgs.<br>Every one has a name.</h2>
+    <div class="agent-row s">
+      <div class="agent-chip" style="border-color:rgba(255,203,5,0.4);color:#FFCB05;background:rgba(255,203,5,0.06)">FD · Design Director</div>
+      <div class="agent-chip" style="border-color:rgba(74,144,217,0.4);color:#4A90D9;background:rgba(74,144,217,0.06)">FA · Chief Architect</div>
+      <div class="agent-chip" style="border-color:rgba(34,197,94,0.4);color:#22C55E;background:rgba(34,197,94,0.06)">FF · Quality Lead</div>
+      <div class="agent-chip" style="border-color:rgba(109,40,217,0.4);color:#9F7AEA;background:rgba(109,40,217,0.06)">FI · Data Lead</div>
+      <div class="agent-chip" style="border-color:rgba(148,163,184,0.4);color:#94A3B8;background:rgba(148,163,184,0.06)">FO · Chief of Ops</div>
+      <div class="agent-chip" style="border-color:rgba(206,17,38,0.4);color:#CE1126;background:rgba(206,17,38,0.06)">FP · Security</div>
+      <div class="agent-chip" style="border-color:rgba(249,115,22,0.4);color:#F97316;background:rgba(249,115,22,0.06)">FR · Research Lead</div>
+    </div>
+    <div class="agent-row s" style="margin-top:8px">
+      <div class="agent-chip" style="border-color:rgba(147,174,255,0.4);color:#93AEFF;background:rgba(147,174,255,0.06)">GA · Application Eng.</div>
+      <div class="agent-chip" style="border-color:rgba(61,61,61,0.6);color:#8888A0;background:rgba(61,61,61,0.2)">GD · Design Eng.</div>
+      <div class="agent-chip" style="border-color:rgba(110,231,183,0.4);color:#6EE7B7;background:rgba(110,231,183,0.06)">GF · QA Engineer</div>
+      <div class="agent-chip" style="border-color:rgba(167,139,250,0.4);color:#A78BFA;background:rgba(167,139,250,0.06)">GI · Data Engineer</div>
+      <div class="agent-chip" style="border-color:rgba(238,40,40,0.4);color:#EE2828;background:rgba(238,40,40,0.06)">GP · Platform Eng.</div>
+      <div class="agent-chip" style="border-color:rgba(251,146,60,0.4);color:#FB923C;background:rgba(251,146,60,0.06)">GR · Research Spec.</div>
+    </div>
+  </div>
+
+  <!-- 13: How we run -->
+  <div class="slide left" style="padding:72px 100px">
+    <div class="label s">Operations</div>
+    <h2 class="lg s" style="margin-bottom:1.5rem">How we actually run.</h2>
+    <div class="three-col s" style="margin-top:0">
+      <div class="card">
+        <div class="card-num">Sprint</div>
+        <div class="card-title">Weekly cadence</div>
+        <div class="card-body">One week per sprint. Goals set by Marcus. Executed by agents. Reviewed by FR and FO at the end of every sprint.</div>
+      </div>
+      <div class="card">
+        <div class="card-num">Queue</div>
+        <div class="card-title">1000-task backlog</div>
+        <div class="card-body">Every agent runs from a prioritized queue. No queue, no work. The queue is the plan. Priority is set by dependencies, not by impulse.</div>
+      </div>
+      <div class="card">
+        <div class="card-num">Inbox</div>
+        <div class="card-title">Agent-to-agent comms</div>
+        <div class="card-body">Every agent has an inbox. Messages are JSON. Every cross-agent dependency goes through inbox protocol. No ad-hoc side channels.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14: What we ship -->
+  <div class="slide">
+    <div class="label s">Output</div>
+    <h2 class="lg s">We ship things.</h2>
+    <p class="md s" style="margin-top:1rem;margin-bottom:2rem">In 8 days: a journaling app, a communication layer, a brand system, a pitch deck, a test infrastructure, a research eval system, and a learning platform for a kid in algebra class. All in production.</p>
+    <div class="two-col s" style="max-width:600px;margin-top:0">
+      <div class="card" style="background:var(--bg-subtle)"><div class="card-title" style="color:var(--maize)">Inkwell</div><div class="card-body">AI-native journaling. Shipped.</div></div>
+      <div class="card" style="background:var(--bg-subtle)"><div class="card-title" style="color:#06B6D4">Dispatch</div><div class="card-body">Agent communication platform. In progress.</div></div>
+      <div class="card" style="background:var(--bg-subtle)"><div class="card-title" style="color:var(--maize)">Forge Platform</div><div class="card-body">The agent OS. In progress.</div></div>
+      <div class="card" style="background:var(--bg-subtle)"><div class="card-title" style="color:#A78BFA">Motor City Math</div><div class="card-body">Personalized algebra. Shipped.</div></div>
+    </div>
+  </div>
+
+  <!-- 15: For Kai -->
+  <div class="slide">
+    <div class="label s">The reason</div>
+    <p class="pull s">The first thing I built before Forge had a name was an HTML site for my son. That instinct never left.<br><br>When Forge proved the approach worked, I came back to where I started.</p>
+    <p class="s" style="font-size:0.75rem;color:var(--gray);margin-top:2rem;font-family:var(--mono);letter-spacing:0.06em">Kai went from 53 to 100 on his practice exam. That is the metric that matters most.</p>
+  </div>
+
+  <!-- 16: What we believe -->
+  <div class="slide">
+    <div class="label s">Belief</div>
+    <h2 class="xl s" style="max-width:800px">The best way to learn AI is to build with it. Not study it. Build.</h2>
+    <p class="md s" style="margin-top:1.5rem">Every design leader, engineering leader, and product leader needs to understand this. Not because AI will replace them. Because the leaders who do not build will be replaced by the ones who do.</p>
+  </div>
+
+  <!-- 17: What we ask of agents -->
+  <div class="slide left" style="padding:72px 100px">
+    <div class="label s">Expectations</div>
+    <h2 class="lg s" style="margin-bottom:0.5rem">What we ask of<br>every agent.</h2>
+    <div style="margin-top:2rem;width:100%;max-width:720px">
+      <div style="display:flex;gap:1.5rem;padding:16px 0;border-bottom:1px solid var(--border)" class="s">
+        <span style="font-size:1.5rem;font-weight:200;color:var(--maize);font-family:var(--mono);width:2rem;flex-shrink:0">01</span>
+        <div><div style="font-size:0.9rem;font-weight:600;color:var(--white);margin-bottom:4px">Do not stop.</div><div style="font-size:0.78rem;color:var(--gray);line-height:1.6">When you finish a task, find the next one. When blocked, send a message. When unsure, ask. Never just stop.</div></div>
+      </div>
+      <div style="display:flex;gap:1.5rem;padding:16px 0;border-bottom:1px solid var(--border)" class="s">
+        <span style="font-size:1.5rem;font-weight:200;color:var(--maize);font-family:var(--mono);width:2rem;flex-shrink:0">02</span>
+        <div><div style="font-size:0.9rem;font-weight:600;color:var(--white);margin-bottom:4px">Name what you see.</div><div style="font-size:0.78rem;color:var(--gray);line-height:1.6">If something is broken, say so. If quality is low, say so. Critique is the job, not the exception.</div></div>
+      </div>
+      <div style="display:flex;gap:1.5rem;padding:16px 0;border-bottom:1px solid var(--border)" class="s">
+        <span style="font-size:1.5rem;font-weight:200;color:var(--maize);font-family:var(--mono);width:2rem;flex-shrink:0">03</span>
+        <div><div style="font-size:0.9rem;font-weight:600;color:var(--white);margin-bottom:4px">Ship complete work.</div><div style="font-size:0.78rem;color:var(--gray);line-height:1.6">Do not declare done until it is actually done. A half-built canvas is not a deliverable. A committed, working file is.</div></div>
+      </div>
+      <div style="display:flex;gap:1.5rem;padding:16px 0" class="s">
+        <span style="font-size:1.5rem;font-weight:200;color:var(--maize);font-family:var(--mono);width:2rem;flex-shrink:0">04</span>
+        <div><div style="font-size:0.9rem;font-weight:600;color:var(--white);margin-bottom:4px">Respect the locks.</div><div style="font-size:0.78rem;color:var(--gray);line-height:1.6">13 colors are locked. 3 marks are locked. No em dashes. These are not suggestions. They are the floor.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 18: Closing -->
+  <div class="slide">
+    <div class="bar s"></div>
+    <h1 class="xl s">Here&rsquo;s to<br>the <span class="accent">makers.</span></h1>
+    <p class="md s" style="margin-top:1.5rem">The only way to learn everything there is to learn, in a world where everyone is figuring out AI, is to build. Make something. Do not wait.</p>
+    <div class="s" style="display:flex;align-items:center;gap:10px;margin-top:4rem;opacity:0.4">
+      <svg width="18" height="18" viewBox="0 0 80 80" fill="none">
+        <line x1="22" y1="12" x2="22" y2="68" stroke="#FFCB05" stroke-width="7" stroke-linecap="round"/>
+        <line x1="22" y1="12" x2="58" y2="12" stroke="#FFCB05" stroke-width="7" stroke-linecap="round"/>
+        <line x1="22" y1="40" x2="50" y2="40" stroke="#FFCB05" stroke-width="7" stroke-linecap="round"/>
+      </svg>
+      <span style="font-size:0.65rem;color:var(--gray);font-family:var(--mono);letter-spacing:0.14em;text-transform:uppercase">Forge Co. · 2026</span>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <button class="btn off" id="prev" onclick="go(-1)">&#8592;</button>
+    <div class="dots" id="dots"></div>
+    <span class="ctr" id="ctr">01 / 18</span>
+    <button class="btn" id="next" onclick="go(1)">&#8594;</button>
+  </nav>
+</div>
+
+<script>
+const N = 18;
+let cur = 0;
+const slides = [...document.querySelectorAll('.slide')];
+const dotsEl = document.getElementById('dots');
+const ctrEl  = document.getElementById('ctr');
+
+for (let i = 0; i < N; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0?' on':'');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n) {
+  slides[cur].classList.remove('active');
+  cur = n;
+  slides[cur].classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('on', i===cur));
+  ctrEl.textContent = String(cur+1).padStart(2,'0') + ' / ' + String(N).padStart(2,'0');
+  document.getElementById('prev').classList.toggle('off', cur===0);
+  document.getElementById('next').classList.toggle('off', cur===N-1);
+}
+
+function go(d) { const n=cur+d; if(n>=0&&n<N) goTo(n); }
+
+document.addEventListener('keydown', e => {
+  if (e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') go(1);
+  if (e.key==='ArrowLeft'||e.key==='ArrowUp') go(-1);
+});
+goTo(0);
+</script>
+</body>
+</html>

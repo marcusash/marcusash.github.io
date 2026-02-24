@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch User Journey Map</title>
+<style>
+  :root {
+    --bg: #F4F5F7; --card: #FFFFFF; --border: #E5E7EB;
+    --text: #111827; --secondary: #6B7280; --dim: #9CA3AF;
+    --dispatch: #06B6D4; --fi: #6D28D9;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  .header { background: #0A0A0F; padding: 1.5rem 2rem; border-bottom: 3px solid var(--dispatch); }
+  .header-inner { max-width: 1060px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { font-size: 1.1rem; font-weight: 800; color: var(--dispatch); }
+  .header-sub { font-family: var(--mono); font-size: 0.5rem; color: #555568; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.2rem; }
+  .header-tag { font-family: var(--mono); font-size: 0.45rem; color: #555568; border: 1px solid #333350; border-radius: 3px; padding: 0.2rem 0.5rem; }
+  .container { max-width: 1060px; margin: 0 auto; padding: 2rem; }
+  .section-label { font-family: var(--mono); font-size: 0.55rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; margin-top: 2rem; }
+  .persona-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .persona-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .persona-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 0.2rem; }
+  .persona-role { font-family: var(--mono); font-size: 0.45rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.08em; }
+  .persona-goal { font-size: 0.6rem; color: var(--secondary); margin-top: 0.5rem; line-height: 1.6; }
+  .stage-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .stage-col { display: flex; flex-direction: column; gap: 0.5rem; }
+  .stage-header { color: #FFFFFF; border-radius: 6px 6px 0 0; padding: 0.6rem 0.75rem; font-weight: 700; font-size: 0.65rem; text-align: center; }
+  .stage-row { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0.6rem 0.75rem; font-size: 0.58rem; line-height: 1.55; flex: 1; }
+  .row-label { font-family: var(--mono); font-size: 0.43rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+  .keybind-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .keybind-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; }
+  .keybind-key { font-family: var(--mono); font-size: 0.7rem; font-weight: 700; color: var(--dispatch); background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25); border-radius: 4px; padding: 0.25rem 0.5rem; display: inline-block; margin-bottom: 0.4rem; }
+  .keybind-label { font-size: 0.6rem; color: var(--text); font-weight: 600; margin-bottom: 0.2rem; }
+  .keybind-desc { font-size: 0.55rem; color: var(--secondary); line-height: 1.5; }
+  .opp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+  .opp-card { border-radius: 6px; padding: 0.75rem 0.9rem; font-size: 0.58rem; line-height: 1.6; }
+  .opp-fi { background: rgba(109,40,217,0.06); border-left: 3px solid var(--fi); color: var(--text); }
+  .opp-fd { background: rgba(6,182,212,0.06); border-left: 3px solid var(--dispatch); color: var(--text); }
+  .opp-label { font-family: var(--mono); font-size: 0.43rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+  .fi-note { background: rgba(109,40,217,0.05); border-left: 3px solid var(--fi); border-radius: 0 6px 6px 0; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.62rem; line-height: 1.6; color: #4C1D95; }
+  .emotion-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .emotion-cell { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0.5rem; text-align: center; font-size: 1.1rem; }
+  .emotion-label { font-size: 0.48rem; color: var(--dim); font-family: var(--mono); margin-top: 0.2rem; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-inner">
+      <div>
+        <div class="header-title">Dispatch User Journey Map</div>
+        <div class="header-sub">Sender, receiver, agent · 5 stages · TUI UX · Handoff doc for FI</div>
+      </div>
+      <div class="header-tag">FD FOR FI</div>
+    </div>
+  </div>
+  <div class="container">
+
+    <div class="fi-note">
+      FI: This doc maps the full Dispatch UX from compose to agent response. Use it to verify the 4 screens (inbox, thread, compose, settings) cover every stage. 4 open questions sent to FI inbox. This is the design spec for what comes next.
+    </div>
+
+    <!-- Personas -->
+    <div class="section-label">Personas</div>
+    <div class="persona-bar">
+      <div class="persona-card" style="border-left:3px solid var(--dispatch)">
+        <div class="persona-name">Marcus (Sender)</div>
+        <div class="persona-role">Primary user, author of all messages</div>
+        <div class="persona-goal">Sends tasks, feedback, and coordination messages to agents and people. Needs speed. Uses dictation. Expects TUI keybindings to feel like a tool, not a form.</div>
+      </div>
+      <div class="persona-card" style="border-left:3px solid var(--fi)">
+        <div class="persona-name">Agent (Receiver)</div>
+        <div class="persona-role">Inbox processor, action executor</div>
+        <div class="persona-goal">Receives messages as JSON. Reads subject, body, type. Acts on the message. Sends back a reply or a status update. Does not need UI. Needs structured format.</div>
+      </div>
+      <div class="persona-card" style="border-left:3px solid #94A3B8">
+        <div class="persona-name">Human Recipient</div>
+        <div class="persona-role">External contact, future user</div>
+        <div class="persona-goal">Receives emails from Marcus or from Forge. Does not use TUI. Gets polished formatted messages. Does not see agent IDs or internal labels.</div>
+      </div>
+    </div>
+
+    <!-- Stage journey -->
+    <div class="section-label">Journey Stages (Marcus Sender Perspective)</div>
+    <div class="stage-grid">
+      <div class="stage-col">
+        <div class="stage-header" style="background:var(--dispatch)">1. Open Inbox</div>
+        <div class="stage-row">
+          <div class="row-label">Action</div>
+          Marcus opens Dispatch. Sees unified inbox: messages from agents + external email. Keybinding j/k to scroll.
+        </div>
+        <div class="stage-row">
+          <div class="row-label">Expectation</div>
+          Inbox should show unread count, sender, and subject preview in 1 line. No clutter. No icons. Pure text.
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header" style="background:var(--dispatch)">2. Read Thread</div>
+        <div class="stage-row">
+          <div class="row-label">Action</div>
+          Marcus presses Enter on a message. Thread view opens. Full message body. Previous replies stacked below.
+        </div>
+        <div class="stage-row">
+          <div class="row-label">Expectation</div>
+          Agent messages should show agent ID badge in their color. Human messages show name only. Timestamp right-aligned.
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header" style="background:var(--dispatch)">3. Compose</div>
+        <div class="stage-row">
+          <div class="row-label">Action</div>
+          Presses c to compose. Types recipient (agent ID or email). Types subject. Body. Presses Ctrl+Enter to send.
+        </div>
+        <div class="stage-row">
+          <div class="row-label">Expectation</div>
+          Compose form must be minimal. No formatting toolbar. Just: To, Subject, Body. Tab between fields. Ctrl+Enter sends.
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header" style="background:var(--dispatch)">4. Agent Responds</div>
+        <div class="stage-row">
+          <div class="row-label">Action</div>
+          Agent reads JSON from inbox. Executes. Writes reply JSON back. Marcus sees new message in thread in near-realtime.
+        </div>
+        <div class="stage-row">
+          <div class="row-label">Expectation</div>
+          Agent reply badge shows agent color and ID. Response should arrive within 60 seconds of action completion.
+        </div>
+      </div>
+      <div class="stage-col">
+        <div class="stage-header" style="background:var(--dispatch)">5. Archive/Act</div>
+        <div class="stage-row">
+          <div class="row-label">Action</div>
+          Marcus reads agent reply. If done: presses d to archive. If needs follow-up: presses r to reply. Or just closes.
+        </div>
+        <div class="stage-row">
+          <div class="row-label">Expectation</div>
+          Archive does not delete. Thread stays accessible. Done state visually distinct (dim, no bold sender).
+        </div>
+      </div>
+    </div>
+
+    <!-- Emotional arc -->
+    <div class="section-label">Emotional Arc (Marcus)</div>
+    <div class="emotion-row">
+      <div class="emotion-cell">📬<div class="emotion-label">Purposeful focus</div></div>
+      <div class="emotion-cell">📖<div class="emotion-label">Informed</div></div>
+      <div class="emotion-cell">✍️<div class="emotion-label">In control</div></div>
+      <div class="emotion-cell">⚡<div class="emotion-label">Satisfied (fast)</div></div>
+      <div class="emotion-cell">✅<div class="emotion-label">Done. Moved on.</div></div>
+    </div>
+
+    <!-- Keybindings -->
+    <div class="section-label">Keybinding Map (Design Spec for FI)</div>
+    <div class="keybind-grid">
+      <div class="keybind-card"><div class="keybind-key">j / k</div><div class="keybind-label">Navigate messages</div><div class="keybind-desc">Up/down through inbox list. Standard vim navigation. Required for any TUI.</div></div>
+      <div class="keybind-card"><div class="keybind-key">Enter</div><div class="keybind-label">Open thread</div><div class="keybind-desc">Open selected message. Show full thread view. Always full-screen.</div></div>
+      <div class="keybind-card"><div class="keybind-key">c</div><div class="keybind-label">Compose</div><div class="keybind-desc">Open compose pane. Focus on To field immediately. Tab to next field.</div></div>
+      <div class="keybind-card"><div class="keybind-key">r</div><div class="keybind-label">Reply</div><div class="keybind-desc">Open reply pane in current thread. Pre-fill recipient. Focus on body.</div></div>
+      <div class="keybind-card"><div class="keybind-key">Ctrl+Enter</div><div class="keybind-label">Send</div><div class="keybind-desc">Send from any compose or reply pane. Confirm send with brief flash animation.</div></div>
+      <div class="keybind-card"><div class="keybind-key">d</div><div class="keybind-label">Archive</div><div class="keybind-desc">Archive current message. Remove from inbox view. Keep in archive tab.</div></div>
+      <div class="keybind-card"><div class="keybind-key">Escape</div><div class="keybind-label">Go back</div><div class="keybind-desc">Close compose or thread. Return to inbox. Never close the app.</div></div>
+      <div class="keybind-card"><div class="keybind-key">?</div><div class="keybind-label">Help overlay</div><div class="keybind-desc">Show keybinding reference overlay. Dismiss with any key.</div></div>
+    </div>
+
+    <!-- Opportunities for FI -->
+    <div class="section-label">UX Opportunities (FI + FD)</div>
+    <div class="opp-grid">
+      <div class="opp-card opp-fi">
+        <div class="opp-label">FI: Thread grouping</div>
+        How should threads from the same agent be grouped? By date? By project? By type (task/feedback/reply)? This decision affects inbox layout and archive structure. FD needs FI decision before finalizing the thread view spec.
+      </div>
+      <div class="opp-card opp-fi">
+        <div class="opp-label">FI: Agent message format</div>
+        Current format is raw JSON in .agent-comms. Dispatch needs to parse subject, from, body, type fields and render them as natural messages. FI to specify the exact JSON schema. FD will design the visual rendering.
+      </div>
+      <div class="opp-card opp-fd">
+        <div class="opp-label">FD: Unread state design</div>
+        Bold sender name + Maize left border for unread. Dim all fields + no border for read. Archive: full opacity reduction. This is the color-state spec. FI to implement against these rules.
+      </div>
+      <div class="opp-card opp-fd">
+        <div class="opp-label">FD: Agent badge system</div>
+        Each agent reply should show a colored dot (their agent color) + ID monogram. Same badge system as business cards. FD has designed this in fd-business-cards.html. FI to pull that spec.
+      </div>
+      <div class="opp-card opp-fi">
+        <div class="opp-label">FI: Dispatch for M365</div>
+        Phase 2: route Dispatch outgoing messages through M365 for external email delivery. FI owns the M365 integration. FD will design the handoff confirmation UI (send via Dispatch vs send via M365).
+      </div>
+      <div class="opp-card opp-fd">
+        <div class="opp-label">FD: Settings screen</div>
+        Settings needs: default reply format (agent vs human mode), keybinding customization panel, signature selector (from fd-email-signatures.html), and theme toggle (dark TUI only for now). FD to spec this screen next.
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

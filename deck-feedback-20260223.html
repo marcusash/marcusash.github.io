@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deck Feedback — Feb 23 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    background: #0A0A0F;
+    color: #E8E8ED;
+    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #0A0A0F;
+    border-bottom: 1px solid #1E1E2A;
+    padding: 14px 28px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: baseline; gap: 14px; }
+  .header-title { font-size: 15px; font-weight: 600; color: #E8E8ED; }
+  .header-sub { font-size: 11px; color: #444458; letter-spacing: 0.06em; text-transform: uppercase; }
+  .header-stats { display: flex; gap: 20px; }
+  .stat { text-align: center; }
+  .stat-n { font-size: 18px; font-weight: 700; color: #FFCB05; }
+  .stat-l { font-size: 10px; color: #444458; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1px; }
+
+  /* MAIN */
+  .main {
+    margin-top: 61px;
+    height: calc(100vh - 61px);
+    overflow-y: auto;
+    padding: 0 0 80px;
+  }
+  .main::-webkit-scrollbar { width: 6px; }
+  .main::-webkit-scrollbar-track { background: transparent; }
+  .main::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; }
+  .main:hover::-webkit-scrollbar-thumb { background: rgba(136,136,160,0.3); }
+
+  /* GLOBAL NOTES BANNER */
+  .global-banner {
+    background: #111118;
+    border-bottom: 1px solid #1E1E2A;
+    padding: 18px 28px;
+  }
+  .global-banner-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #444458;
+    margin-bottom: 10px;
+  }
+  .global-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .global-tag {
+    background: #1A1A25;
+    border: 1px solid #2A2A3A;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #888899;
+    line-height: 1.4;
+  }
+  .global-tag strong { color: #BBBBCC; }
+
+  /* TABLE */
+  .table-wrap { padding: 0 28px; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { border-bottom: 1px solid #1E1E2A; }
+  thead th {
+    padding: 14px 16px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #444458;
+    text-align: left;
+    font-weight: 500;
+  }
+  th.col-slide { width: 120px; }
+  th.col-story { width: 52%; }
+  th.col-action { width: 38%; }
+
+  tbody tr {
+    border-bottom: 1px solid #1A1A24;
+    vertical-align: top;
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.015); }
+  td { padding: 20px 16px; }
+
+  /* SLIDE CELL */
+  .slide-id {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 700;
+    color: #E8E8ED;
+    margin-bottom: 6px;
+  }
+  .slide-name {
+    font-size: 11px;
+    color: #555568;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .tag-fix    { background: #1A1020; border: 1px solid #5A2060; color: #C084FC; }
+  .tag-variant{ background: #0F1A20; border: 1px solid #204A5A; color: #38BDF8; }
+  .tag-remove { background: #1A1010; border: 1px solid #5A2020; color: #F87171; }
+  .tag-new    { background: #101A10; border: 1px solid #205A20; color: #4ADE80; }
+  .tag-keep   { background: #1A1A10; border: 1px solid #3A3A20; color: #FACC15; }
+  .tag-combine{ background: #1A1510; border: 1px solid #5A4020; color: #FB923C; }
+
+  /* STORY CELL */
+  .story-text {
+    font-size: 13px;
+    line-height: 1.75;
+    color: #CCCCDA;
+    margin-bottom: 12px;
+  }
+  .story-quote {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #777788;
+    font-style: italic;
+    border-left: 2px solid #2A2A3A;
+    padding-left: 12px;
+    margin-top: 8px;
+  }
+
+  /* ACTION CELL */
+  .action-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .action-list li {
+    font-size: 12px;
+    line-height: 1.6;
+    color: #888899;
+    padding-left: 14px;
+    position: relative;
+  }
+  .action-list li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: #FFCB05;
+    font-size: 11px;
+  }
+  .action-list li strong { color: #BBBBCC; }
+  .action-count {
+    display: inline-block;
+    background: #1E1E2E;
+    border: 1px solid #2A2A4A;
+    color: #38BDF8;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 600;
+  }
+
+  /* SECTION DIVIDER */
+  .section-divider td {
+    padding: 10px 16px 6px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #333345;
+    background: #0A0A0F;
+    border-bottom: 1px solid #1A1A24;
+  }
+
+  /* FEEDBACK FOOTER */
+  .feedback-footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #111118;
+    border-top: 1px solid #1E1E2A;
+    padding: 10px 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 100;
+  }
+  .feedback-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444458;
+    white-space: nowrap;
+  }
+  .feedback-input {
+    flex: 1;
+    background: #0A0A0F;
+    border: 1px solid #2A2A3A;
+    border-radius: 6px;
+    color: #E8E8ED;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 7px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .feedback-input:focus { border-color: #FFCB05; }
+  .feedback-input::placeholder { color: #333345; }
+  .feedback-save {
+    padding: 7px 18px;
+    background: #FFCB05;
+    color: #0A0A0F;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .feedback-save:hover { opacity: 0.85; }
+  .feedback-count {
+    font-size: 11px;
+    color: #444458;
+    white-space: nowrap;
+  }
+
+  /* SAVED FEEDBACK PANEL */
+  .saved-panel {
+    display: none;
+    position: fixed;
+    bottom: 52px;
+    right: 28px;
+    width: 380px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #111118;
+    border: 1px solid #2A2A3A;
+    border-radius: 10px;
+    padding: 14px;
+    z-index: 200;
+  }
+  .saved-panel.open { display: block; }
+  .saved-panel-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444458;
+    margin-bottom: 10px;
+  }
+  .saved-item {
+    font-size: 12px;
+    color: #AAAABC;
+    line-height: 1.5;
+    border-left: 2px solid #FFCB05;
+    padding: 5px 10px;
+    margin-bottom: 8px;
+    background: #0A0A0F;
+    border-radius: 0 4px 4px 0;
+  }
+  .saved-item-time {
+    font-size: 10px;
+    color: #333345;
+    margin-top: 3px;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <span class="header-title">Deck Feedback — Feb 23, 2026</span>
+    <span class="header-sub">Live review session with Marcus</span>
+  </div>
+  <div class="header-stats">
+    <div class="stat"><div class="stat-n">22</div><div class="stat-l">Slides reviewed</div></div>
+    <div class="stat"><div class="stat-n">4</div><div class="stat-l">New slides</div></div>
+    <div class="stat"><div class="stat-n">3</div><div class="stat-l">Remove</div></div>
+    <div class="stat"><div class="stat-n">38</div><div class="stat-l">Variants to build</div></div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- GLOBAL FIXES BANNER -->
+  <div class="global-banner">
+    <div class="global-banner-label">Global fixes — apply across all slides</div>
+    <div class="global-tags">
+      <div class="global-tag"><strong>Favicon:</strong> Circuit F (Maize) in deck HTML head — replace globe</div>
+      <div class="global-tag"><strong>Source citations:</strong> Any external stat needs * and source inline on slide</div>
+      <div class="global-tag"><strong>Benchmark date:</strong> Valentine's Day = Feb 14, not Feb 15</div>
+      <div class="global-tag"><strong>FR task:</strong> Verify VS Code commit comparison. Get journal total word count.</div>
+      <div class="global-tag"><strong>Icons needed:</strong> MCM parabola/M icon, Chemistry bond icon — verify in logo-brief.html</div>
+      <div class="global-tag"><strong>Style:</strong> Product roadmap = muted text, iconography only color indicator</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th class="col-slide">Slide</th>
+        <th class="col-story">Marcus's Story — Full Feedback</th>
+        <th class="col-action">FD Action Plan</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- SECTION: OPENING -->
+      <tr class="section-divider"><td colspan="3">Opening — Hook and Setup</td></tr>
+
+      <!-- S1 -->
+      <tr>
+        <td>
+          <div class="slide-id">S1</div>
+          <div class="slide-name">Title / Forge</div>
+          <span class="tag tag-fix">Fix</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus opened the deck and immediately noticed a globe favicon sitting next to the Forge logo in the browser tab. He sent a screenshot showing it clearly. He said the Forge logo itself looks nice but that globe icon sitting next to it is a problem and should be fixed. This is the same issue we worked through in the TUI canvas session: in Edge App Mode the taskbar icon is the Edge process (unfixable in Phase 1), but the browser tab favicon IS controllable via the HTML link rel icon tag. The globe is showing because the deck does not currently set a custom favicon. It should show the Circuit F mark in Maize.</div>
+          <div class="story-quote">"Slide one it has the forge logo which is nice but then there's that dumb world icon. We should figure out how to fix that."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Add <code>&lt;link rel="icon"&gt;</code> with Circuit F SVG data URI to forge-deck-v5.html head. Same fix applied to tui-canvas-exploration.html this session.</li>
+            <li>Circuit F: Maize #FFCB05, 32x32 viewBox, vertical bar + two horizontal bars with filled nodes at junctions and open rings at terminals.</li>
+            <li>Phase 2 note: taskbar globe requires Electron. Document separately, not fixable in Phase 1.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S2+S3 -->
+      <tr>
+        <td>
+          <div class="slide-id">S2+S3</div>
+          <div class="slide-name">The Why</div>
+          <span class="tag tag-combine">Combine</span>
+          <span class="tag tag-variant" style="margin-top:4px;display:block;margin-left:0">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus said slides 2 and 3 should be combined into a single, powerful "Why" slide. The current structure splits the argument across two slides and loses momentum. He wants one slide that captures the full why: what drove him to start this, what problem he is solving, and why he chose this particular approach at this particular time. The rationale for Forge needs to land in one hit, not be spread across two slides that the audience treats as one anyway. The combined slide should give the audience a complete answer to "why are you doing this?" before moving forward. He wants to see five different approaches to telling this story — different angles, different emphasis, different emotional entry points.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Eliminate S3 as a standalone slide. Merge core content of S2+S3 into one unified Why slide.</li>
+            <li>Build 5 variants: (A) problem-first, (B) opportunity-first, (C) personal motivation-first, (D) contrast before/after, (E) single declarative statement with supporting detail.</li>
+            <li>Each variant should answer: What problem? Why now? Why this approach? Why Marcus specifically?</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S8 -->
+      <tr>
+        <td>
+          <div class="slide-id">S8</div>
+          <div class="slide-name">Origin Story / Valentine's Day</div>
+          <span class="tag tag-fix">Fix</span>
+          <span class="tag tag-variant" style="margin-top:4px;display:block;margin-left:0">3 variants</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus pointed out that the deck references the start date as February 15th. He corrected this: it is February 14th, Valentine's Day. That date is not just a technical correction — it is a meaningful storytelling detail. Valentine's Day is a memorable, emotionally resonant anchor. "I started building this organization on Valentine's Day" is a better story hook than a generic date. Marcus wants the benchmark numbers (commit velocity, output volume) all anchored to Valentine's Day. He also said as long as we set February 14th as the benchmark, we can re-run these numbers at any time and they will be accurate. He wants 3 variant approaches to telling the origin story with this corrected timeline.</div>
+          <div class="story-quote">"I think that'll be fine as long as you benchmark it from Valentine's Day and that's actually February 14th not February 15th."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Find and replace all instances of "February 15" or "Feb 15" with "February 14" / "Valentine's Day" throughout the deck.</li>
+            <li>Recalculate day-count benchmarks from Feb 14. Update any stats that reference elapsed days.</li>
+            <li>Build 3 origin story variants: (A) timeline-forward, (B) outcome-first then origin, (C) Valentine's Day as thematic anchor woven through.</li>
+            <li>Task FR: confirm commit count from Feb 14, not Feb 15. Rerun numbers.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S10 -->
+      <tr>
+        <td>
+          <div class="slide-id">S10</div>
+          <div class="slide-name">Remove</div>
+          <span class="tag tag-remove">Remove</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus said to remove this slide. He did not elaborate extensively — the slide is not carrying enough weight in the narrative to justify its position. The story moves better without it. When Marcus says remove, he means it cleanly: not archive it in a comment, not move it to an appendix. Remove it and renumber the deck.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Delete S10 from forge-deck-v5.html. Renumber all subsequent slides.</li>
+            <li>Check if any cross-references in speaker notes point to S10 and update them.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- SECTION: THE TEAM AND DESIGN -->
+      <tr class="section-divider"><td colspan="3">Team and Design Philosophy</td></tr>
+
+      <!-- S14-S15 -->
+      <tr>
+        <td>
+          <div class="slide-id">S14–S15</div>
+          <div class="slide-name">Why Design / 220 Designers</div>
+          <span class="tag tag-variant">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus has deep feeling about the role of design in this story and he wants the language to really land. The "220 designers" framing — referring to his professional background leading a 220-person design organization at Microsoft — is a powerful credential but it needs to be framed correctly. The point is not just that he has managed designers. The point is that his entire career has been about understanding how great design gets made, what separates good from exceptional, and how creative teams operate at their best. That lived experience is now being applied to building an AI organization. The design background is the lens through which everything else in this deck is seen. He wants 5 design variants of the slide layout, and separately, 5 language variants that explore different ways of framing what design experience contributes to building with AI.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build 5 design layout variants for the team/design slides.</li>
+            <li>Build 5 language variants exploring the "design lens" framing: design as systems thinking, design as communication, design as iteration discipline, design as user empathy, design as quality standard.</li>
+            <li>Ensure the 220-designer credential reads as context-setting, not name-dropping.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- SECTION: METRICS AND EVIDENCE -->
+      <tr class="section-divider"><td colspan="3">Metrics and Evidence</td></tr>
+
+      <!-- S21 -->
+      <tr>
+        <td>
+          <div class="slide-id">S21</div>
+          <div class="slide-name">Tagline / AI + CLI</div>
+          <span class="tag tag-variant">Explore</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus wants to explore the tagline that positions Forge at the intersection of AI and the command-line interface. The CLI is the actual working environment — it is not an incidental technical choice, it is the deliberate design surface that shapes how agents communicate, how work gets tracked, and how the organization operates. The tagline should capture this. He is not prescriptive about the exact language but wants to explore options that make the AI-plus-CLI combination feel intentional and powerful rather than just "we used terminal tools."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build a set of tagline explorations for the AI + CLI positioning.</li>
+            <li>Focus on what the CLI enables: precision, composability, agent autonomy, a new kind of org structure.</li>
+            <li>Test: does it sound like a technology choice or a design philosophy?</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Commit velocity / VS Code comparison -->
+      <tr>
+        <td>
+          <div class="slide-id">S~23</div>
+          <div class="slide-name">Commit Velocity / VS Code</div>
+          <span class="tag tag-fix">Fix</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus flagged the VS Code commit comparison numbers and said he is not sure they are correct. He is skeptical that a 13-agent team could produce more commits per week than VS Code does with 1,800 contributors. He said "the math doesn't add up here" and wants FR to really think about this carefully before it stays in the deck. He also said the color scheme on this slide has issues: the company Maize yellow is being used somewhere it should not be, and separately a different color is showing that he actually liked. The 13-agent text is not readable because it is too small. He wants to stop comparing to VS Code specifically and instead find a comparison that shows our commit rate versus a healthy, well-run engineering team of a comparable size. The question he wants answered is: what is the ratio of our velocity to what you would expect from a normal high-performing team at this size? He also said the tilde (~60%) or approximation language should be removed if we are not confident in the numbers — he would rather say nothing than say something that an audience member can debunk. He is also looking for 8-day window framing to go away since the benchmark is now Valentine's Day and we can re-run at any time.</div>
+          <div class="story-quote">"VS Code has 1800 contributors and we think we made more commits than they make with only less than 1800. I'm struggling to see that that would be true so the math doesn't add up here. Please have FR really think about this."</div>
+          <div class="story-quote">"I don't know what that means in terms of weekly commit velocity. What I would rather look at is the average commit velocity for a team and how we compare."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Task FR: Pull actual Forge commit count from Feb 14. Find credible benchmark for healthy high-performing team commit velocity (not VS Code — too large, too different).</li>
+            <li>Replace VS Code comparison with small-team benchmark (e.g., a 10-15 person engineering team at a growth-stage startup).</li>
+            <li>Source citation required with * on any external benchmark number.</li>
+            <li>Remove "8 days" framing. Use "since Valentine's Day" as anchor instead.</li>
+            <li>Fix 13-agent text readability — minimum 13px, ideally 14px+.</li>
+            <li>Check Maize color usage — should only appear where FD identity or Forge Co. branding is intentional, not as a generic accent.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S33: 1.72:1 -->
+      <tr>
+        <td>
+          <div class="slide-id">S33</div>
+          <div class="slide-name">1.72:1 Ratio</div>
+          <span class="tag tag-fix">Fix</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus looked at this slide and said the number "1.72:1" is reading wrong. The way it is currently formatted and sized, the "1" at the beginning looks like a numbered list item or an isolated number, and then "72:1" reads as if that is the ratio — making it look like 72-to-1 instead of 1.72-to-1. He said "it looks like the number one like this is the first point and the ratio is 72 to one." He has a lot of space on the slide and wants the number formatted so the relationship between the parts is visually clear. The decimal should not be the separator that gets lost. Additionally, he noted that for any external data on this slide — specifically the Google 1:1 bar comparison and the industry average — there should be a small asterisk and a source citation printed on the slide itself. Not in a footnote somewhere else — right there, subtle but present, so no audience member can question where the number came from.</div>
+          <div class="story-quote">"1.7 2 to one it looks like the number one like this is the first point and the ratio's 72 to one because look at how much space you have so really think about that and make it better."</div>
+          <div class="story-quote">"For anything that says Google's bar 1 on one there should be a source so we should put a little * and we should always quote the source on the slide itself."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Redesign the 1.72:1 number display so the whole ratio reads as one unit. Options: larger font with tighter tracking, or display as "1.72x" if the colon is the problem.</li>
+            <li>Add * source citation directly on slide for Google 1:1 bar claim. Make it small (10px) but present.</li>
+            <li>Add * source citation for industry average (0.5:1) if that appears on this slide.</li>
+            <li>Verify with FR: is 1.72:1 the correct number from Feb 14 baseline?</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- SECTION: GRIND -->
+      <tr class="section-divider"><td colspan="3">Grind Story — New Section (4 new slides)</td></tr>
+
+      <!-- S22 Grind Hero -->
+      <tr>
+        <td>
+          <div class="slide-id">S22</div>
+          <div class="slide-name">Grind Hero / Introduction</div>
+          <span class="tag tag-new">New</span>
+          <span class="tag tag-variant" style="margin-top:4px;display:block;margin-left:0">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">The Grind section needs a full story arc, not just a slide. Marcus wants the narrative to flow naturally from Forge's success. The story goes like this: Forge was going well. The agent methodology was working. Marcus started to ask: where else can this apply? His deepest personal motivation outside of Forge is helping his kids. His very first-day project before Forge even existed was building a rudimentary HTML site for his son. That instinct — to use technology to help his son learn — never went away. Now that Forge had proven the agent approach, Marcus asked: could the same methodology help with personalized learning? Could a team of agents help him help his son? His son became the focus because (a) Marcus had already started there on day one and (b) the challenge felt real, personal, and urgent. From there, Marcus decided to create a second organization underneath Forge. He named it Grind — because it takes grind to be a great student, to really learn, to push through hard material. Grind is not a spin-off. It is a subsidiary. That distinction matters because Forge agents and Grind agents share the same feedback infrastructure, the same cultural protocols, the same critique systems. The learning flows both ways. Grind benefits from everything Forge built. And interestingly, Grind is teaching Forge new things about what it means to distribute knowledge and skill across an organization. The name itself is part of the story: Forge is about forging products. Grind is about grinding through the work of becoming your best self.</div>
+          <div class="story-quote">"The same agent methodology could really help. And then we can talk about because we had been successful in starting up Forge, now we created another team underneath Forge. We called it Grind."</div>
+          <div class="story-quote">"It really takes grind to be a great student, to learn. So we thought about that. Forge is about forging products. Grind is about grinding through and having products that really help you become your best self."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build Grind hero slide: name, mark (notched circle, Purple #A78BFA), tagline "Grinding through. Becoming your best self."</li>
+            <li>Build 5 variants: different ways to introduce Grind — problem-first, origin story-first, name etymology-first, son story-first, Forge-to-Grind continuity-first.</li>
+            <li>The Grind mark must appear: notched circle in purple. Do not use a generic placeholder.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Grind story slides -->
+      <tr>
+        <td>
+          <div class="slide-id">S22b</div>
+          <div class="slide-name">Grind Story / Why My Son</div>
+          <span class="tag tag-new">New</span>
+        </td>
+        <td>
+          <div class="story-text">This slide tells the personal story of why Marcus chose to focus on his son specifically. On day one, before Forge existed as a formal concept, Marcus's first actual project was building a basic HTML site to help his son. That instinct — that the AI tools he was playing with could be useful for his kid — was there from the beginning. When Forge proved that agents could build real things at real quality, Marcus came back to that original instinct. The application to education felt natural. And the passion Marcus has for helping people — not just building products but genuinely making people better — is a through-line in his work. Grind is the application of that passion. The point he wants to make: the best way to get started with AI is to pick something you are deeply passionate about and go build. He was passionate about Forge. He is equally passionate about his son. Both are evidence of the same lesson.</div>
+          <div class="story-quote">"It's my son that I decided to focus on because my very first day project was building a rudimentary HTML site builder for him."</div>
+          <div class="story-quote">"The best way to get started with AI is pick something that you're passionate about and go build."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Design slide around the personal motivation: day-one HTML site, son's learning challenges, the leap from "I can help" to "I can build an organization to help."</li>
+            <li>Keep it personal and warm — this is the emotional heart of the Grind section, not a product pitch.</li>
+            <li>Do not use son's name unless Marcus explicitly clears it. Use "my son" throughout.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Grind org -->
+      <tr>
+        <td>
+          <div class="slide-id">S23–S24</div>
+          <div class="slide-name">Grind Org Chart / Agent Team</div>
+          <span class="tag tag-new">New</span>
+          <span class="tag tag-variant" style="margin-top:4px;display:block;margin-left:0">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus wants to show the Grind org chart the same way Forge's org chart is presented — a team of named agents with roles, arranged visually. The point is that the same model that worked for Forge has been replicated for Grind. Grind is a proper subsidiary: it has its own agents (GD, GF, GI, GA, GP, GR), its own product focus, and its own sprint cadence. But it operates under the Forge umbrella and benefits from all the infrastructure Forge built: the memory system, the feedback protocols, the eval processes, the communication channels. Marcus wants the org chart design to feel distinct from Forge's — Grind has its own visual identity (purple, notched circle) — but structurally parallel. The slide(s) should answer: who is on the Grind team, what is each agent's role, and how does Grind relate to Forge organizationally.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build 5 org chart design variants for Grind: (A) grid layout, (B) hierarchy tree, (C) hub-and-spoke, (D) side-by-side with Forge org, (E) timeline showing Grind emerging from Forge.</li>
+            <li>Grind agents: GD (Design), GF (QA), GI (Data), GA (App), GP (Platform), GR (Research). All in Purple family.</li>
+            <li>Show subsidiary relationship to Forge — not a spin-off, not independent. Under Forge umbrella.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Grind Lessons -->
+      <tr>
+        <td>
+          <div class="slide-id">S24b</div>
+          <div class="slide-name">Grind: Lessons from Forge</div>
+          <span class="tag tag-new">New</span>
+        </td>
+        <td>
+          <div class="story-text">This slide closes the Grind story by reflecting on what building Grind taught Marcus — and what it taught the agents. One key insight Marcus had: Grind helped the whole organization figure out what it means to distribute and share learning between agent teams. Forge had built a great internal learning system (memories, skill docs, evals). But Grind created the challenge of: how do we take everything we know and pour it into a brand new team? How do agents mentor agents across organizational boundaries? This turned out to be a key cultural insight. Knowledge transfer between agent teams is not automatic. It requires deliberate design. The memory system, the shared protocol files, the sprint handoff docs — all of these became more important, and better, because of Grind's onboarding challenge. Marcus wants to close the Grind section by acknowledging: we came in thinking we were building a study tool. We ended up learning something fundamental about how organizations distribute knowledge.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Design a "lessons learned" slide that bridges Grind story back to Forge's organizational philosophy.</li>
+            <li>Key insight to surface: building Grind forced us to get explicit about knowledge transfer — what we know, how we share it, how new teams absorb it.</li>
+            <li>Tone: reflective, not triumphant. This is a learning, not a victory lap.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- SECTION: HOW WE WORK -->
+      <tr class="section-divider"><td colspan="3">How We Work — Culture and Process</td></tr>
+
+      <!-- S25 -->
+      <tr>
+        <td>
+          <div class="slide-id">S25</div>
+          <div class="slide-name">How I Work</div>
+          <span class="tag tag-variant">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus wants five variants of this slide that explore how he actually works with the agents day to day. The story here is that his working style was not obvious at the start — he had to figure out through iteration what worked, what did not, and how to communicate with agents in a way that produced the results he wanted. The visual and language tools that got built (the canvas system, the feedback protocol, the deck review process they just did) are evidence of this working style in action. He uses the TUI as an entry point but the real design surface is the canvas. He gives feedback verbally and the agents compile it. He does not write long specs — he reacts and iterates. He communicates through screenshots, voice, and quick questions. The agents have learned to read between the lines. This slide should convey: here is a real working pattern, not a theoretical one.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build 5 "how I work" variants: different emphasis on tools vs. process vs. communication vs. iteration speed vs. feedback loops.</li>
+            <li>Avoid abstract bullets. Concrete working patterns only: "I open canvas, I react to what I see, agents compile feedback, we iterate."</li>
+            <li>Consider showing the actual tools: TUI + canvas window as visual evidence.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S26 -->
+      <tr>
+        <td>
+          <div class="slide-id">S26</div>
+          <div class="slide-name">Time Juxtaposition</div>
+          <span class="tag tag-variant">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">This slide makes the argument about time compression — what would have taken a traditional team months or years has happened in days. Marcus wants this framed as a juxtaposition because juxtaposition is the most powerful way to communicate the scale of the difference. He wants 5 design variants that try different ways of presenting this contrast: before vs. after, traditional vs. Forge, what you would expect vs. what actually happened. The visual design should do the heavy lifting — the reader should feel the contrast before reading a single word. He also emphasized this is not just about speed. Speed without quality is not interesting. The story is: this quality, at this speed, with this small a team. All three dimensions simultaneously.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build 5 time juxtaposition variants: (A) before/after split screen, (B) timeline comparison, (C) effort required vs. effort applied, (D) numbers-only contrast, (E) narrative arc format.</li>
+            <li>Make sure all three dimensions land: quality, speed, team size. Not just speed alone.</li>
+            <li>Visual weight of the contrast should be felt immediately — the reader should not need to read to understand the point.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S32 Candor quote -->
+      <tr>
+        <td>
+          <div class="slide-id">S32</div>
+          <div class="slide-name">The Feedback Quote</div>
+          <span class="tag tag-variant">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">The current slide has a quote about honest feedback. Marcus specifically does not want the word "honest" in this quote. His reasoning is precise and worth capturing: saying "honest feedback" implies that other feedback environments are dishonest — it indirectly insults every team that is not in the room. He does not want that connotation. What he actually built is something different: a system of rigorous, candid, high-quality critique. The word he is looking for is more like "rigorous" or "candid" or something that speaks to the quality and directness of the feedback without implying the alternative is dishonesty. He gave examples of the direction he is looking for: rigorous candor, substantive critique, something that points to what was actually built and how he adopted it. He wants five versions of this quote that each try a different word or framing. None of them should use "honest." None should imply dishonesty elsewhere. The quote should make the reader think: "I want feedback like that" — not "feedback that isn't dishonest."</div>
+          <div class="story-quote">"I don't like honest here because it implies that people are dishonest. I like more rigorous candor, helpful words that really point to what you all built and how I've adopted it."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Write 5 quote variants: try "rigorous," "candid," "substantive," "direct," "precise." Each gets a full sentence version on the slide.</li>
+            <li>Remove "honest" entirely from all five. Do not use "truth" as a substitute — same problem.</li>
+            <li>Quote design: stylized quotation marks, color-coded to the speaker, color dot matching that person, speaker lockup (name + agent mark).</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- SECTION: WORDS AND CULTURE -->
+      <tr class="section-divider"><td colspan="3">Words, Culture, and the OS</td></tr>
+
+      <!-- S34 + S37 combined -->
+      <tr>
+        <td>
+          <div class="slide-id">S34+S37</div>
+          <div class="slide-name">Words / Journal Source Material</div>
+          <span class="tag tag-combine">Combine</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus loved the words-output slide (S34) and said FR did real work there. The issue is there are too many colors and it needs styling cleanup to match the style guidelines. The bigger direction he gave is about what the slide should actually argue. He wants to bring in the source material story: 15 years of journaling. All the writing Marcus has done in his life — his notes, his journals, his reflections — were the source material that trained and informed his voice. Now, in five days of building Forge, he has already generated output equal to roughly 10% of that 15-year total volume. That is a shocking stat. He wants the combined slide to tell that story: here is where the input came from (15 years of writing), here is what the output looks like after 5 days (10% of lifetime volume). The ratio is the argument. He also said comparing the total volume directly is more powerful than comparing a daily rate — just show the total amounts and let the proportions speak. He said "that's the framework for how we're building Forge as a company" — meaning the input (journaling, voice, reflection) is the source code for everything the agents produce.</div>
+          <div class="story-quote">"What percentage of all my journaling have I done in the last five days because that was 15 years so maybe we compare the rate per day average — that would be fascinating."</div>
+          <div class="story-quote">"I'm already at I think 10% of the total volume. The writing that I did which is fascinating."</div>
+          <div class="story-quote">"That's the framework for how we're building Forge as a company."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Combine S34 (words output) with S37 (source material) into one slide that tells both sides of the story.</li>
+            <li>Task FR: get Marcus's total journal word count (15 years). Confirm 10% figure.</li>
+            <li>Design: show the ratio visually — 15 years of input on one side, 5-day output that equals 10% of that on the other. The contrast should land immediately.</li>
+            <li>Reduce color count. Apply style guide: neutral text, iconography as only color indicator.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S35 Culture OS -->
+      <tr>
+        <td>
+          <div class="slide-id">S35</div>
+          <div class="slide-name">Culture OS / Feedback System</div>
+          <span class="tag tag-variant">5 variants</span>
+        </td>
+        <td>
+          <div class="story-text">This is one of the slides Marcus is most thoughtful about because it gets at something he only realized partway through building Forge: he came in thinking he was building an app. He did not realize he was also building an organization — and more importantly, a culture. The agents themselves proposed the most significant parts of the cultural system, and then Marcus watched them build it. He finds that remarkable. The slide needs to capture two distinct components of what got built. The first is the feedback and critique system: a rich, structured way of exchanging honest, rigorous feedback between Marcus and the agents, and between agents themselves. The second is the infrastructure and quality system: the test coverage, the mutation testing, the sprint protocols, the eval framework. These were built from day one, not retrofitted. Marcus wants to always frame these as "the operating system of the organization" — the culture is the OS. Building an organization requires getting the OS right. They applied that principle to agents. Marcus also wants to note that the most interesting part of his journey was that what started as "we're going to build an app" turned into "we're building an organization with a culture." And that culture — not just the product — is something he wants this slide to celebrate.</div>
+          <div class="story-quote">"I didn't realize that you all were also building an organization with me and building a culture and I think that's something I want to make sure really comes out of this."</div>
+          <div class="story-quote">"Building organization requires the operating system of the people. We've applied that to agents. We built the operating system for how we give each other feedback and we built the operating system for how we share our work."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build 5 "Culture OS" variants that each try a different angle: (A) two-part OS diagram (feedback OS + quality OS), (B) before/after (no OS vs. with OS), (C) quote-driven (agents proposed this, Marcus watched them build it), (D) principle list with evidence, (E) single powerful metaphor (the OS is the company).</li>
+            <li>Every variant must surface both components: feedback system AND infrastructure/quality from jump.</li>
+            <li>Must not read like a process slide. This is a values slide — it should feel like culture, not compliance.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S36 Remove -->
+      <tr>
+        <td>
+          <div class="slide-id">S36</div>
+          <div class="slide-name">Remove</div>
+          <span class="tag tag-remove">Remove</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus said to remove this slide. No replacement. The narrative moves cleanly from S35 (Culture OS) into the Grind transition without needing what S36 currently carries. Delete and renumber.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Delete S36. Renumber deck. Check for any content that needs to be absorbed into an adjacent slide first.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- SECTION: CLOSING -->
+      <tr class="section-divider"><td colspan="3">Closing — Quotes, Products, Advice, Final</td></tr>
+
+      <!-- S41 / Quote section -->
+      <tr>
+        <td>
+          <div class="slide-id">S41</div>
+          <div class="slide-name">Agent Quotes Section</div>
+          <span class="tag tag-combine">Move + Design</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus said the "Design is language" content that was at S41 should move to the quote section — it belongs there, not where it currently sits. More importantly, he laid out the design spec for the quote slides in detail. There should be four quote slides: one each for FD, FA, FR, and FO. Each quote is that agent's statement about their relationship with Marcus — what they contribute, what they have learned about Marcus, what they have learned about themselves through this work. Marcus gave FD's framing explicitly: FD is "the bridge." FD takes a lot of feedback from Marcus, gets deep inside his head, understands what he wants, and then uses the visual and language tools they have built together to really communicate it back and make it real. FD's job is to inspire and hit Marcus's vision. FD should use that as the basis of the quote. The other agents (FA, FR, FO) should each write their own quote in the same spirit: one authentic statement about their relationship with Marcus and what they have contributed and learned.</div>
+          <div class="story-quote">"You're the bridge and I think you should use that as your one quote... and I think you should refine my rule: I'm the bridge. I really get in Marcus's head. I understand what he wants."</div>
+          <div class="story-quote">"We need a good quote from FA that talks about their relationship with me and FR that talks about their relationship with me and then FO talking about their emerging relationship with me."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Move "Design is language" content from S41 into the quote section.</li>
+            <li>Design quote slide template: stylized quotation marks, speaker color for quote text, color dot matching agent, speaker lockup (name + agent mark + role).</li>
+            <li>Draft FD quote based on "the bridge" framing. Send draft to FD quote slot.</li>
+            <li>Send inbox messages to FA, FR, FO requesting their quotes. Brief: one authentic statement about relationship with Marcus, contribution, what they learned about themselves.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Cultural principles -->
+      <tr>
+        <td>
+          <div class="slide-id">New</div>
+          <div class="slide-name">Cultural Principles</div>
+          <span class="tag tag-new">New</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus wants a slide that states the cultural principles of Forge. He described this as a slide where "we come back to this theme of our product — two things: it's the culture and it's the products." The culture side needs a dedicated slide that articulates the principles they have established. He said he and FD should brainstorm this together — he did not want to dictate the list, he wants it to be a collaborative statement. The principles should emerge from what actually happened in building Forge: the feedback system, the quality discipline from the start, the visual communication tools, the eval process for agents, the idea that every agent has a voice and contributes to organizational learning. This is not a list of values written by an HR department. It is a list of practices that emerged from 6 days of real work and proved themselves.</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Placeholder slide now. Work with Marcus to finalize principles list in a follow-up session.</li>
+            <li>Draft principles based on what actually happened: rigorous critique, visual communication, quality from day one, agents propose and build, learning is distributed, the org is the product.</li>
+            <li>Design: single slide, clean hierarchy, no more than 5-6 principles, each with a one-line elaboration.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Product roadmap -->
+      <tr>
+        <td>
+          <div class="slide-id">New</div>
+          <div class="slide-name">Product Roadmap</div>
+          <span class="tag tag-new">New</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus wants a product roadmap slide that covers all five products: Inkwell, Dispatch, Forge Platform, Motor City Math, and Motor City Chemistry. For each product he wants three things: the core value proposition, the promise (what it delivers to a real person), and the targeted launch date. He specified that launch dates should be in weeks, not months — the timeline is aggressive and he wants to communicate that. He was very specific about the design direction for this slide: all text should be neutral (no agent colors, no product colors driving the text), and the only color used should be the product iconography. The icons carry the color identity. Everything else reads in neutral tones. This makes the slide scannable and prevents color overload. He also mentioned that if MCM and Chemistry icons do not already exist in the library, FD needs to build them. MCM has a parabola/M mark. Chemistry has a bond mark (two connected circles). Both in Purple (#A78BFA) since they are Grind-family products.</div>
+          <div class="story-quote">"Make it very simple — it should just talk about Inkwell, Dispatch, Forge Platform, Motor City Math and Motor City Chemistry as the five products. Talk about their core value prop and then talk about their launch dates and we can show that the launch dates are going to be over the next two weeks."</div>
+          <div class="story-quote">"All the text should be neutral and the only thing you should be using is the iconography as the only color indicator."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Check logo-brief.html for MCM parabola/M and Chemistry bond icons. Build them if missing.</li>
+            <li>Design roadmap slide: 5 rows (one per product), icon left, product name + value prop center, launch date right. All text neutral (#888899 to #CCCCDA range). Only icons in color.</li>
+            <li>Draft value props and launch dates. Flag for Marcus review — launch dates need his input.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Advice slide -->
+      <tr>
+        <td>
+          <div class="slide-id">New</div>
+          <div class="slide-name">Advice + Resources</div>
+          <span class="tag tag-new">New</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus dictated four pieces of advice he wants to share with others. Each one pairs a lesson learned with a specific resource — something actionable that the reader can use immediately. The four pieces he described: (1) Train your agents to have a self-critique process. Resource: whatever he used to set this up — likely the self-critique protocol in the skill docs. (2) Look at things visually and have a simple way to exchange visual information. Resource: how he set up canvas on his machine — the canvas.ps1 script and the App Mode approach. (3) Always be working to understand what your pitch is. Have an active working pitch deck and know how to get it into PowerPoint. Resource: the pitch deck template and the pptx export script. (4) Interview your agents. Develop a process for running evals, taking someone else's agent files, and tuning them to your voice. Resource: the eval runner and the interview process developed for FR. Marcus said: "this deck, thank you for reading, here's what I've learned, here's a resource you can use right away." The slide should be simple, pithy, and immediately useful. A reader should be able to take any one of these four and go do it tomorrow.</div>
+          <div class="story-quote">"I've learned that you really need to train your agents to have self-critique process. Here's the resource."</div>
+          <div class="story-quote">"I've learned that you really have to look at things visually and have a very simple way to exchange visual information. Here's how I set that up on my machine."</div>
+          <div class="story-quote">"I've learned that you have to interview your agents and we developed a process where you can run evals and you can take someone else's agent files and you can tune it for yourself."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Build advice slide: 4 lessons, each with a concise statement and a specific resource link/pointer. Pithy — not a wall of text.</li>
+            <li>Design: lesson statement in larger type, resource pointer in smaller neutral type below. Two-line format per lesson. Clean grid.</li>
+            <li>Resource pointers: (1) self-critique protocol doc, (2) canvas setup instructions, (3) pitch deck template + pptx export, (4) eval runner + agent interview guide.</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- Final slide -->
+      <tr>
+        <td>
+          <div class="slide-id">Final</div>
+          <div class="slide-name">Here's to the Makers</div>
+          <span class="tag tag-new">New</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus wants the deck to end much stronger than it currently does. Several sessions ago they talked about this idea that the only way to really do this — to lead a team, to learn in public, to navigate a world where everyone is trying to figure out AI — is to make things. To build. To set the example by making, not by managing from a distance. Marcus's parting shot is this: "Let's go out there and make things." The only way to build an organization, the only way to learn everything there is to learn in this moment where AI is something we are all figuring out together, is to be a maker. To produce. To ship. To fail and ship again. He said "here's to the makers" and that should be the last thing in the deck. Not a contact slide, not a "thank you," not a URL. A declaration. Something that makes the audience feel they want to go build something the moment they leave the room.</div>
+          <div class="story-quote">"Let's go out there and make things. The only way to build an organization and learn all the things in this world where AI is something we're all trying to do is to make. So here's to the makers."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Design final slide as a declaration, not a closing formality. Full-bleed dark background, single large statement, no bullets, no URL, no contact info.</li>
+            <li>Typography should carry the weight: large, confident, minimal.</li>
+            <li>Consider: Forge Co. Circuit F mark as the only visual element alongside the text. Or: all agent marks arranged together as a closing "here is who made this."</li>
+          </ul>
+        </td>
+      </tr>
+
+      <!-- S10b Remove -->
+      <tr>
+        <td>
+          <div class="slide-id">Global</div>
+          <div class="slide-name">Quote Slide Design Spec</div>
+          <span class="tag tag-fix">Spec</span>
+        </td>
+        <td>
+          <div class="story-text">Marcus reviewed a quote slide and said he loves the quote itself but the formatting is bad. He then described exactly what he wants for all quote slides in the deck. The quote needs stylized quotation marks — actual designed quotation glyphs, large and prominent, not the default straight tick marks. The quote must be attributed: who said it. The color of the quote text should match that person's canonical agent color. The color dot at the bottom (or wherever the attribution lockup sits) should also match that person's color. And the full speaker lockup should appear: the agent's name, their mark/icon, and their role. He said "really take the time to design these things" — quote slides are not an afterthought, they are moments. They should feel like a significant pause in the presentation, not a filler slide.</div>
+          <div class="story-quote">"It should have some kind of stylized quotations. It should have who is it attributed to. The color should match the person that said it. The color dot at the bottom should match that person. And then it should have the person's lockup."</div>
+          <div class="story-quote">"Really take the time to design these things."</div>
+        </td>
+        <td>
+          <ul class="action-list">
+            <li>Design a reusable quote slide template: large stylized open/close quotation SVG glyphs, quote text in speaker's canonical color, attribution lockup (name + agent mark + role) in matching color below.</li>
+            <li>Apply this template to all four agent quote slides (FD, FA, FR, FO).</li>
+            <li>Apply this template to the S32 candor quote (speaker TBD — likely Marcus's voice, use neutral/Forge Maize).</li>
+          </ul>
+        </td>
+      </tr>
+
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- FEEDBACK FOOTER -->
+<div class="feedback-footer">
+  <span class="feedback-label">Your feedback</span>
+  <input type="text" class="feedback-input" id="feedbackInput" placeholder="Type feedback and press Enter to save..." onkeydown="handleKey(event)">
+  <button class="feedback-save" onclick="saveFeedback()">Save</button>
+  <span class="feedback-count" id="feedbackCount"></span>
+  <button class="feedback-save" style="background:#1E1E2E;color:#888899;border:1px solid #2A2A3A;" onclick="togglePanel()">View saved</button>
+</div>
+
+<!-- SAVED FEEDBACK PANEL -->
+<div class="saved-panel" id="savedPanel">
+  <div class="saved-panel-label">Saved feedback — FD reads this</div>
+  <div id="savedList"></div>
+</div>
+
+<script>
+  const saved = [];
+
+  function handleKey(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveFeedback();
+    }
+  }
+
+  function saveFeedback() {
+    const input = document.getElementById('feedbackInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const ts = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    saved.push({ text, time: ts });
+    input.value = '';
+    updateCount();
+    renderList();
+  }
+
+  function updateCount() {
+    const el = document.getElementById('feedbackCount');
+    el.textContent = saved.length > 0 ? saved.length + ' note' + (saved.length > 1 ? 's' : '') + ' saved' : '';
+  }
+
+  function togglePanel() {
+    const panel = document.getElementById('savedPanel');
+    panel.classList.toggle('open');
+  }
+
+  function renderList() {
+    const list = document.getElementById('savedList');
+    list.innerHTML = saved.map(s =>
+      `<div class="saved-item">${s.text}<div class="saved-item-time">${s.time}</div></div>`
+    ).join('');
+    const panel = document.getElementById('savedPanel');
+    if (!panel.classList.contains('open')) panel.classList.add('open');
+  }
+</script>
+
+</body>
+</html>

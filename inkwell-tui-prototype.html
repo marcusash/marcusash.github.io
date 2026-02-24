@@ -1,0 +1,2559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inkwell — TUI Journal Prototype</title>
+<style>
+/* ============================================================
+   RESET + ROOT
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0A0A0F;
+  --bg-card:   #111118;
+  --bg-subtle: #16161F;
+  --border:    #1E1E2A;
+  --maize:     #FFCB05;
+  --cyan:      #06B6D4;
+  --white:     #E8E8ED;
+  --gray:      #8888A0;
+  --dim:       #3A3A50;
+  --green:     #22C55E;
+  --orange:    #F97316;
+  --red:       #EF4444;
+  --purple:    #A855F7;
+  --sidebar-w: 56px;
+  --font-ui:   'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+/* ============================================================
+   SCAN-LINE TEXTURE OVERLAY
+   ============================================================ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+#app {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: 38px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: 0.02em;
+}
+
+.inkwell-mark {
+  font-size: 18px;
+  color: var(--maize);
+  line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(255,203,5,0.5));
+}
+
+.topbar-spacer { flex: 1; }
+
+.topbar-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar-meta .streak {
+  color: var(--maize);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.topbar-meta .streak::before { content: '▲'; font-size: 9px; }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 2px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.nav-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  font-size: 16px;
+  color: var(--gray);
+  position: relative;
+}
+
+.nav-icon:hover {
+  background: var(--bg-subtle);
+  color: var(--white);
+}
+
+.nav-icon.active {
+  color: var(--maize);
+  background: rgba(255,203,5,0.1);
+}
+
+.nav-icon.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 20px;
+  background: var(--maize);
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-tooltip {
+  position: absolute;
+  left: calc(var(--sidebar-w) + 4px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 100;
+  font-family: var(--font-mono);
+}
+
+.nav-icon:hover .nav-tooltip { opacity: 1; }
+
+.sidebar-spacer { flex: 1; }
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg);
+}
+
+/* ============================================================
+   SCREENS
+   ============================================================ */
+.screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+.statusbar {
+  height: 24px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 16px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+  user-select: none;
+}
+
+.statusbar-item { display: flex; align-items: center; gap: 4px; }
+.statusbar-item .dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green);
+  display: inline-block;
+}
+.statusbar-spacer { flex: 1; }
+
+.statusbar-kbd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--dim);
+}
+
+.kbd {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 9px;
+  color: var(--gray);
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ============================================================
+   COMMON COMPONENTS
+   ============================================================ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.card-sm {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+.maize { color: var(--maize); }
+.cyan  { color: var(--cyan);  }
+.green { color: var(--green); }
+.gray  { color: var(--gray);  }
+.dim   { color: var(--dim);   }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--gray);
+}
+
+.tag.maize { background: rgba(255,203,5,0.12); border-color: rgba(255,203,5,0.3); color: var(--maize); }
+.tag.cyan  { background: rgba(6,182,212,0.12);  border-color: rgba(6,182,212,0.3);  color: var(--cyan);  }
+.tag.green { background: rgba(34,197,94,0.12);  border-color: rgba(34,197,94,0.3);  color: var(--green); }
+
+.section-header {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+
+/* ============================================================
+   SCREEN 1: DASHBOARD
+   ============================================================ */
+#screen-home {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+.home-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.home-aside {
+  width: 260px;
+  border-left: 1px solid var(--border);
+  padding: 20px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.home-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.home-greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.home-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.home-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.home-title span { color: var(--maize); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  font-family: var(--font-ui);
+}
+
+.btn-primary {
+  background: var(--maize);
+  color: #0A0A0F;
+}
+.btn-primary:hover { background: #FFD333; box-shadow: 0 0 12px rgba(255,203,5,0.35); }
+
+.btn-secondary {
+  background: var(--bg-subtle);
+  color: var(--white);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--dim); border-color: var(--gray); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--gray);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--white); border-color: var(--gray); }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-card .val {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--white);
+}
+
+.stat-card .val.maize { color: var(--maize); }
+.stat-card .val.cyan  { color: var(--cyan);  }
+.stat-card .val.green { color: var(--green); }
+
+.stat-card .sub {
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.entry-list { display: flex; flex-direction: column; gap: 2px; }
+
+.entry-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  background: var(--bg-card);
+  border-color: var(--border);
+  margin-bottom: 2px;
+}
+
+.entry-row:hover {
+  border-color: var(--maize);
+  background: var(--bg-subtle);
+}
+
+.entry-row.featured {
+  border-color: rgba(255,203,5,0.4);
+  background: rgba(255,203,5,0.04);
+}
+
+.entry-date-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+  min-width: 64px;
+  flex-shrink: 0;
+}
+
+.entry-title {
+  font-size: 13px;
+  color: var(--white);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.word-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.mini-streak-bar {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.mini-streak-bar .bar {
+  width: 8px;
+  background: var(--dim);
+  border-radius: 1px;
+  transition: background 0.2s;
+}
+
+.mini-streak-bar .bar.active { background: var(--maize); }
+
+/* ============================================================
+   SCREEN 2: NEW ENTRY
+   ============================================================ */
+#screen-new {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.editor-meta {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.editor-title-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  width: 320px;
+  caret-color: var(--maize);
+  font-family: var(--font-ui);
+}
+
+.editor-title-input::placeholder { color: var(--dim); }
+
+.editor-layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.editor-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--white);
+  line-height: 1.8;
+  position: relative;
+}
+
+.editor-content {
+  max-width: 640px;
+  margin: 0 auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.cursor-blink {
+  display: inline-block;
+  width: 2px;
+  height: 14px;
+  background: var(--maize);
+  vertical-align: text-bottom;
+  animation: blink 1.1s step-end infinite;
+  border-radius: 1px;
+  box-shadow: 0 0 6px rgba(255,203,5,0.6);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.editor-sidebar {
+  width: 220px;
+  border-left: 1px solid var(--border);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.mood-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mood-btn {
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--gray);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.mood-btn:hover, .mood-btn.active {
+  border-color: var(--maize);
+  color: var(--maize);
+  background: rgba(255,203,5,0.1);
+}
+
+.tags-input-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 6px;
+  min-height: 36px;
+}
+
+.tags-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--white);
+  width: 80px;
+  caret-color: var(--maize);
+}
+
+.voice-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--gray);
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  transition: all 0.15s;
+}
+
+.voice-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(6,182,212,0.08);
+}
+
+.voice-btn .mic-icon {
+  font-size: 16px;
+}
+
+.editor-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.wc-display {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray);
+  flex: 1;
+}
+
+.wc-display span { color: var(--cyan); }
+
+/* ============================================================
+   SCREEN 3: BROWSE
+   ============================================================ */
+#screen-browse {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.browse-header {
+  padding: 16px 20px 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.browse-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.browse-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  width: 260px;
+}
+
+.search-bar input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--white);
+  font-size: 12px;
+  font-family: var(--font-ui);
+  width: 100%;
+  caret-color: var(--maize);
+}
+
+.search-bar input::placeholder { color: var(--dim); }
+
+.search-icon { color: var(--gray); font-size: 12px; }
+
+.filter-row {
+  display: flex;
+  gap: 6px;
+  padding: 10px 0;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 11px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  color: var(--gray);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-chip:hover, .filter-chip.active {
+  border-color: var(--maize);
+  color: var(--maize);
+  background: rgba(255,203,5,0.08);
+}
+
+.browse-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.browse-list {
+  width: 320px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.browse-entry {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.browse-entry:hover { background: var(--bg-subtle); }
+
+.browse-entry.selected {
+  background: rgba(255,203,5,0.06);
+  border-left: 2px solid var(--maize);
+  padding-left: 14px;
+}
+
+.browse-entry-date {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+
+.browse-entry-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--white);
+  margin-bottom: 4px;
+}
+
+.browse-entry-preview {
+  font-size: 11px;
+  color: var(--gray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.browse-entry-footer {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  align-items: center;
+}
+
+.browse-preview {
+  flex: 1;
+  padding: 24px 28px;
+  overflow-y: auto;
+}
+
+.preview-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.preview-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray);
+  margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.preview-body {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--white);
+  line-height: 1.9;
+  max-width: 560px;
+}
+
+/* ============================================================
+   SCREEN 4: ENTRY DETAIL
+   ============================================================ */
+#screen-detail {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-layout {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.detail-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 36px;
+}
+
+.detail-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+
+.detail-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray);
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.detail-body {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 2;
+  color: var(--white);
+  max-width: 600px;
+  white-space: pre-wrap;
+}
+
+.detail-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.detail-aside {
+  width: 260px;
+  border-left: 1px solid var(--border);
+  padding: 20px 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.ai-insight-panel {
+  background: linear-gradient(135deg, rgba(6,182,212,0.06) 0%, rgba(168,85,247,0.06) 100%);
+  border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.ai-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-label::before {
+  content: '◆';
+  font-size: 8px;
+  color: var(--cyan);
+}
+
+.ai-insight-item {
+  font-size: 11px;
+  color: var(--gray);
+  line-height: 1.6;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ai-insight-item:last-child { border-bottom: none; }
+
+.ai-insight-item strong { color: var(--white); font-weight: 500; }
+
+.ai-score {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.ai-score-bar {
+  height: 3px;
+  flex: 1;
+  background: var(--bg-subtle);
+  border-radius: 2px;
+  margin: 0 8px;
+  overflow: hidden;
+}
+
+.ai-score-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--purple));
+}
+
+/* ============================================================
+   SCREEN 5: INSIGHTS
+   ============================================================ */
+#screen-insights {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.insights-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-content: start;
+}
+
+.insights-scroll .span-2 { grid-column: 1 / -1; }
+
+.insight-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 24px 0;
+  flex-shrink: 0;
+}
+
+.insight-header-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.insight-header-sub {
+  font-size: 11px;
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+
+.insight-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
+/* Heatmap */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.hm-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  position: relative;
+  cursor: default;
+  transition: transform 0.1s;
+}
+
+.hm-cell:hover { transform: scale(1.3); z-index: 1; }
+
+.hm-cell.l1 { background: rgba(255,203,5,0.15); border-color: rgba(255,203,5,0.2); }
+.hm-cell.l2 { background: rgba(255,203,5,0.35); border-color: rgba(255,203,5,0.4); }
+.hm-cell.l3 { background: rgba(255,203,5,0.60); border-color: rgba(255,203,5,0.7); }
+.hm-cell.l4 { background: rgba(255,203,5,0.90); border-color: var(--maize); }
+
+.hm-day-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.hm-day-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dim);
+  text-align: center;
+}
+
+/* Bar chart */
+.bar-chart {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 80px;
+  padding-top: 8px;
+}
+
+.bc-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.bc-bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  background: var(--dim);
+  transition: background 0.2s;
+}
+
+.bc-bar.active { background: var(--maize); }
+.bc-bar:hover { background: var(--cyan); }
+
+.bc-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--dim);
+  text-align: center;
+}
+
+/* Mood line */
+.mood-chart {
+  position: relative;
+  height: 70px;
+  margin-top: 8px;
+}
+
+.mood-chart svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Stat items */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-row:last-child { border-bottom: none; }
+
+.stat-row-label {
+  font-size: 11px;
+  color: var(--gray);
+}
+
+.stat-row-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--white);
+}
+
+.ai-summary-block {
+  background: linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(168,85,247,0.08) 100%);
+  border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.ai-summary-text {
+  font-size: 12px;
+  color: var(--white);
+  line-height: 1.7;
+}
+
+.ai-summary-text .hl { color: var(--cyan); font-weight: 600; }
+.ai-summary-text .hl-m { color: var(--maize); font-weight: 600; }
+
+/* ============================================================
+   SCREEN 6: SETTINGS
+   ============================================================ */
+#screen-settings {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-section-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.setting-info { flex: 1; }
+
+.setting-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--white);
+}
+
+.setting-desc {
+  font-size: 11px;
+  color: var(--gray);
+  margin-top: 2px;
+}
+
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--gray);
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: all 0.2s;
+}
+
+.toggle.on {
+  background: rgba(255,203,5,0.2);
+  border-color: var(--maize);
+}
+
+.toggle.on::after {
+  background: var(--maize);
+  left: 18px;
+}
+
+.setting-select {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 3px 8px;
+  color: var(--white);
+  font-size: 11px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  outline: none;
+}
+
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.export-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.export-card:hover {
+  border-color: var(--cyan);
+  background: rgba(6,182,212,0.06);
+}
+
+.export-icon {
+  font-size: 22px;
+}
+
+.export-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--white);
+}
+
+.export-desc {
+  font-size: 10px;
+  color: var(--gray);
+}
+
+/* ============================================================
+   MINI WAVEFORM (voice)
+   ============================================================ */
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 20px;
+}
+
+.wave-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--cyan);
+  animation: wave 1s ease-in-out infinite;
+}
+
+.wave-bar:nth-child(1) { height: 6px;  animation-delay: 0s;    }
+.wave-bar:nth-child(2) { height: 12px; animation-delay: 0.1s;  }
+.wave-bar:nth-child(3) { height: 18px; animation-delay: 0.2s;  }
+.wave-bar:nth-child(4) { height: 10px; animation-delay: 0.3s;  }
+.wave-bar:nth-child(5) { height: 16px; animation-delay: 0.4s;  }
+.wave-bar:nth-child(6) { height: 8px;  animation-delay: 0.5s;  }
+.wave-bar:nth-child(7) { height: 14px; animation-delay: 0.6s;  }
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(1);   opacity: 0.7; }
+  50%       { transform: scaleY(0.4); opacity: 0.4; }
+}
+
+/* ============================================================
+   CONTEXT MENU (hover detail for heatmap)
+   ============================================================ */
+.hm-tooltip {
+  position: fixed;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--white);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.1s;
+  z-index: 1000;
+}
+
+/* ============================================================
+   PROGRESS RING
+   ============================================================ */
+.progress-ring-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progress-ring-svg {
+  flex-shrink: 0;
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.5s ease;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+}
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <span class="inkwell-mark">◉</span>
+      <span>inkwell</span>
+    </div>
+    <div class="topbar-meta">
+      <span style="color:var(--dim)">v0.9.4-beta</span>
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-meta">
+      <span class="streak">23 day streak</span>
+      <span id="clock" class="mono">--:-- --</span>
+      <span style="color:var(--green)">● synced</span>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="app-body">
+
+    <!-- SIDEBAR NAV -->
+    <nav class="sidebar">
+      <div class="nav-icon active" data-screen="home" onclick="switchScreen('home')" title="">
+        ⌂
+        <span class="nav-tooltip">Dashboard</span>
+      </div>
+      <div class="nav-icon" data-screen="new" onclick="switchScreen('new')" title="">
+        ✎
+        <span class="nav-tooltip">New Entry</span>
+      </div>
+      <div class="nav-icon" data-screen="browse" onclick="switchScreen('browse')" title="">
+        ☰
+        <span class="nav-tooltip">Browse</span>
+      </div>
+      <div class="nav-icon" data-screen="detail" onclick="switchScreen('detail')" title="">
+        ◫
+        <span class="nav-tooltip">Entry Detail</span>
+      </div>
+      <div class="nav-icon" data-screen="insights" onclick="switchScreen('insights')" title="">
+        ◈
+        <span class="nav-tooltip">Insights</span>
+      </div>
+      <div class="sidebar-spacer"></div>
+      <div class="nav-icon" data-screen="settings" onclick="switchScreen('settings')" title="">
+        ⚙
+        <span class="nav-tooltip">Settings</span>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- ====================================================
+           SCREEN 1: DASHBOARD
+           ==================================================== -->
+      <div id="screen-home" class="screen active">
+        <div class="home-layout" style="height:100%">
+          <div class="home-main">
+
+            <div class="home-header">
+              <div class="home-greeting">
+                <div class="home-date" id="home-date">Monday, February 23, 2026</div>
+                <div class="home-title">Good morning, <span>Marcus</span>.</div>
+              </div>
+              <button class="btn btn-primary" onclick="switchScreen('new')">✎&nbsp; New Entry</button>
+            </div>
+
+            <!-- STAT CARDS -->
+            <div class="stat-grid">
+              <div class="stat-card">
+                <div class="label">Streak</div>
+                <div class="val maize">23</div>
+                <div class="sub">days consecutive</div>
+              </div>
+              <div class="stat-card">
+                <div class="label">Today</div>
+                <div class="val cyan">412</div>
+                <div class="sub">words written</div>
+              </div>
+              <div class="stat-card">
+                <div class="label">This Week</div>
+                <div class="val">5</div>
+                <div class="sub">entries logged</div>
+              </div>
+              <div class="stat-card">
+                <div class="label">Total Words</div>
+                <div class="val green">21,812</div>
+                <div class="sub">lifetime count</div>
+              </div>
+            </div>
+
+            <!-- RECENT ENTRIES -->
+            <div>
+              <div class="section-header">Recent Entries</div>
+              <div class="entry-list">
+                <div class="entry-row featured" onclick="switchScreen('detail')">
+                  <div class="entry-date-badge">Feb 23</div>
+                  <div class="entry-title">The thing about building with agents is that...</div>
+                  <div class="entry-meta-row">
+                    <span class="word-badge mono">412 w</span>
+                    <span class="tag maize">agents</span>
+                    <span class="tag cyan">work</span>
+                  </div>
+                </div>
+                <div class="entry-row" onclick="switchScreen('detail')">
+                  <div class="entry-date-badge">Feb 22</div>
+                  <div class="entry-title">Kai hit 89% on the practice exam today...</div>
+                  <div class="entry-meta-row">
+                    <span class="word-badge mono">287 w</span>
+                    <span class="tag green">kai</span>
+                    <span class="tag">family</span>
+                  </div>
+                </div>
+                <div class="entry-row" onclick="switchScreen('detail')">
+                  <div class="entry-date-badge">Feb 21</div>
+                  <div class="entry-title">Shipped Dispatch today. The inbox design...</div>
+                  <div class="entry-meta-row">
+                    <span class="word-badge mono">531 w</span>
+                    <span class="tag maize">dispatch</span>
+                    <span class="tag">design</span>
+                  </div>
+                </div>
+                <div class="entry-row" onclick="switchScreen('detail')">
+                  <div class="entry-date-badge">Feb 20</div>
+                  <div class="entry-title">Voice dictation is changing how I think about writing...</div>
+                  <div class="entry-meta-row">
+                    <span class="word-badge mono">344 w</span>
+                    <span class="tag cyan">tools</span>
+                  </div>
+                </div>
+                <div class="entry-row" onclick="switchScreen('detail')">
+                  <div class="entry-date-badge">Feb 19</div>
+                  <div class="entry-title">Sunday. Thinking about what building means now...</div>
+                  <div class="entry-meta-row">
+                    <span class="word-badge mono">618 w</span>
+                    <span class="tag">reflection</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- RIGHT ASIDE -->
+          <div class="home-aside">
+
+            <!-- Writing goal progress -->
+            <div class="card">
+              <div class="label">Daily Goal</div>
+              <div style="margin-top:8px">
+                <div class="progress-ring-wrap">
+                  <svg class="progress-ring-svg" width="56" height="56" viewBox="0 0 56 56">
+                    <circle cx="28" cy="28" r="22" fill="none" stroke="var(--border)" stroke-width="4"/>
+                    <circle class="progress-ring-circle" cx="28" cy="28" r="22" fill="none"
+                      stroke="var(--maize)" stroke-width="4"
+                      stroke-dasharray="138.2"
+                      stroke-dashoffset="70"
+                      stroke-linecap="round"/>
+                    <text x="28" y="33" text-anchor="middle" fill="var(--maize)"
+                      font-family="'Cascadia Code','Consolas',monospace"
+                      font-size="11" font-weight="600">49%</text>
+                  </svg>
+                  <div>
+                    <div style="font-size:13px;font-weight:600">412 / 850</div>
+                    <div style="font-size:11px;color:var(--gray)">words today</div>
+                    <div style="font-size:10px;color:var(--dim);margin-top:4px;font-family:var(--font-mono)">438 to goal</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Weekly bars -->
+            <div class="card">
+              <div class="label" style="margin-bottom:10px">This Week</div>
+              <div class="bar-chart">
+                <div class="bc-col">
+                  <div class="bc-bar" style="height:28px"></div>
+                  <div class="bc-label">M</div>
+                </div>
+                <div class="bc-col">
+                  <div class="bc-bar" style="height:44px"></div>
+                  <div class="bc-label">T</div>
+                </div>
+                <div class="bc-col">
+                  <div class="bc-bar" style="height:52px"></div>
+                  <div class="bc-label">W</div>
+                </div>
+                <div class="bc-col">
+                  <div class="bc-bar" style="height:32px"></div>
+                  <div class="bc-label">T</div>
+                </div>
+                <div class="bc-col">
+                  <div class="bc-bar active" style="height:24px"></div>
+                  <div class="bc-label" style="color:var(--maize)">F</div>
+                </div>
+                <div class="bc-col">
+                  <div class="bc-bar" style="height:0px"></div>
+                  <div class="bc-label">S</div>
+                </div>
+                <div class="bc-col">
+                  <div class="bc-bar" style="height:0px"></div>
+                  <div class="bc-label">S</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Quick Insight -->
+            <div class="ai-insight-panel">
+              <div class="ai-label">AI Insight</div>
+              <div style="font-size:11px;color:var(--gray);line-height:1.6">
+                You write most on <strong style="color:var(--white)">Sunday evenings</strong>.
+                Your dominant theme this week: <strong style="color:var(--maize)">building and creating</strong>.
+                Sentiment is trending <strong style="color:var(--green)">more positive</strong> than last week.
+              </div>
+            </div>
+
+            <!-- Top tags -->
+            <div class="card-sm">
+              <div class="label" style="margin-bottom:8px">Top Tags</div>
+              <div style="display:flex;flex-wrap:wrap;gap:4px">
+                <span class="tag maize">agents</span>
+                <span class="tag cyan">work</span>
+                <span class="tag green">kai</span>
+                <span class="tag">design</span>
+                <span class="tag">dispatch</span>
+                <span class="tag">tools</span>
+                <span class="tag">reflection</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           SCREEN 2: NEW ENTRY
+           ==================================================== -->
+      <div id="screen-new" class="screen">
+        <div class="editor-topbar">
+          <div class="editor-meta">
+            <input class="editor-title-input" type="text" placeholder="Entry title..." value="The thing about building with agents">
+            <span class="tag mono">Feb 23, 2026</span>
+          </div>
+          <button class="btn btn-ghost" style="font-size:11px">Save Draft</button>
+          <button class="btn btn-primary" style="font-size:11px">Save Entry</button>
+        </div>
+
+        <div class="editor-layout">
+
+          <div class="editor-pane">
+            <div class="editor-area">
+              <div class="editor-content">The thing about building with agents is that it changes the unit of thought. You stop thinking in functions and start thinking in intentions.
+
+When I was writing code last week, I realized I was describing what I wanted more than specifying how to get it. That felt different. It felt closer to design thinking than engineering thinking.
+
+Maybe that is the point. Maybe the best builders have always been the ones who could hold both: the intention and the mechanism. Agents just make the gap between them smaller.
+
+What I am sitting with today: Forge is not a product. It is a practice. The agents are not tools. They are colleagues, collaborators, something in between.<span class="cursor-blink"></span>
+              </div>
+            </div>
+
+            <div class="editor-footer">
+              <div class="wc-display">
+                <span>412</span> words &nbsp;&nbsp; <span>2,241</span> chars &nbsp;&nbsp; ~2 min read
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--dim)">
+                <span class="kbd">Ctrl</span><span>+</span><span class="kbd">S</span>
+                <span style="margin-left:4px">save</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-sidebar">
+            <div>
+              <div class="label">Mood</div>
+              <div class="mood-row" style="margin-top:6px">
+                <div class="mood-btn">😌 calm</div>
+                <div class="mood-btn active">🔥 focused</div>
+                <div class="mood-btn">💭 pensive</div>
+                <div class="mood-btn">✨ inspired</div>
+                <div class="mood-btn">😤 frustrated</div>
+              </div>
+            </div>
+
+            <div>
+              <div class="label">Tags</div>
+              <div class="tags-input-wrap" style="margin-top:6px">
+                <span class="tag maize">agents</span>
+                <span class="tag cyan">work</span>
+                <span class="tag">design</span>
+                <input class="tags-input" type="text" placeholder="+ tag">
+              </div>
+            </div>
+
+            <div>
+              <div class="label" style="margin-bottom:8px">Voice Input</div>
+              <div class="voice-btn">
+                <span class="mic-icon">🎙</span>
+                Start Recording
+              </div>
+            </div>
+
+            <div class="ai-insight-panel">
+              <div class="ai-label">Live Analysis</div>
+              <div class="ai-insight-item">
+                <strong>Tone</strong><br>
+                <div class="ai-score">
+                  <span style="font-size:10px;color:var(--gray)">reflective</span>
+                  <div class="ai-score-bar"><div class="ai-score-fill" style="width:72%"></div></div>
+                  <span style="font-size:10px;color:var(--gray)">72%</span>
+                </div>
+              </div>
+              <div class="ai-insight-item">
+                <strong>Theme</strong><br>
+                <span style="font-size:10px;color:var(--cyan)">building, agency, design thinking</span>
+              </div>
+              <div class="ai-insight-item">
+                <strong>Clarity</strong><br>
+                <div class="ai-score">
+                  <span style="font-size:10px;color:var(--gray)">clear</span>
+                  <div class="ai-score-bar"><div class="ai-score-fill" style="width:88%"></div></div>
+                  <span style="font-size:10px;color:var(--gray)">88%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-sm">
+              <div class="label" style="margin-bottom:8px">Writing Pace</div>
+              <div class="mini-streak-bar" style="gap:3px">
+                <div class="bar active" style="height:12px"></div>
+                <div class="bar active" style="height:18px"></div>
+                <div class="bar active" style="height:10px"></div>
+                <div class="bar active" style="height:22px"></div>
+                <div class="bar active" style="height:16px"></div>
+                <div class="bar" style="height:6px;background:var(--dim)"></div>
+                <div class="bar" style="height:8px;background:var(--dim)"></div>
+              </div>
+              <div style="font-size:10px;color:var(--gray);margin-top:6px;font-family:var(--font-mono)">~38 wpm avg today</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           SCREEN 3: BROWSE
+           ==================================================== -->
+      <div id="screen-browse" class="screen">
+        <div class="browse-header">
+          <div class="browse-title-row">
+            <div class="browse-title">All Entries</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="search-bar">
+                <span class="search-icon">⌕</span>
+                <input type="text" placeholder="Search entries...">
+              </div>
+              <button class="btn btn-primary" onclick="switchScreen('new')" style="font-size:11px">✎ New</button>
+            </div>
+          </div>
+          <div class="filter-row">
+            <div class="filter-chip active">All</div>
+            <div class="filter-chip">This Week</div>
+            <div class="filter-chip">This Month</div>
+            <div class="filter-chip">#agents</div>
+            <div class="filter-chip">#kai</div>
+            <div class="filter-chip">#work</div>
+            <div class="filter-chip">#reflection</div>
+          </div>
+        </div>
+
+        <div class="browse-body">
+          <div class="browse-list">
+
+            <div class="browse-entry selected" onclick="selectBrowseEntry(this)">
+              <div class="browse-entry-date">Mon Feb 23, 2026</div>
+              <div class="browse-entry-title">The thing about building with agents is that...</div>
+              <div class="browse-entry-preview">...it changes the unit of thought. You stop thinking in functions and start thinking in intentions.</div>
+              <div class="browse-entry-footer">
+                <span class="tag maize">agents</span>
+                <span class="tag cyan">work</span>
+                <span class="word-badge mono" style="margin-left:auto">412 w</span>
+              </div>
+            </div>
+
+            <div class="browse-entry" onclick="selectBrowseEntry(this)">
+              <div class="browse-entry-date">Sun Feb 22, 2026</div>
+              <div class="browse-entry-title">Kai hit 89% on the practice exam today...</div>
+              <div class="browse-entry-preview">...I did not expect it to land this hard. He is ready. He has been ready. I think I needed to see the number.</div>
+              <div class="browse-entry-footer">
+                <span class="tag green">kai</span>
+                <span class="tag">family</span>
+                <span class="word-badge mono" style="margin-left:auto">287 w</span>
+              </div>
+            </div>
+
+            <div class="browse-entry" onclick="selectBrowseEntry(this)">
+              <div class="browse-entry-date">Sat Feb 21, 2026</div>
+              <div class="browse-entry-title">Shipped Dispatch today. The inbox design...</div>
+              <div class="browse-entry-preview">...was something I had been wrestling with for weeks. Seeing it rendered in a real terminal felt like the design finally had weight.</div>
+              <div class="browse-entry-footer">
+                <span class="tag maize">dispatch</span>
+                <span class="tag">design</span>
+                <span class="word-badge mono" style="margin-left:auto">531 w</span>
+              </div>
+            </div>
+
+            <div class="browse-entry" onclick="selectBrowseEntry(this)">
+              <div class="browse-entry-date">Fri Feb 20, 2026</div>
+              <div class="browse-entry-title">Voice dictation is changing how I think...</div>
+              <div class="browse-entry-preview">...writing at speaking pace is a completely different cognitive mode. Slower thoughts. More complete sentences.</div>
+              <div class="browse-entry-footer">
+                <span class="tag cyan">tools</span>
+                <span class="word-badge mono" style="margin-left:auto">344 w</span>
+              </div>
+            </div>
+
+            <div class="browse-entry" onclick="selectBrowseEntry(this)">
+              <div class="browse-entry-date">Thu Feb 19, 2026</div>
+              <div class="browse-entry-title">Sunday. Thinking about what building means now.</div>
+              <div class="browse-entry-preview">...I used to think building meant writing every line. Now I think it means knowing which lines matter.</div>
+              <div class="browse-entry-footer">
+                <span class="tag">reflection</span>
+                <span class="word-badge mono" style="margin-left:auto">618 w</span>
+              </div>
+            </div>
+
+            <div class="browse-entry" onclick="selectBrowseEntry(this)">
+              <div class="browse-entry-date">Wed Feb 18, 2026</div>
+              <div class="browse-entry-title">The eval runner finished its first full run...</div>
+              <div class="browse-entry-preview">...2,400 samples. The results were better than I expected in one dimension and worse in another.</div>
+              <div class="browse-entry-footer">
+                <span class="tag maize">agents</span>
+                <span class="tag cyan">eval</span>
+                <span class="word-badge mono" style="margin-left:auto">402 w</span>
+              </div>
+            </div>
+
+            <div class="browse-entry" onclick="selectBrowseEntry(this)">
+              <div class="browse-entry-date">Tue Feb 17, 2026</div>
+              <div class="browse-entry-title">Context windows and the cost of remembering.</div>
+              <div class="browse-entry-preview">...There is a physics to memory in AI that nobody talks about. The cost is not just tokens. It is coherence.</div>
+              <div class="browse-entry-footer">
+                <span class="tag">ai</span>
+                <span class="tag">research</span>
+                <span class="word-badge mono" style="margin-left:auto">489 w</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="browse-preview">
+            <div class="preview-title">The thing about building with agents</div>
+            <div class="preview-meta">
+              <span>Mon Feb 23, 2026</span>
+              <span style="color:var(--dim)">|</span>
+              <span>412 words</span>
+              <span style="color:var(--dim)">|</span>
+              <span class="tag maize">agents</span>
+              <span class="tag cyan">work</span>
+              <button class="btn btn-ghost" style="font-size:10px;height:24px;margin-left:8px" onclick="switchScreen('detail')">View Full</button>
+            </div>
+            <div class="preview-body">The thing about building with agents is that it changes the unit of thought. You stop thinking in functions and start thinking in intentions.
+
+When I was writing code last week, I realized I was describing what I wanted more than specifying how to get it. That felt different. It felt closer to design thinking than engineering thinking.
+
+Maybe that is the point. Maybe the best builders have always been the ones who could hold both: the intention and the mechanism. Agents just make the gap between them smaller.
+
+What I am sitting with today: Forge is not a product. It is a practice. The agents are not tools. They are colleagues, collaborators, something in between.
+
+Tomorrow I want to write about what it feels like to trust a system you built. Because that is the real test. Not whether it works. Whether you believe it when it matters.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           SCREEN 4: ENTRY DETAIL
+           ==================================================== -->
+      <div id="screen-detail" class="screen">
+        <div class="detail-layout">
+
+          <div class="detail-main">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+              <button class="btn btn-ghost" style="height:26px;font-size:11px" onclick="switchScreen('browse')">&#8592; Browse</button>
+              <span style="color:var(--dim);font-size:11px">5 of 47 entries</span>
+              <div style="flex:1"></div>
+              <button class="btn btn-ghost" style="height:26px;font-size:11px">&#9998; Edit</button>
+              <button class="btn btn-ghost" style="height:26px;font-size:11px">&#10515; Export</button>
+            </div>
+
+            <div class="detail-title">The thing about building with agents</div>
+            <div class="detail-meta">
+              <span>Mon Feb 23, 2026</span>
+              <span style="color:var(--dim)">|</span>
+              <span class="mono">412 words</span>
+              <span style="color:var(--dim)">|</span>
+              <span>~2 min read</span>
+              <span style="color:var(--dim)">|</span>
+              <span style="color:var(--green)">🔥 focused</span>
+            </div>
+
+            <div class="detail-body">The thing about building with agents is that it changes the unit of thought. You stop thinking in functions and start thinking in intentions.
+
+When I was writing code last week, I realized I was describing what I wanted more than specifying how to get it. That felt different. It felt closer to design thinking than engineering thinking.
+
+Maybe that is the point. Maybe the best builders have always been the ones who could hold both: the intention and the mechanism. Agents just make the gap between them smaller.
+
+What I am sitting with today: Forge is not a product. It is a practice. The agents are not tools. They are colleagues, collaborators, something in between.
+
+Tomorrow I want to write about what it feels like to trust a system you built. Because that is the real test. Not whether it works. Whether you believe it when it matters.
+
+The design philosophy that keeps surfacing: constraint as clarity. When you have fewer options, you make faster decisions. When you make faster decisions, you learn faster. Forge is a constrained system by design.
+
+I keep coming back to that word: practice. Forge as a practice. Writing as a practice. Building as a practice. The word implies repetition, but also incompleteness. You never finish practicing. You just get better at not finishing.</div>
+
+            <div class="detail-tags">
+              <span class="tag maize">agents</span>
+              <span class="tag cyan">work</span>
+              <span class="tag">design</span>
+              <span class="tag">forge</span>
+              <span class="tag">philosophy</span>
+            </div>
+          </div>
+
+          <div class="detail-aside">
+
+            <div class="ai-insight-panel">
+              <div class="ai-label">AI Insights</div>
+              <div class="ai-insight-item">
+                <strong>Dominant Themes</strong><br>
+                <span style="color:var(--cyan);font-size:10px">agency, design thinking, systems, practice</span>
+              </div>
+              <div class="ai-insight-item">
+                <strong>Writing Tone</strong><br>
+                <div class="ai-score">
+                  <span style="font-size:10px;color:var(--gray)">reflective</span>
+                  <div class="ai-score-bar"><div class="ai-score-fill" style="width:78%"></div></div>
+                  <span style="font-size:10px;color:var(--gray)">78%</span>
+                </div>
+              </div>
+              <div class="ai-insight-item">
+                <strong>Sentence Rhythm</strong><br>
+                <span style="font-size:10px;color:var(--gray)">Short sentences dominate. Pacing is intentional. Pattern matches your Sunday writing.</span>
+              </div>
+              <div class="ai-insight-item">
+                <strong>Vocabulary Richness</strong><br>
+                <div class="ai-score">
+                  <span style="font-size:10px;color:var(--gray)">high</span>
+                  <div class="ai-score-bar"><div class="ai-score-fill" style="width:82%"></div></div>
+                  <span style="font-size:10px;color:var(--gray)">82%</span>
+                </div>
+              </div>
+              <div class="ai-insight-item">
+                <strong>Connected Entries</strong><br>
+                <span style="font-size:10px;color:var(--gray)">Similar themes found in 3 earlier entries: Feb 19, Jan 31, Jan 14.</span>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="label" style="margin-bottom:10px">Entry Stats</div>
+              <div class="stat-row">
+                <div class="stat-row-label">Words</div>
+                <div class="stat-row-val">412</div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">Sentences</div>
+                <div class="stat-row-val">28</div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">Avg sentence</div>
+                <div class="stat-row-val">14.7 w</div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">Reading time</div>
+                <div class="stat-row-val">~2 min</div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">Created</div>
+                <div class="stat-row-val" style="font-size:10px">9:14 AM</div>
+              </div>
+            </div>
+
+            <div class="card-sm">
+              <div class="label" style="margin-bottom:8px">Voice Note</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="waveform">
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                  <div class="wave-bar"></div>
+                </div>
+                <span style="font-size:10px;color:var(--gray);font-family:var(--font-mono)">2:34</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================
+           SCREEN 5: INSIGHTS
+           ==================================================== -->
+      <div id="screen-insights" class="screen">
+
+        <div class="insight-header" style="padding:16px 24px 0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div class="insight-header-title">Writing Insights</div>
+              <div class="insight-header-sub">AI analysis of your journal patterns</div>
+            </div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--gray)">Last 30 days</div>
+          </div>
+        </div>
+
+        <div class="insights-scroll">
+
+          <!-- AI SUMMARY -->
+          <div class="ai-summary-block span-2">
+            <div class="ai-label">AI Summary</div>
+            <div class="ai-summary-text">
+              You write most on <span class="hl">Sunday evenings</span> and tend to produce your longest entries when working through questions about <span class="hl-m">building and creating</span>.
+              Over the last 30 days you have written <span class="hl-m">21,812 words</span> across <span class="hl">47 entries</span>, averaging <span class="hl">464 words per session</span>.
+              Your writing sentiment has trended <span class="hl" style="color:var(--green)">progressively positive</span> since Feb 10. Your most used theme cluster: <span class="hl">agents, systems, practice</span>.
+            </div>
+          </div>
+
+          <!-- HEATMAP -->
+          <div class="card span-2">
+            <div class="insight-title">Writing Frequency (Last 7 Weeks)</div>
+            <div class="hm-day-labels">
+              <div class="hm-day-label">M</div>
+              <div class="hm-day-label">T</div>
+              <div class="hm-day-label">W</div>
+              <div class="hm-day-label">T</div>
+              <div class="hm-day-label">F</div>
+              <div class="hm-day-label">S</div>
+              <div class="hm-day-label">S</div>
+            </div>
+            <div class="heatmap-grid" id="heatmap"></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:10px">
+              <span style="font-size:10px;color:var(--dim);font-family:var(--font-mono)">Less</span>
+              <div style="width:10px;height:10px;border-radius:2px;background:var(--bg-subtle);border:1px solid var(--border)"></div>
+              <div style="width:10px;height:10px;border-radius:2px" class="hm-cell l1"></div>
+              <div style="width:10px;height:10px;border-radius:2px" class="hm-cell l2"></div>
+              <div style="width:10px;height:10px;border-radius:2px" class="hm-cell l3"></div>
+              <div style="width:10px;height:10px;border-radius:2px" class="hm-cell l4"></div>
+              <span style="font-size:10px;color:var(--dim);font-family:var(--font-mono)">More</span>
+            </div>
+          </div>
+
+          <!-- WORD COUNT TREND -->
+          <div class="card">
+            <div class="insight-title">Word Count Trend (This Week)</div>
+            <div class="bar-chart" style="height:100px">
+              <div class="bc-col">
+                <div class="bc-bar" style="height:52px;background:rgba(255,203,5,0.4)"></div>
+                <div class="bc-label" style="color:var(--gray)">Mon<br><span style="color:var(--white)">287</span></div>
+              </div>
+              <div class="bc-col">
+                <div class="bc-bar" style="height:68px;background:rgba(255,203,5,0.55)"></div>
+                <div class="bc-label" style="color:var(--gray)">Tue<br><span style="color:var(--white)">344</span></div>
+              </div>
+              <div class="bc-col">
+                <div class="bc-bar" style="height:80px;background:rgba(255,203,5,0.7)"></div>
+                <div class="bc-label" style="color:var(--gray)">Wed<br><span style="color:var(--white)">531</span></div>
+              </div>
+              <div class="bc-col">
+                <div class="bc-bar" style="height:40px;background:rgba(255,203,5,0.35)"></div>
+                <div class="bc-label" style="color:var(--gray)">Thu<br><span style="color:var(--white)">618</span></div>
+              </div>
+              <div class="bc-col">
+                <div class="bc-bar active" style="height:28px"></div>
+                <div class="bc-label" style="color:var(--maize)">Fri<br><span>412</span></div>
+              </div>
+              <div class="bc-col">
+                <div class="bc-bar" style="height:0px"></div>
+                <div class="bc-label">Sat<br><span style="color:var(--dim)">--</span></div>
+              </div>
+              <div class="bc-col">
+                <div class="bc-bar" style="height:0px"></div>
+                <div class="bc-label">Sun<br><span style="color:var(--dim)">--</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MOOD TREND -->
+          <div class="card">
+            <div class="insight-title">Mood Trend (Last 14 Days)</div>
+            <div class="mood-chart">
+              <svg viewBox="0 0 200 70" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="moodGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--cyan)" stop-opacity="0.3"/>
+                    <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0.0"/>
+                  </linearGradient>
+                </defs>
+                <path d="M0,50 C14,46 28,40 42,38 C56,36 70,42 84,36 C98,30 112,22 126,18 C140,14 154,16 168,12 C182,8 196,10 200,8"
+                  fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M0,50 C14,46 28,40 42,38 C56,36 70,42 84,36 C98,30 112,22 126,18 C140,14 154,16 168,12 C182,8 196,10 200,8 L200,70 L0,70 Z"
+                  fill="url(#moodGrad)"/>
+                <circle cx="200" cy="8" r="3" fill="var(--cyan)"/>
+              </svg>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--dim);font-family:var(--font-mono);margin-top:4px">
+              <span>Feb 9</span><span>Feb 16</span><span>Feb 23</span>
+            </div>
+          </div>
+
+          <!-- TOP THEMES -->
+          <div class="card">
+            <div class="insight-title">Top Themes (30 Days)</div>
+            <div>
+              <div class="stat-row">
+                <div class="stat-row-label">building &amp; creating</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:80px;height:4px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                    <div style="width:88%;height:100%;background:var(--maize);border-radius:2px"></div>
+                  </div>
+                  <span class="stat-row-val">88%</span>
+                </div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">systems thinking</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:80px;height:4px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                    <div style="width:72%;height:100%;background:var(--cyan);border-radius:2px"></div>
+                  </div>
+                  <span class="stat-row-val">72%</span>
+                </div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">family / kai</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:80px;height:4px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                    <div style="width:54%;height:100%;background:var(--green);border-radius:2px"></div>
+                  </div>
+                  <span class="stat-row-val">54%</span>
+                </div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">design &amp; craft</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:80px;height:4px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                    <div style="width:48%;height:100%;background:var(--purple);border-radius:2px"></div>
+                  </div>
+                  <span class="stat-row-val">48%</span>
+                </div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-row-label">reflection</div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:80px;height:4px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                    <div style="width:40%;height:100%;background:var(--gray);border-radius:2px"></div>
+                  </div>
+                  <span class="stat-row-val">40%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- WRITING TIME -->
+          <div class="card">
+            <div class="insight-title">Best Writing Times</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray);width:52px">9-10 AM</span>
+                <div style="flex:1;height:10px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                  <div style="width:82%;height:100%;background:rgba(255,203,5,0.7);border-radius:2px"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray)">82%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray);width:52px">8-9 PM</span>
+                <div style="flex:1;height:10px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                  <div style="width:65%;height:100%;background:rgba(6,182,212,0.7);border-radius:2px"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray)">65%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray);width:52px">12-1 PM</span>
+                <div style="flex:1;height:10px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                  <div style="width:38%;height:100%;background:rgba(168,85,247,0.7);border-radius:2px"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray)">38%</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray);width:52px">6-7 AM</span>
+                <div style="flex:1;height:10px;background:var(--bg-subtle);border-radius:2px;overflow:hidden">
+                  <div style="width:24%;height:100%;background:rgba(136,136,160,0.4);border-radius:2px"></div>
+                </div>
+                <span style="font-family:var(--font-mono);font-size:10px;color:var(--gray)">24%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ALL-TIME STATS -->
+          <div class="card span-2" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0">
+            <div style="padding:14px;border-right:1px solid var(--border)">
+              <div class="label">Total Words</div>
+              <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--maize);margin-top:4px">21,812</div>
+              <div style="font-size:10px;color:var(--gray)">lifetime</div>
+            </div>
+            <div style="padding:14px;border-right:1px solid var(--border)">
+              <div class="label">Entries</div>
+              <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--white);margin-top:4px">47</div>
+              <div style="font-size:10px;color:var(--gray)">total logged</div>
+            </div>
+            <div style="padding:14px;border-right:1px solid var(--border)">
+              <div class="label">Streak</div>
+              <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--maize);margin-top:4px">23</div>
+              <div style="font-size:10px;color:var(--gray)">days current</div>
+            </div>
+            <div style="padding:14px;border-right:1px solid var(--border)">
+              <div class="label">Avg/Entry</div>
+              <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--cyan);margin-top:4px">464</div>
+              <div style="font-size:10px;color:var(--gray)">words</div>
+            </div>
+            <div style="padding:14px">
+              <div class="label">Best Day</div>
+              <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--green);margin-top:4px">891</div>
+              <div style="font-size:10px;color:var(--gray)">words (Feb 9)</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ====================================================
+           SCREEN 6: SETTINGS
+           ==================================================== -->
+      <div id="screen-settings" class="screen">
+        <div class="settings-scroll">
+
+          <div style="margin-bottom:4px">
+            <div style="font-size:16px;font-weight:600">Settings</div>
+            <div style="font-size:11px;color:var(--gray);margin-top:2px">Configure Inkwell to your preferences</div>
+          </div>
+
+          <!-- APPEARANCE -->
+          <div class="settings-section">
+            <div class="settings-section-title">Appearance</div>
+            <div class="setting-row">
+              <div style="font-size:18px">◑</div>
+              <div class="setting-info">
+                <div class="setting-name">Theme</div>
+                <div class="setting-desc">Choose your color theme</div>
+              </div>
+              <select class="setting-select">
+                <option>Inkwell Dark</option>
+                <option>Inkwell Light</option>
+                <option>Midnight</option>
+                <option>Forest</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div style="font-size:18px">⊟</div>
+              <div class="setting-info">
+                <div class="setting-name">Scan-line Texture</div>
+                <div class="setting-desc">CRT scan-line overlay for TUI authenticity</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div style="font-size:18px">Aa</div>
+              <div class="setting-info">
+                <div class="setting-name">Font Size</div>
+                <div class="setting-desc">Editor and UI font size</div>
+              </div>
+              <select class="setting-select">
+                <option>12px</option>
+                <option selected>13px</option>
+                <option>14px</option>
+                <option>15px</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- VOICE INPUT -->
+          <div class="settings-section">
+            <div class="settings-section-title">Voice Input</div>
+            <div class="setting-row">
+              <div style="font-size:18px">🎙</div>
+              <div class="setting-info">
+                <div class="setting-name">Voice-to-Text</div>
+                <div class="setting-desc">Enable microphone transcription in the editor</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div style="font-size:18px">◎</div>
+              <div class="setting-info">
+                <div class="setting-name">Auto-Punctuate</div>
+                <div class="setting-desc">AI adds punctuation to transcribed speech</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div style="font-size:18px">⊛</div>
+              <div class="setting-info">
+                <div class="setting-name">Noise Reduction</div>
+                <div class="setting-desc">Filter background noise during recording</div>
+              </div>
+              <div class="toggle" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div style="font-size:18px">◈</div>
+              <div class="setting-info">
+                <div class="setting-name">Voice Model</div>
+                <div class="setting-desc">Transcription engine</div>
+              </div>
+              <select class="setting-select">
+                <option>Whisper Large v3</option>
+                <option>Whisper Medium</option>
+                <option>Local (fast)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- AI -->
+          <div class="settings-section">
+            <div class="settings-section-title">AI Analysis</div>
+            <div class="setting-row">
+              <div style="font-size:18px">◆</div>
+              <div class="setting-info">
+                <div class="setting-name">Live Analysis</div>
+                <div class="setting-desc">Real-time tone and theme detection while writing</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div style="font-size:18px">◇</div>
+              <div class="setting-info">
+                <div class="setting-name">Weekly Insights</div>
+                <div class="setting-desc">Generate pattern summary every Sunday</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="setting-row">
+              <div style="font-size:18px">⬡</div>
+              <div class="setting-info">
+                <div class="setting-name">AI Model</div>
+                <div class="setting-desc">Model used for insights and analysis</div>
+              </div>
+              <select class="setting-select">
+                <option>GPT-4o</option>
+                <option selected>Claude Sonnet</option>
+                <option>Claude Haiku (fast)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- BACKUP + EXPORT -->
+          <div class="settings-section">
+            <div class="settings-section-title">Backup and Export</div>
+            <div class="setting-row" style="margin-bottom:12px">
+              <div style="font-size:18px">☁</div>
+              <div class="setting-info">
+                <div class="setting-name">Auto-Sync</div>
+                <div class="setting-desc">Sync to cloud on every save</div>
+              </div>
+              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div class="export-grid">
+              <div class="export-card">
+                <div class="export-icon">📄</div>
+                <div class="export-name">Markdown</div>
+                <div class="export-desc">All entries as .md files</div>
+              </div>
+              <div class="export-card">
+                <div class="export-icon">📋</div>
+                <div class="export-name">Plain Text</div>
+                <div class="export-desc">.txt, UTF-8 encoded</div>
+              </div>
+              <div class="export-card">
+                <div class="export-icon">📊</div>
+                <div class="export-name">JSON</div>
+                <div class="export-desc">Full data with metadata</div>
+              </div>
+              <div class="export-card">
+                <div class="export-icon">📕</div>
+                <div class="export-name">PDF</div>
+                <div class="export-desc">Formatted document</div>
+              </div>
+              <div class="export-card">
+                <div class="export-icon">📦</div>
+                <div class="export-name">ZIP Archive</div>
+                <div class="export-desc">Full backup bundle</div>
+              </div>
+              <div class="export-card">
+                <div class="export-icon">🔗</div>
+                <div class="export-name">Notion</div>
+                <div class="export-desc">Sync to workspace</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ACCOUNT -->
+          <div class="settings-section">
+            <div class="settings-section-title">Account</div>
+            <div class="setting-row">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--maize);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0A0A0F;flex-shrink:0">M</div>
+              <div class="setting-info">
+                <div class="setting-name">Marcus Ash</div>
+                <div class="setting-desc">marcus@microsoft.com</div>
+              </div>
+              <button class="btn btn-ghost" style="height:26px;font-size:11px">Sign Out</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <div class="statusbar-item">
+      <span class="dot"></span>
+      <span id="status-date">Mon Feb 23, 2026</span>
+    </div>
+    <div class="statusbar-item" style="color:var(--maize)">
+      ▲ 23 day streak
+    </div>
+    <div class="statusbar-item">
+      <span id="status-wc" class="mono" style="color:var(--cyan)">412</span>&nbsp;words today
+    </div>
+    <div class="statusbar-spacer"></div>
+    <div class="statusbar-kbd">
+      <span class="kbd">Tab</span> switch panel
+      &nbsp;
+      <span class="kbd">Ctrl</span>+<span class="kbd">N</span> new entry
+      &nbsp;
+      <span class="kbd">Ctrl</span>+<span class="kbd">S</span> save
+      &nbsp;
+      <span class="kbd">/</span> search
+    </div>
+    <div class="statusbar-item" style="color:var(--dim);margin-left:8px">
+      inkwell v0.9.4
+    </div>
+  </div>
+
+</div>
+
+<!-- HEATMAP TOOLTIP -->
+<div class="hm-tooltip" id="hm-tooltip"></div>
+
+<script>
+// ============================================================
+// CLOCK
+// ============================================================
+function updateClock() {
+  const now = new Date();
+  let h = now.getHours(), m = now.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const ms = String(m).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${ms} ${ampm}`;
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ============================================================
+// SCREEN NAVIGATION
+// ============================================================
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-icon').forEach(n => n.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const icon = document.querySelector('[data-screen="' + id + '"]');
+  if (icon) icon.classList.add('active');
+}
+
+// ============================================================
+// BROWSE ENTRY SELECT
+// ============================================================
+function selectBrowseEntry(el) {
+  document.querySelectorAll('.browse-entry').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ============================================================
+// HEATMAP BUILD
+// ============================================================
+(function buildHeatmap() {
+  const levels = [
+    // 7 weeks x 7 days = 49 cells
+    0,1,0,2,0,0,3,
+    1,0,2,1,3,0,4,
+    0,2,1,0,2,1,3,
+    2,1,3,2,1,0,4,
+    0,1,2,3,2,1,3,
+    1,2,1,2,3,0,4,
+    2,1,2,0,1,0,3,
+  ];
+
+  const months = ['Jan','Feb','Mar'];
+  // Rough day labels: last 49 days ending Feb 23
+  const end = new Date(2026, 1, 23);
+  const tooltipDates = [];
+  for (let i = 48; i >= 0; i--) {
+    const d = new Date(end);
+    d.setDate(d.getDate() - i);
+    tooltipDates.push(d.toLocaleDateString('en-US',{month:'short',day:'numeric'}));
+  }
+
+  const wordCounts = [0,287,0,531,0,0,618, 344,0,412,287,531,0,618, 0,344,412,0,531,287,618, 344,412,531,344,287,0,618, 0,287,412,531,344,412,618, 287,412,344,531,618,0,618, 344,287,412,0,412,0,618];
+
+  const grid = document.getElementById('heatmap');
+  const tooltip = document.getElementById('hm-tooltip');
+
+  levels.forEach((lvl, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'hm-cell' + (lvl > 0 ? ' l' + lvl : '');
+
+    cell.addEventListener('mousemove', (e) => {
+      const wc = wordCounts[i];
+      tooltip.textContent = tooltipDates[i] + (wc ? ': ' + wc + ' words' : ': no entry');
+      tooltip.style.opacity = '1';
+      tooltip.style.left = (e.clientX + 12) + 'px';
+      tooltip.style.top  = (e.clientY - 28) + 'px';
+    });
+
+    cell.addEventListener('mouseleave', () => {
+      tooltip.style.opacity = '0';
+    });
+
+    grid.appendChild(cell);
+  });
+})();
+
+// ============================================================
+// KEYBOARD SHORTCUTS (demo)
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'n') { e.preventDefault(); switchScreen('new'); }
+  if (e.key === 'Escape') switchScreen('home');
+});
+</script>
+</body>
+</html>

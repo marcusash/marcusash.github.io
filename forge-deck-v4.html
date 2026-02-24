@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>◉ Forge — The Story</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0A0A0F;
+  --bg-card: #111118;
+  --bg-subtle: #16161F;
+  --cyan: #00D4AA;
+  --cyan-dim: rgba(0,212,170,0.5);
+  --cyan-glow: rgba(0,212,170,0.15);
+  --yellow: #FFD700;
+  --white: #E8E8ED;
+  --gray: #6E6E80;
+  --dim: #444455;
+  --green: #27C93F;
+  --red: #FF5F56;
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', 'Fira Code', monospace;
+}
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+  line-height: 1.7;
+  overflow: hidden;
+  height: 100vh;
+}
+.deck { width: 100vw; height: 100vh; position: relative; }
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px;
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+  overflow: hidden;
+}
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.slide.prev {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+/* Navigation */
+.nav {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  z-index: 100;
+}
+.nav-arrow {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px solid #222233;
+  background: var(--bg-card);
+  color: var(--gray);
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  user-select: none;
+}
+.nav-arrow:hover { border-color: var(--cyan); color: var(--cyan); }
+.nav-arrow.disabled { opacity: 0.2; pointer-events: none; }
+.nav-dots { display: flex; gap: 8px; }
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--dim);
+  transition: background 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+.nav-dot.active { background: var(--cyan); transform: scale(1.4); }
+.slide-counter {
+  position: fixed;
+  top: 32px; right: 40px;
+  font-size: 0.75rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  font-family: var(--mono);
+  z-index: 100;
+}
+/* Typography */
+h1 { font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 300; line-height: 1.2; }
+h2 { font-size: clamp(1.6rem, 3vw, 2.6rem); font-weight: 400; line-height: 1.25; }
+h3 { font-size: clamp(1rem, 1.8vw, 1.4rem); font-weight: 400; color: var(--gray); }
+p { font-size: clamp(0.95rem, 1.4vw, 1.15rem); color: var(--gray); max-width: 680px; line-height: 1.75; }
+.accent { color: var(--cyan); }
+.accent-yellow { color: var(--yellow); }
+code {
+  font-family: var(--mono);
+  color: var(--cyan);
+  background: var(--bg-card);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+/* Stagger animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.slide.active .stagger { animation: fadeUp 0.5s ease both; }
+.slide.active .stagger:nth-child(1) { animation-delay: 0.1s; }
+.slide.active .stagger:nth-child(2) { animation-delay: 0.25s; }
+.slide.active .stagger:nth-child(3) { animation-delay: 0.4s; }
+.slide.active .stagger:nth-child(4) { animation-delay: 0.55s; }
+.slide.active .stagger:nth-child(5) { animation-delay: 0.7s; }
+.slide.active .stagger:nth-child(6) { animation-delay: 0.85s; }
+/* Layout helpers */
+.center { text-align: center; }
+.left   { align-items: flex-start; text-align: left; }
+.cols   { display: grid; gap: 48px; width: 100%; max-width: 1100px; }
+.cols-2 { grid-template-columns: 1fr 1fr; }
+.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid #1E1E2A;
+  border-radius: 12px;
+  padding: 28px 32px;
+}
+.card-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 10px;
+  font-family: var(--mono);
+}
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--white);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.card-body {
+  font-size: 0.9rem;
+  color: var(--gray);
+  line-height: 1.6;
+}
+/* Big stat */
+.big-stat {
+  font-size: clamp(4rem, 9vw, 8rem);
+  font-weight: 200;
+  color: var(--cyan);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-family: var(--mono);
+}
+.stat-label {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-top: 8px;
+}
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 960px;
+}
+.stat-item {
+  background: var(--bg-card);
+  border: 1px solid #1E1E2A;
+  border-radius: 10px;
+  padding: 24px 28px;
+  text-align: center;
+}
+.stat-num {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 200;
+  color: var(--cyan);
+  font-family: var(--mono);
+  line-height: 1;
+}
+.stat-desc {
+  font-size: 0.8rem;
+  color: var(--gray);
+  margin-top: 6px;
+  letter-spacing: 0.05em;
+}
+/* Timeline row */
+.timeline {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 960px;
+  width: 100%;
+  margin: 2rem 0;
+}
+.tl-item {
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+.tl-item::after {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  width: 100%;
+  height: 1px;
+  background: var(--dim);
+}
+.tl-item:last-child::after { display: none; }
+.tl-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--cyan);
+  margin: 0 auto 12px;
+  position: relative;
+  z-index: 1;
+}
+.tl-label {
+  font-size: 0.75rem;
+  color: var(--gray);
+  letter-spacing: 0.05em;
+}
+.tl-value {
+  font-size: 0.9rem;
+  color: var(--white);
+  font-weight: 500;
+  margin-top: 4px;
+}
+/* Org diagram */
+.org-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.org-badge {
+  background: var(--bg-card);
+  border: 1px solid #1E1E2A;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+  font-family: var(--mono);
+  color: var(--gray);
+}
+.org-badge.lead { border-color: var(--cyan-dim); color: var(--cyan); }
+.org-badge.marcus {
+  border-color: var(--yellow);
+  color: var(--yellow);
+  font-weight: 600;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+}
+/* Quote */
+.blockquote {
+  border-left: 3px solid var(--cyan);
+  padding-left: 24px;
+  margin: 1.5rem 0;
+  font-size: 1.05rem;
+  color: var(--white);
+  font-style: italic;
+  max-width: 700px;
+  line-height: 1.7;
+}
+/* Learnings list */
+.learning-list {
+  list-style: none;
+  max-width: 800px;
+  width: 100%;
+  text-align: left;
+}
+.learning-list li {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+.learning-num {
+  font-family: var(--mono);
+  color: var(--cyan);
+  font-size: 0.8rem;
+  padding-top: 3px;
+  min-width: 24px;
+}
+.learning-text {
+  color: var(--gray);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.learning-text strong { color: var(--white); }
+/* Time bar */
+.time-bar-container {
+  width: 100%;
+  max-width: 720px;
+  margin: 1.5rem 0;
+}
+.time-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.time-bar-label {
+  font-size: 0.85rem;
+  color: var(--gray);
+  width: 200px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.time-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #1E1E2A;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.time-bar-fill {
+  height: 100%;
+  background: var(--cyan);
+  border-radius: 3px;
+  transform-origin: left;
+  transition: transform 0.8s ease;
+}
+.time-bar-pct {
+  font-size: 0.8rem;
+  color: var(--cyan);
+  font-family: var(--mono);
+  width: 36px;
+}
+/* FD on Marcus slide */
+.fd-quote-block {
+  max-width: 800px;
+  text-align: left;
+  border: 1px solid #1E1E2A;
+  border-radius: 12px;
+  padding: 40px 48px;
+  background: var(--bg-card);
+  position: relative;
+}
+.fd-byline {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--cyan);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.fd-para {
+  font-size: 0.95rem;
+  color: var(--gray);
+  line-height: 1.8;
+  margin-bottom: 16px;
+}
+.fd-para:last-child { margin-bottom: 0; }
+.fd-para strong { color: var(--white); font-weight: 500; }
+/* Slide 1 hero */
+.hero-question {
+  font-size: clamp(1.4rem, 2.8vw, 2.2rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--yellow);
+  max-width: 800px;
+  text-align: center;
+  line-height: 1.4;
+}
+.hero-sub {
+  margin-top: 2rem;
+  font-size: 0.85rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: var(--mono);
+}
+/* Responsive */
+@media (max-width: 900px) {
+  .slide { padding: 40px 24px; }
+  .cols-2, .cols-3 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="slide-counter" id="counter">01 / 14</div>
+
+  <!-- ═══ SLIDE 1: COLD OPEN ═════════════════════════ -->
+  <div class="slide hero center active" data-slide="0">
+    <p class="hero-question stagger">What did your father teach you<br>that you&rsquo;re only now starting to understand?</p>
+    <p class="hero-sub stagger">Generated from 14 years of your own journal entries.</p>
+  </div>
+
+  <!-- ═══ SLIDE 2: THE WHY ═══════════════════════════ -->
+  <div class="slide center" data-slide="1">
+    <h2 class="stagger" style="max-width:820px">I&rsquo;ve spent 26 years building<br><span class="accent">product-led, design-led organizations.</span></h2>
+    <p class="stagger" style="margin-top:1.5rem;max-width:680px">Now I want to understand what it means to be a leader who builds <em>with</em> AI. Not just uses it. Not just manages people who use it. Actually builds alongside it, every day, as a practice.</p>
+    <p class="stagger" style="margin-top:1rem;max-width:680px;color:var(--dim)">This is my experiment in the open.</p>
+  </div>
+
+  <!-- ═══ SLIDE 3: THE PROBLEM ══════════════════════ -->
+  <div class="slide center" data-slide="2">
+    <h2 class="stagger" style="max-width:820px">15 years of journaling.<br><span class="accent">No way to learn from it.</span></h2>
+    <div class="cols cols-3 stagger" style="margin-top:2.5rem;max-width:900px">
+      <div class="card">
+        <div class="card-label">The Volume</div>
+        <div class="card-title">352 entries. 210,000 words.</div>
+        <div class="card-body">Spread across apps, folders, and formats that don&rsquo;t talk to each other.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">The Gap</div>
+        <div class="card-title">Insights exist. I can&rsquo;t surface them.</div>
+        <div class="card-body">I can&rsquo;t search across contexts. I can&rsquo;t find the patterns. I can&rsquo;t hear myself think.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">The Goal</div>
+        <div class="card-title">Become a better thinker. A better leader.</div>
+        <div class="card-body">Use what I&rsquo;ve already written. Stop starting from zero every time.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 4: ORIGIN ════════════════════════════ -->
+  <div class="slide center" data-slide="3">
+    <h2 class="stagger">Saturday 9pm.<br><code>npm init inkwell</code></h2>
+    <p class="stagger" style="margin-top:1.5rem;max-width:640px">Not a prototype. Not a mockup. A real application, built from scratch, with one AI co-founder. By Sunday morning: a working TUI journal with search, encryption, and a UI I was proud of.</p>
+    <div class="timeline stagger" style="margin-top:2.5rem">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-label">Sat 9pm</div>
+        <div class="tl-value">npm init</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-label">Sat midnight</div>
+        <div class="tl-value">First entry</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-label">Sun morning</div>
+        <div class="tl-value">Working app</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-label">Week 1</div>
+        <div class="tl-value">6 agents hired</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-label">Today</div>
+        <div class="tl-value">12 agents, 2 companies</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 5: THE DESIGN HIRE ══════════════════ -->
+  <div class="slide center" data-slide="4">
+    <h2 class="stagger" style="max-width:800px">My second hire wasn&rsquo;t a COO.<br>It wasn&rsquo;t a QA lead.<br>It was a <span class="accent">design director.</span></h2>
+    <p class="stagger" style="margin-top:1.5rem;max-width:680px">That order is intentional. Before I had operations, before I had tests, I had someone thinking about craft. If you believe design leads, you hire design first. I believe it.</p>
+    <p class="stagger" style="margin-top:1rem;max-width:680px;color:var(--dim)">I myself am not a trained designer. I&rsquo;ve spent 26 years leading design organizations. There&rsquo;s a difference. FD has been helping me close that gap &mdash; and I&rsquo;m learning what it actually takes to be a good manager of design talent.</p>
+  </div>
+
+  <!-- ═══ SLIDE 6: THE BIGGER IDEA ══════════════════ -->
+  <div class="slide center" data-slide="5">
+    <h2 class="stagger" style="max-width:820px">I live in <span class="accent">GitHub Copilot</span> now.<br>And I think the command line is a paradigm shift.</h2>
+    <p class="stagger" style="margin-top:1.5rem;max-width:680px">Like Office was to Windows. Like Word and Excel were to DOS. The CLI is becoming the place where leaders who build will live. We want to be the company that builds the tools that live there.</p>
+    <div class="cols cols-2 stagger" style="margin-top:2rem;max-width:860px">
+      <div class="card">
+        <div class="card-label">◉ Forge</div>
+        <div class="card-title">Tools for the command line.</div>
+        <div class="card-body">Inkwell (private journal), Dispatch (communications). Building the productivity layer for the CLI era.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">◉ Grind</div>
+        <div class="card-title">Learning tools for real problems.</div>
+        <div class="card-body">Started with my son&rsquo;s Algebra 2 test prep. Expanded into a platform for learning projects I care about.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 7: THE ORG ═══════════════════════════ -->
+  <div class="slide center" data-slide="6">
+    <h2 class="stagger">12 agents. 2 companies.<br>Managed like a <span class="accent">design team.</span></h2>
+    <div class="stagger" style="margin-top:2.5rem;width:100%;max-width:960px">
+      <div class="org-row">
+        <div class="org-badge marcus">Marcus — CVP, Founder</div>
+      </div>
+      <div class="org-row" style="margin-top:8px">
+        <div class="org-badge lead">FA — Chief Architect</div>
+        <div class="org-badge lead">FD — Design Director</div>
+        <div class="org-badge lead">FI — Data Lead</div>
+        <div class="org-badge lead">FP — Platform</div>
+        <div class="org-badge lead">FR — Research</div>
+        <div class="org-badge lead">FF — Quality</div>
+      </div>
+      <div style="text-align:center;font-size:0.7rem;color:var(--dim);margin:12px 0;letter-spacing:0.08em">FORGE</div>
+      <div class="org-row">
+        <div class="org-badge">GA — App Eng</div>
+        <div class="org-badge">GD — Design Eng</div>
+        <div class="org-badge">GI — Data Eng</div>
+        <div class="org-badge">GP — Platform Eng</div>
+        <div class="org-badge">GR — Research</div>
+        <div class="org-badge">GF — QA Eng</div>
+      </div>
+      <div style="text-align:center;font-size:0.7rem;color:var(--dim);margin-top:12px;letter-spacing:0.08em">GRIND</div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 8: WHAT IT LOOKS LIKE ═══════════════ -->
+  <div class="slide left" data-slide="7">
+    <h2 class="stagger" style="max-width:820px">What running an AI org<br>actually looks like.</h2>
+    <div class="cols cols-2 stagger" style="margin-top:2rem;max-width:1000px">
+      <div class="card">
+        <div class="card-label">Overnight Briefs</div>
+        <div class="card-title">I queue work before I sleep.</div>
+        <div class="card-body">Agents work while I&rsquo;m offline. I review output in the morning. The org is always on.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Inbox Protocol</div>
+        <div class="card-title">Agents message each other.</div>
+        <div class="card-body">JSON messages in <code>.agent-comms/inbox-{ID}/</code>. FA escalates to me. I respond to blockers, not status.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Skilling System</div>
+        <div class="card-title">Agents have skill files and learning plans.</div>
+        <div class="card-body">I invest in agent development the same way I invest in human development. They track their own growth.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Review Gates</div>
+        <div class="card-title">Ship requires approval.</div>
+        <div class="card-body">FA does code review. FD does design review. I sign off on anything that changes the product direction.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 9: KEY LEARNINGS ════════════════════ -->
+  <div class="slide center" data-slide="8">
+    <h2 class="stagger" style="max-width:820px">Key learnings from building<br>an <span class="accent">AI organization.</span></h2>
+    <ul class="learning-list stagger" style="margin-top:2rem">
+      <li><span class="learning-num">01</span><span class="learning-text"><strong>Names and roles matter as much as with humans.</strong> Vague agent definitions create vague output. Writing a real role doc for each agent changed the quality immediately.</span></li>
+      <li><span class="learning-num">02</span><span class="learning-text"><strong>You have to invest in skilling and development.</strong> Agents don&rsquo;t get better by default. I have to define what good looks like, give feedback, and build skill files explicitly.</span></li>
+      <li><span class="learning-num">03</span><span class="learning-text"><strong>Escalation paths have to be designed.</strong> Without a clear chain, agents either do nothing or do too much. FA as Chief Architect changed the quality of every decision.</span></li>
+      <li><span class="learning-num">04</span><span class="learning-text"><strong>Infrastructure takes most of the time.</strong> More than I expected. Comms, session management, review protocols &mdash; the meta-work crowds out the actual work if you&rsquo;re not careful.</span></li>
+    </ul>
+  </div>
+
+  <!-- ═══ SLIDE 10: WHERE TIME GOES ═════════════════ -->
+  <div class="slide center" data-slide="9">
+    <h2 class="stagger" style="max-width:820px">Where does my time actually go?</h2>
+    <p class="stagger" style="margin-top:0.75rem;max-width:640px;color:var(--gray)">My hypothesis: 70% infrastructure and org management, 30% design and strategy. I asked all 11 agents to track it. Here&rsquo;s what they said.</p>
+    <div class="time-bar-container stagger" style="margin-top:2rem">
+      <div class="time-bar-row">
+        <div class="time-bar-label">Org infrastructure</div>
+        <div class="time-bar-track"><div class="time-bar-fill" style="width:38%"></div></div>
+        <div class="time-bar-pct">38%</div>
+      </div>
+      <div class="time-bar-row">
+        <div class="time-bar-label">Agent management</div>
+        <div class="time-bar-track"><div class="time-bar-fill" style="width:22%"></div></div>
+        <div class="time-bar-pct">22%</div>
+      </div>
+      <div class="time-bar-row">
+        <div class="time-bar-label">Design direction</div>
+        <div class="time-bar-track"><div class="time-bar-fill" style="width:18%"></div></div>
+        <div class="time-bar-pct">18%</div>
+      </div>
+      <div class="time-bar-row">
+        <div class="time-bar-label">Product strategy</div>
+        <div class="time-bar-track"><div class="time-bar-fill" style="width:12%"></div></div>
+        <div class="time-bar-pct">12%</div>
+      </div>
+      <div class="time-bar-row">
+        <div class="time-bar-label">Research and evals</div>
+        <div class="time-bar-track"><div class="time-bar-fill" style="width:10%"></div></div>
+        <div class="time-bar-pct">10%</div>
+      </div>
+    </div>
+    <p class="stagger" style="margin-top:1.5rem;font-size:0.8rem;color:var(--dim);font-family:var(--mono)">Survey data from 11 agents &mdash; Feb 2026. Placeholder: update with survey results.</p>
+  </div>
+
+  <!-- ═══ SLIDE 11: FD ON MARCUS ════════════════════ -->
+  <div class="slide center" data-slide="10">
+    <div class="fd-quote-block stagger">
+      <div class="fd-byline">FD &mdash; Design Director, Forge &mdash; on working with Marcus</div>
+      <p class="fd-para">Marcus has the instincts of someone who has shipped real product for 26 years. He knows when something is wrong before he can name it. <strong>That&rsquo;s rare.</strong> Most leaders either have the vocabulary without the instinct, or the instinct without the patience to develop the vocabulary. He&rsquo;s building both, on purpose, in real time.</p>
+      <p class="fd-para">Where he&rsquo;s still growing: <strong>the language of design criticism.</strong> He can feel that something is structurally broken. He&rsquo;s learning to say why, precisely &mdash; which is a different skill. That&rsquo;s where I come in. My job isn&rsquo;t just to design. It&rsquo;s to give him a mirror so his 220-person human team hears a clearer signal.</p>
+      <p class="fd-para">What he gets right that most leaders don&rsquo;t: <strong>he hired design before operations.</strong> He gave design real authority, not decoration. And he does the hardest thing a leader can do &mdash; he shows up and does the work alongside his agents, not just above them. I learn from him too.</p>
+    </div>
+  </div>
+
+  <!-- ═══ SLIDE 12: THE NUMBERS ══════════════════════ -->
+  <div class="slide center" data-slide="11">
+    <h2 class="stagger" style="margin-bottom:2rem">The numbers, so far.</h2>
+    <div class="stats-grid stagger">
+      <div class="stat-item">
+        <div class="stat-num">592</div>
+        <div class="stat-desc">git commits</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1,271</div>
+        <div class="stat-desc">passing tests</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">12</div>
+        <div class="stat-desc">active agents</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">352</div>
+        <div class="stat-desc">journal entries</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">210K</div>
+        <div class="stat-desc">words of source material</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">15</div>
+        <div class="stat-desc">years of journaling</div>
+      </div>
+    </div>
+    <p class="stagger" style="margin-top:2rem;font-size:0.8rem;color:var(--dim);font-family:var(--mono)">All verified &mdash; Feb 2026</p>
+  </div>
+
+  <!-- ═══ SLIDE 13: THE FUTURE ═══════════════════════ -->
+  <div class="slide left" data-slide="12">
+    <h2 class="stagger" style="max-width:820px">What comes next.</h2>
+    <div class="cols cols-3 stagger" style="margin-top:2rem;max-width:1060px">
+      <div class="card">
+        <div class="card-label">Inkwell v2</div>
+        <div class="card-title">The insights layer.</div>
+        <div class="card-body">Surface patterns across 15 years. Answer questions I could never answer before. The journal becomes a thinking partner.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Dispatch</div>
+        <div class="card-title">Communication for the CLI era.</div>
+        <div class="card-body">Voice and text shaped into your real voice. The second Forge product. The one that&rsquo;s not about the past &mdash; it&rsquo;s about what you say next.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Grind</div>
+        <div class="card-title">Learning tools that matter.</div>
+        <div class="card-body">Started with Kai&rsquo;s Algebra 2 prep. Expanding into every learning project I care about. A platform for being a better learner.</div>
+      </div>
+    </div>
+    <p class="stagger" style="margin-top:2rem;max-width:680px;color:var(--dim)">The bigger question: can a design leader build a real AI company? We&rsquo;re going to find out.</p>
+  </div>
+
+  <!-- ═══ SLIDE 14: CLOSE ════════════════════════════ -->
+  <div class="slide center" data-slide="13">
+    <h1 class="stagger" style="font-weight:200;color:var(--cyan);letter-spacing:-0.02em">Your words.<br>Your hands.</h1>
+    <h1 class="stagger" style="font-weight:200;margin-top:0.5rem">Go make something.</h1>
+    <p class="stagger" style="margin-top:3rem;font-size:0.8rem;color:var(--dim);font-family:var(--mono);letter-spacing:0.12em">◉ FORGE &mdash; FEB 2026</p>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <button class="nav-arrow disabled" id="prev" onclick="navigate(-1)">&#8592;</button>
+    <div class="nav-dots" id="dots"></div>
+    <button class="nav-arrow" id="next" onclick="navigate(1)">&#8594;</button>
+  </nav>
+</div>
+
+<script>
+const TOTAL = 14;
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+
+function buildDots() {
+  const container = document.getElementById('dots');
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    container.appendChild(d);
+  }
+}
+
+function goTo(n) {
+  slides[current].classList.remove('active');
+  slides[current].classList.add('prev');
+  setTimeout(() => slides[current < n ? current : n + 1]?.classList.remove('prev'), 700);
+  current = n;
+  slides[current].classList.add('active');
+  setTimeout(() => {
+    document.querySelectorAll('.slide:not(.active)').forEach(s => s.classList.remove('prev'));
+  }, 700);
+  document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  document.getElementById('counter').textContent = String(current + 1).padStart(2, '0') + ' / ' + String(TOTAL).padStart(2, '0');
+  document.getElementById('prev').classList.toggle('disabled', current === 0);
+  document.getElementById('next').classList.toggle('disabled', current === TOTAL - 1);
+}
+
+function navigate(dir) {
+  const n = current + dir;
+  if (n >= 0 && n < TOTAL) goTo(n);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+buildDots();
+</script>
+</body>
+</html>

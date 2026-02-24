@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>◉ Forge</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0A0A0F;
+  --bg-card: #111118;
+  --bg-subtle: #16161F;
+  --cyan: #00D4AA;
+  --cyan-dim: rgba(0,212,170,0.5);
+  --cyan-glow: rgba(0,212,170,0.15);
+  --yellow: #FFD700;
+  --white: #E8E8ED;
+  --gray: #6E6E80;
+  --dim: #444455;
+  --green: #27C93F;
+  --green-bright: #39FF6B;
+  --red: #FF5F56;
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', 'Fira Code', monospace;
+}
+
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+  line-height: 1.7;
+  overflow: hidden;
+  height: 100vh;
+  cursor: none;
+}
+
+/* ── Slide Container ─────────────────────────────── */
+.deck { width: 100vw; height: 100vh; position: relative; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px;
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* ── Navigation ──────────────────────────────────── */
+.nav {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  z-index: 100;
+}
+
+.nav-arrow {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: 1px solid #222233;
+  background: var(--bg-card);
+  color: var(--gray);
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  user-select: none;
+}
+.nav-arrow:hover { border-color: var(--cyan); color: var(--cyan); cursor: pointer; }
+.nav-arrow.disabled { opacity: 0.2; pointer-events: none; }
+
+.nav-dots { display: flex; gap: 8px; }
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--dim);
+  transition: background 0.3s, transform 0.3s;
+  cursor: pointer;
+}
+.nav-dot.active { background: var(--cyan); transform: scale(1.4); }
+
+.slide-counter {
+  position: fixed;
+  top: 32px; right: 40px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--dim);
+  z-index: 100;
+  letter-spacing: 0.1em;
+}
+
+/* ── Progress bar ────────────────────────────────── */
+.progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: var(--cyan);
+  z-index: 200;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 12px var(--cyan-dim);
+}
+
+/* ── Typography ──────────────────────────────────── */
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.025em; }
+h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.08; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 3rem); line-height: 1.15; }
+h3 { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.3; }
+.accent { color: var(--cyan); }
+.dim-text { color: var(--gray); }
+.label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  opacity: 0.6;
+  margin-bottom: 1.5rem;
+}
+
+p { color: var(--gray); font-size: 1.125rem; max-width: 640px; line-height: 1.8; }
+
+/* ── Stagger animations ─────────────────────────── */
+.slide.active .stagger { animation: fadeUp 0.5s ease both; }
+.slide.active .stagger:nth-child(1) { animation-delay: 0.1s; }
+.slide.active .stagger:nth-child(2) { animation-delay: 0.25s; }
+.slide.active .stagger:nth-child(3) { animation-delay: 0.4s; }
+.slide.active .stagger:nth-child(4) { animation-delay: 0.55s; }
+.slide.active .stagger:nth-child(5) { animation-delay: 0.7s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hero ────────────────────────────────────────── */
+.hero { text-align: center; }
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 45%, var(--cyan-glow) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 30% at 25% 65%, rgba(0,212,170,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-mark {
+  font-size: 6rem;
+  color: var(--cyan);
+  animation: breathe 4s ease-in-out infinite;
+  text-shadow: 0 0 80px var(--cyan-dim), 0 0 160px var(--cyan-glow);
+  position: relative;
+  z-index: 1;
+  margin-bottom: 2.5rem;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+.hero h1 { position: relative; z-index: 1; margin-bottom: 1.5rem; }
+
+/* ── Terminal ────────────────────────────────────── */
+.terminal {
+  background: #0D0D14;
+  border: 1px solid #1E1E2A;
+  border-radius: 0;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  width: 100%;
+  max-width: 780px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 1px rgba(255,255,255,0.05);
+}
+.terminal-bar {
+  background: #1A1A24;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1E1E2A;
+}
+.terminal-bar .tab {
+  display: flex; align-items: center; gap: 8px;
+  background: #0D0D14;
+  padding: 5px 14px;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: -1px;
+  border: 1px solid #1E1E2A;
+  border-bottom: 1px solid #0D0D14;
+}
+.terminal-bar .tab-icon { color: var(--cyan); font-size: 0.7rem; }
+.terminal-bar .tab-title { color: var(--gray); font-size: 0.72rem; }
+.terminal-bar .win-controls { display: flex; gap: 0; }
+.terminal-bar .win-btn {
+  width: 46px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray); font-size: 0.65rem;
+  font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets', sans-serif;
+}
+.terminal-bar .win-btn svg { width: 10px; height: 10px; stroke: var(--gray); stroke-width: 1.5; fill: none; }
+
+.terminal-body { padding: 20px 24px; }
+.t-line { white-space: pre; min-height: 1.55em; }
+.t-cyan { color: var(--cyan); }
+.t-cyan-b { color: var(--cyan); font-weight: bold; }
+.t-yellow { color: var(--yellow); }
+.t-green { color: var(--green); }
+.t-green-b { color: var(--green-bright); font-weight: bold; }
+.t-dim { color: var(--dim); }
+.t-gray { color: var(--gray); }
+.t-white { color: var(--white); }
+.t-white-b { color: var(--white); font-weight: bold; }
+.t-red { color: var(--red); }
+
+/* ── Layout ──────────────────────────────────────── */
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; width: 100%; max-width: 1100px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; width: 100%; max-width: 1100px; }
+@media (max-width: 1024px) { .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+.center { text-align: center; display: flex; flex-direction: column; align-items: center; }
+
+/* ── Cards ───────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid #1E1E2A;
+  border-radius: 14px;
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.3s, transform 0.25s;
+}
+.card:hover { border-color: var(--cyan-dim); transform: translateY(-3px); }
+.card .icon { font-size: 1.8rem; margin-bottom: 1rem; display: block; }
+.card h3 { color: var(--white); margin-bottom: 0.5rem; }
+.card p { color: var(--gray); font-size: 0.92rem; max-width: none; }
+.card .card-label {
+  margin-top: 0.75rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--cyan);
+}
+
+/* ── Stats ───────────────────────────────────────── */
+.stat { text-align: center; padding: 20px 12px; }
+.stat-num { font-size: clamp(2.5rem, 4vw, 3.8rem); font-weight: 700; color: var(--cyan); line-height: 1; }
+.stat-label { font-size: 0.8rem; color: var(--dim); margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* ── Quote block ─────────────────────────────────── */
+.quote {
+  border-left: 3px solid var(--cyan);
+  padding: 1.25rem 1.75rem;
+  background: var(--bg-card);
+  border-radius: 0 10px 10px 0;
+  max-width: 700px;
+}
+.quote p { color: var(--white); font-style: italic; font-size: 1.15rem; line-height: 1.75; max-width: none; }
+.quote .attr { color: var(--dim); font-style: normal; font-size: 0.8rem; margin-top: 0.6rem; }
+
+/* ── Closing ─────────────────────────────────────── */
+.closing .hero-mark { font-size: 3.5rem; margin-bottom: 2rem; }
+.closing h2 { margin-bottom: 1rem; line-height: 1.25; }
+.closing .tagline {
+  font-family: var(--mono);
+  color: var(--dim);
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  margin-top: 3rem;
+}
+.closing .author { color: var(--gray); font-size: 0.95rem; margin-top: 1.5rem; }
+
+/* ── Big number slide ────────────────────────────── */
+.big-num {
+  font-size: clamp(5rem, 12vw, 10rem);
+  font-weight: 700;
+  color: var(--cyan);
+  line-height: 1;
+  font-family: var(--font);
+}
+.big-label {
+  font-size: 1.3rem;
+  color: var(--gray);
+  margin-top: 1rem;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .slide { padding: 40px 24px; }
+  .terminal { font-size: 0.7rem; }
+  .nav { bottom: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+
+<div class="deck" id="deck" role="region" aria-label="Forge pitch deck">
+
+<!-- ═══════ SLIDE 1: COLD OPEN ═══════════════════════ -->
+<div class="slide hero active" data-slide="0">
+  <div class="hero-mark stagger">◉</div>
+  <h1 class="stagger" style="max-width:800px;font-style:italic;font-weight:400;color:var(--yellow);">What did your father teach you that you're only now starting to understand?</h1>
+  <p class="stagger" style="margin-top:3rem;font-family:var(--mono);font-size:0.85rem;color:var(--dim);">Generated from 14 years of your own journal entries.</p>
+  <!-- NOTES: Don't explain. Let this sit 3 seconds. The room goes quiet. That's the product. -->
+</div>
+
+<!-- ═══════ SLIDE 2: THE ANXIETY ═════════════════════ -->
+<div class="slide center" data-slide="1">
+  <div class="label stagger">The Gap</div>
+  <h2 class="stagger" style="max-width:800px">Nobody's anxious about the technology.</h2>
+  <h2 class="stagger" style="max-width:800px;margin-top:1rem;color:var(--gray);font-weight:400">They're anxious about <span class="accent">themselves</span>.</h2>
+  <!-- NOTES: "Everyone's talking about what agents will do. Nobody's worried about the models. They're worried about whether the instincts they built over decades still matter. I manage 220 designers. I watch this every day." -->
+</div>
+
+<!-- ═══════ SLIDE 3: THREE CIRCLES ═══════════════════ -->
+<div class="slide center" data-slide="2">
+  <div class="label stagger">The System</div>
+  <h2 class="stagger" style="max-width:800px">The <span class="accent">human side</span> of the AI era.</h2>
+  <div class="grid-3 stagger" style="max-width:1000px;margin-top:3rem;">
+    <div class="card"><span class="icon">🪶</span><h3>Reflect</h3><p>Private daily writing powered by your own history.</p><div class="card-label">◉ Inkwell</div></div>
+    <div class="card"><span class="icon">📡</span><h3>Communicate</h3><p>Voice and text shaped into your real voice.</p><div class="card-label">◉ Dispatch</div></div>
+    <div class="card"><span class="icon">⚡</span><h3>Command</h3><p>One terminal. Every agent. Type and it routes.</p><div class="card-label">◉ Forge</div></div>
+  </div>
+  <!-- NOTES: "Three concentric circles. Reflect, communicate, command. We started with the innermost circle. The journal. Because that's where everything begins: your own thinking." -->
+</div>
+
+<!-- ═══════ SLIDE 4: THE MOMENT ══════════════════════ -->
+<div class="slide center" data-slide="3">
+  <div class="label stagger">Origin</div>
+  <h2 class="stagger" style="max-width:800px">Saturday 9pm.<br><code style="color:var(--cyan);background:var(--bg-card);padding:2px 10px;border-radius:4px;font-family:var(--mono);font-size:0.7em">npm init</code></h2>
+  <h2 class="stagger" style="max-width:800px;margin-top:1.5rem;color:var(--gray);font-weight:400">Sunday morning: working app.</h2>
+  <!-- NOTES: "I opened a terminal and typed npm init. I didn't write the code. I talked to 6 AI agents the way I talk to my design team. Clear ownership. Direct feedback. No meetings. By morning it worked." -->
+</div>
+
+<!-- ═══════ SLIDE 5: THE APP ═════════════════════════ -->
+<div class="slide center" data-slide="4">
+  <div class="label stagger">Inkwell</div>
+  <h2 class="stagger" style="margin-bottom:1.5rem">Built in a terminal.<br>Designed like it's not.</h2>
+  <div class="terminal stagger">
+    <div class="terminal-bar"><div class="tab"><span class="tab-icon">◉</span><span class="tab-title">inkwell</span></div><div class="win-controls"><div class="win-btn"><svg viewBox="0 0 10 10"><line x1="1" y1="5" x2="9" y2="5"/></svg></div><div class="win-btn"><svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="0.5"/></svg></div><div class="win-btn win-btn-close"><svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></div></div></div>
+    <div class="terminal-body">
+<div class="t-line"><span class="t-cyan-b">◉ Inkwell</span> <span class="t-dim">— private daily writing</span></div>
+<div class="t-line"></div>
+<div class="t-line"> 📅 <span class="t-white-b">Wednesday, February 19, 2026</span></div>
+<div class="t-line">    <span class="t-dim">░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░</span> <span class="t-green">▓</span> <span class="t-green-b">█</span> <span class="t-dim">· · · · · · · · · · ·</span></div>
+<div class="t-line"></div>
+<div class="t-line"> <span class="t-dim">TODAY</span>              <span class="t-dim">ALL TIME</span></div>
+<div class="t-line"> <span class="t-green-b">412/350</span><span class="t-white"> words</span> <span class="t-green">✅</span>   <span class="t-white-b">352</span> entries</div>
+<div class="t-line"> <span class="t-dim">8:42 elapsed</span>       <span class="t-white-b">210,418</span> words</div>
+<div class="t-line">                    <span class="t-white-b">16</span> day best streak</div>
+<div class="t-line"></div>
+<div class="t-line"> 🔥 <span class="t-white-b">14</span> day streak</div>
+<div class="t-line"></div>
+<div class="t-line"> <span class="t-dim">BADGES</span> 🏕️ <span class="t-dim">Bonfire</span>  📚 <span class="t-dim">Novel</span>  🕯️ <span class="t-dim">First Light</span></div>
+<div class="t-line"></div>
+<div class="t-line"> <span class="t-cyan">❯</span> 🪶 Write</div>
+<div class="t-line">   📖 Browse entries</div>
+<div class="t-line">   🔍 Search</div>
+<div class="t-line">   📊 Stats</div>
+<div class="t-line">   ⚙️ Settings</div>
+<div class="t-line">   👋 Exit</div>
+    </div>
+  </div>
+  <!-- NOTES: Don't narrate the screen. Let them look. 19 design specs written before any code. Choreographed animations. Every character placed on purpose. That's what design leadership looks like in a terminal. -->
+</div>
+
+<!-- ═══════ SLIDE 6: THE SOUL ════════════════════════ -->
+<div class="slide center" data-slide="5">
+  <div class="label stagger">The Soul</div>
+  <h2 class="stagger" style="max-width:800px;margin-bottom:2.5rem">The best part already knows you.</h2>
+  <div class="quote stagger">
+    <p>"In 2013 you wrote: Be the first person in the office and the last one to leave. You don't believe that anymore. What do you believe about work ethic now?"</p>
+    <div class="attr">Personal prompt, mined from 2013 journal entry</div>
+  </div>
+  <div class="quote stagger" style="margin-top:1.5rem;">
+    <p>"Name someone you appreciate but haven't told recently. Write it like you're telling them directly."</p>
+    <div class="attr">Curated prompt, Relationships</div>
+  </div>
+  <!-- NOTES: Read the first prompt out loud. Slowly. "That's from my own journal. 2013. The app found it and turned it into a question I hadn't thought to ask myself. 939 personal prompts. One per day. Never repeated." -->
+</div>
+
+<!-- ═══════ SLIDE 7: THE TEAM ════════════════════════ -->
+<div class="slide center" data-slide="6">
+  <div class="label stagger">The Team</div>
+  <h2 class="stagger" style="max-width:800px">12 AI agents.<br>Managed like a <span class="accent">design team</span>.</h2>
+  <p class="stagger" style="margin-top:2rem;color:var(--dim);font-family:var(--mono);font-size:0.9rem">Clear ownership. Shared status board. Overnight briefs. Direct feedback. No meetings.</p>
+  <!-- NOTES: "I manage these agents the same way I manage my 220 designers. Clear file ownership. No ambiguity. A blocker protocol. An overnight brief so detailed the team ships while I sleep. It works. Not because the agents are smart. Because the structure is right." -->
+</div>
+
+<!-- ═══════ SLIDE 8: 670 TESTS ═══════════════════════ -->
+<div class="slide center" data-slide="7">
+  <div class="big-num stagger">670</div>
+  <div class="big-label stagger">tests passing</div>
+  <p class="stagger" style="margin-top:2rem;font-family:var(--mono);font-size:0.85rem;color:var(--dim)">Zero words lost.</p>
+  <!-- NOTES: "670 automated tests. 380 commits. 11,000 lines of TypeScript I didn't write but reviewed every one. And zero words lost. That's the number I care about most. This is a journal. You don't lose people's writing." -->
+</div>
+
+<!-- ═══════ SLIDE 9: WHAT I LEARNED ══════════════════ -->
+<div class="slide center" data-slide="8">
+  <div class="label stagger">What I Learned</div>
+  <h2 class="stagger" style="margin-bottom:3rem;max-width:800px">Three things.</h2>
+  <div class="grid-3 stagger" style="max-width:1000px;">
+    <div class="card" style="text-align:left;"><span class="icon">⚡</span><h3>Speed changes everything.</h3><p>Decision to test in 10 seconds. First screen rendering in hours. Like snowboarding: grinding, falling, then you see the potential.</p></div>
+    <div class="card" style="text-align:left;"><span class="icon">🎯</span><h3>Design taste accelerates.</h3><p>Every instinct about quality, about what feels right, about when something is almost there: it all works. Just faster.</p></div>
+    <div class="card" style="text-align:left;"><span class="icon">🔓</span><h3>Permission is the barrier.</h3><p>The tools are ready. The thing stopping most of us is giving ourselves permission to build instead of review.</p></div>
+  </div>
+  <!-- NOTES: Read headlines only. Let the room read the cards. The third one is the call to action. "The tools have been ready. We haven't." -->
+</div>
+
+<!-- ═══════ SLIDE 10: WHAT'S NEXT ════════════════════ -->
+<div class="slide center" data-slide="9">
+  <div class="label stagger">Building</div>
+  <h2 class="stagger" style="max-width:800px;margin-bottom:2.5rem">The other two circles.</h2>
+  <div class="grid-3 stagger" style="max-width:1000px;">
+    <div class="card"><span class="icon">📡</span><h3>Dispatch</h3><p>Record your voice or type bullets. AI shapes it into messages in your real voice. 960-line design spec. Building now.</p><div class="card-label">◉ Dispatch</div></div>
+    <div class="card"><span class="icon">⚡</span><h3>Forge Command</h3><p>One terminal view of every agent. What shipped overnight. What needs you. Type a command, it routes.</p><div class="card-label">◉ Forge</div></div>
+    <div class="card"><span class="icon">📐</span><h3>Grind</h3><p>Personalized learning for my son's Algebra II. Same agents, same craft, different mission. A dad and his kid and some math.</p><div class="card-label">◉ Grind</div></div>
+  </div>
+  <!-- NOTES: Quick. "Dispatch is next. Forge ties it together. Grind is a separate story. Same system, different mission." -->
+</div>
+
+<!-- ═══════ SLIDE 11: THE INVITATION ═════════════════ -->
+<div class="slide center" data-slide="10">
+  <h2 class="stagger" style="max-width:750px;line-height:1.35;">The tools are ready.<br><br>Give yourself <span class="accent">permission to build</span>.</h2>
+  <!-- NOTES: "How many of you have an idea for something that doesn't exist? Something you sketched on a napkin, or described to an engineer, but never built yourself? You can build it now. Tonight. Your taste is the skill. The tools just make it move faster." -->
+</div>
+
+<!-- ═══════ SLIDE 12: CLOSE ══════════════════════════ -->
+
+<!-- DISPATCH DEMO SLIDE -->
+<div class="slide center dispatch-demo">
+  <div style="width:100%;max-width:960px;">
+    <p class="eyebrow stagger" style="color:var(--cyan);letter-spacing:.15em;font-size:.75rem;text-transform:uppercase;margin-bottom:1.5rem;">Built in one session</p>
+    <h2 class="stagger" style="font-size:2.4rem;margin-bottom:.5rem;">&#9711; Dispatch</h2>
+    <p class="stagger" style="color:var(--gray);margin-bottom:2.5rem;font-size:1.05rem;">Your raw words. Your voice. Send-ready in 8 seconds.</p>
+    <div class="stagger" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;">
+      <div style="background:var(--bg-card);border:1px solid var(--dim);padding:16px 14px;font-family:var(--mono);font-size:.7rem;">
+        <div style="color:var(--cyan);margin-bottom:10px;font-weight:600;">&#9711; Dispatch</div>
+        <div style="color:var(--yellow);margin-bottom:8px;font-size:.65rem;">What kind of message?</div>
+        <div style="color:var(--cyan);margin-bottom:2px;">&gt; The Digest</div>
+        <div style="color:var(--gray);margin-bottom:2px;">&nbsp;&nbsp;Newsletter</div>
+        <div style="color:var(--gray);margin-bottom:2px;">&nbsp;&nbsp;Signal Forward</div>
+        <div style="color:var(--gray);margin-bottom:8px;">&nbsp;&nbsp;LT Message</div>
+        <div style="border-top:1px solid var(--dim);padding-top:6px;color:var(--dim);font-size:.6rem;">arrows select &middot; enter confirm</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--dim);padding:16px 14px;font-family:var(--mono);font-size:.7rem;">
+        <div style="color:var(--cyan);margin-bottom:10px;font-weight:600;">&#9711; Dispatch</div>
+        <div style="color:var(--gray);margin-bottom:6px;font-size:.65rem;">The Digest</div>
+        <div style="color:var(--yellow);margin-bottom:8px;font-size:.65rem;">Your raw words:</div>
+        <div style="border:1px solid var(--dim);padding:6px 8px;color:var(--white);line-height:1.5;font-size:.65rem;min-height:80px;">the last few days have been rough. three infra issues. i want to be honest with the team...</div>
+        <div style="margin-top:6px;color:var(--gray);font-size:.6rem;">24 words</div>
+        <div style="border-top:1px solid var(--dim);margin-top:8px;padding-top:6px;color:var(--dim);font-size:.6rem;">tab submit &middot; esc back</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--dim);padding:16px 14px;font-family:var(--mono);font-size:.7rem;">
+        <div style="color:var(--cyan);margin-bottom:10px;font-weight:600;">&#9711; Dispatch</div>
+        <div style="color:var(--cyan);margin-bottom:10px;font-size:.65rem;">Drafting your Digest...</div>
+        <div style="color:var(--gray);margin-bottom:3px;font-size:.65rem;">Loading voice guide...</div>
+        <div style="color:var(--green);margin-bottom:3px;font-size:.65rem;">&#x2713; Calling model...</div>
+        <div style="color:var(--white);font-size:.65rem;line-height:1.5;margin-top:8px;">"The last few days have been rough, no way around it..."</div>
+        <div style="border-top:1px solid var(--dim);margin-top:8px;padding-top:6px;color:var(--dim);font-size:.6rem;">ctrl+c abort</div>
+      </div>
+      <div style="background:var(--bg-card);border:1px solid var(--dim);padding:16px 14px;font-family:var(--mono);font-size:.7rem;">
+        <div style="color:var(--cyan);margin-bottom:10px;font-weight:600;">&#9711; Dispatch</div>
+        <div style="color:var(--yellow);margin-bottom:6px;font-size:.65rem;">Voice check:</div>
+        <div style="color:var(--green);font-size:.65rem;">&#x2713; Sentence variety</div>
+        <div style="color:var(--green);font-size:.65rem;">&#x2713; Concrete specifics</div>
+        <div style="color:var(--green);font-size:.65rem;">&#x2713; No filler emoji</div>
+        <div style="color:var(--green);font-size:.65rem;">&#x2713; Energy words</div>
+        <div style="color:var(--green);font-size:.65rem;margin-bottom:8px;">&#x2713; Marcus sign-off</div>
+        <div style="background:var(--cyan);color:#000;text-align:center;padding:4px;font-weight:600;font-size:.65rem;">[ Copy to clipboard ]</div>
+        <div style="border-top:1px solid var(--dim);margin-top:8px;padding-top:6px;color:var(--dim);font-size:.6rem;">c copy &middot; r refine &middot; s start over</div>
+      </div>
+    </div>
+    <p class="stagger" style="margin-top:1.5rem;color:var(--gray);font-size:.85rem;text-align:center;">Raw words in. Voice-perfect message out. <span style="color:var(--cyan);">8 seconds end to end.</span></p>
+  </div>
+</div>
+<!-- PROTOTYPE GALLERY SLIDE -->
+<div class="slide center" style="data-slide='prototype-gallery'">
+  <div style="width:100%;max-width:1000px;">
+    <p class="eyebrow stagger" style="color:var(--cyan);letter-spacing:.15em;font-size:.75rem;text-transform:uppercase;margin-bottom:1.5rem;">Rapid prototyping velocity</p>
+    <h2 class="stagger" style="font-size:2.2rem;margin-bottom:.5rem;">Three more tools. One overnight session.</h2>
+    <p class="stagger" style="color:var(--gray);margin-bottom:2rem;font-size:1rem;">Each prototype explores a different layer of how Marcus leads, decides, and thinks.</p>
+    <div class="stagger" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;">
+
+      <!-- Ledger -->
+      <div style="background:var(--bg-card);border:1px solid var(--dim);padding:20px 18px;">
+        <div style="color:var(--cyan);font-family:var(--mono);font-size:.75rem;font-weight:600;margin-bottom:6px;">&#9711; Ledger</div>
+        <div style="color:var(--white);font-size:.95rem;font-weight:600;margin-bottom:8px;">Decision Memory</div>
+        <div style="color:var(--gray);font-size:.8rem;line-height:1.6;margin-bottom:14px;">Log decisions as they happen. Capture the context: what you knew, what you chose, what you expected. Revisit when outcomes arrive.</div>
+        <div style="font-family:var(--mono);font-size:.65rem;">
+          <div style="color:var(--yellow);margin-bottom:4px;">Recent decisions</div>
+          <div style="color:var(--white);margin-bottom:2px;">&gt; Hired COO: prioritize ops rigor</div>
+          <div style="color:var(--gray);margin-bottom:2px;">&nbsp;&nbsp;Switched to Ink for TUI</div>
+          <div style="color:var(--gray);">&nbsp;&nbsp;Chose Tailscale over VPN</div>
+        </div>
+      </div>
+
+      <!-- Pressure -->
+      <div style="background:var(--bg-card);border:1px solid #8b2020;padding:20px 18px;">
+        <div style="color:#e05252;font-family:var(--mono);font-size:.75rem;font-weight:600;margin-bottom:6px;">&#9711; Pressure</div>
+        <div style="color:var(--white);font-size:.95rem;font-weight:600;margin-bottom:8px;">Adversarial Sparring</div>
+        <div style="color:var(--gray);font-size:.8rem;line-height:1.6;margin-bottom:14px;">Pressure-test any proposal before you pitch it. Your idea in. The sharpest objections out. Strengthen it or kill it before it sees a room.</div>
+        <div style="font-family:var(--mono);font-size:.65rem;">
+          <div style="color:#e05252;margin-bottom:4px;">Objection 1 of 4</div>
+          <div style="color:var(--white);line-height:1.5;">"What happens when Marcus is unavailable and the agent queue stalls for 6 hours?"</div>
+        </div>
+      </div>
+
+      <!-- Frequency -->
+      <div style="background:var(--bg-card);border:1px solid var(--dim);padding:20px 18px;">
+        <div style="color:var(--green);font-family:var(--mono);font-size:.75rem;font-weight:600;margin-bottom:6px;">&#9711; Frequency</div>
+        <div style="color:var(--white);font-size:.95rem;font-weight:600;margin-bottom:8px;">Writing Pattern Analysis</div>
+        <div style="color:var(--gray);font-size:.8rem;line-height:1.6;margin-bottom:14px;">Surface patterns in how you communicate over time. Topic drift. Energy shifts. What you avoid. The signal your writing is already sending.</div>
+        <div style="font-family:var(--mono);font-size:.65rem;">
+          <div style="color:var(--green);margin-bottom:4px;">This month</div>
+          <div style="color:var(--white);margin-bottom:2px;">&gt; Infrastructure: 34%</div>
+          <div style="color:var(--gray);margin-bottom:2px;">&nbsp;&nbsp;Team culture: 28%</div>
+          <div style="color:var(--gray);">&nbsp;&nbsp;Product vision: 19%</div>
+        </div>
+      </div>
+
+    </div>
+    <p class="stagger" style="margin-top:1.5rem;color:var(--gray);font-size:.85rem;text-align:center;">Dispatch. Ledger. Pressure. Frequency. <span style="color:var(--cyan);">All built agent-first, overnight.</span></p>
+  </div>
+</div>
+
+<div class="slide hero closing" data-slide="11">
+  <div class="hero-mark stagger">◉</div>
+  <h2 class="stagger" style="max-width:600px">Your words. Your hands.<br>Go make something.</h2>
+  <div class="tagline stagger">reflect · communicate · command</div>
+  <div class="author stagger">Marcus Ash · CVP of Design, Microsoft<br>Built with GitHub Copilot · ◉ Forge · February 2026</div>
+  <!-- NOTES: "Forge. A system for the human side of the AI era. We started with a journal. We're building the rest. The best decision I've made in ten years as a design leader is giving myself permission to make something again." -->
+</div>
+
+<!-- ═══════ SLIDE 13: THE NUMBERS (APPENDIX) ═════════ -->
+<div class="slide center" data-slide="12">
+  <div class="label stagger">Appendix: The Numbers</div>
+  <div class="grid-4 stagger">
+    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Years of Writing</div></div>
+    <div class="stat"><div class="stat-num">352</div><div class="stat-label">Entries Imported</div></div>
+    <div class="stat"><div class="stat-num">210K</div><div class="stat-label">Words</div></div>
+    <div class="stat"><div class="stat-num">1,449</div><div class="stat-label">Prompts</div></div>
+  </div>
+  <div class="grid-4 stagger" style="margin-top:16px;">
+    <div class="stat"><div class="stat-num">73</div><div class="stat-label">Badges</div></div>
+    <div class="stat"><div class="stat-num">670</div><div class="stat-label">Tests</div></div>
+    <div class="stat"><div class="stat-num">12</div><div class="stat-label">AI Agents</div></div>
+    <div class="stat"><div class="stat-num">380</div><div class="stat-label">Commits</div></div>
+  </div>
+  <div class="grid-4 stagger" style="margin-top:16px;">
+    <div class="stat"><div class="stat-num">11,114</div><div class="stat-label">Lines of Source</div></div>
+    <div class="stat"><div class="stat-num">11,774</div><div class="stat-label">Lines of Tests</div></div>
+    <div class="stat"><div class="stat-num">1,895</div><div class="stat-label">Curated Quotes</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">Words Lost</div></div>
+  </div>
+  <!-- NOTES: "For the curious. 670 tests. 380 commits. 22,000+ lines across source and tests. 1,449 writing prompts, 939 mined from my own entries. 1,895 curated quotes. And zero words lost." -->
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div class="nav" id="nav" role="navigation" aria-label="Slide navigation">
+  <div class="nav-arrow" id="prev" onclick="go(-1)" role="button" aria-label="Previous slide" tabindex="0">←</div>
+  <div class="nav-dots" id="dots" role="tablist" aria-label="Slide indicators"></div>
+  <div class="nav-arrow" id="next" onclick="go(1)" role="button" aria-label="Next slide" tabindex="0">→</div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+const dotsEl = document.getElementById('dots');
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('div');
+  d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n) {
+  if (n < 0 || n >= total || n === current) return;
+  const dir = n > current ? 1 : -1;
+  const prev = current;
+  current = n;
+
+  slides[prev].classList.remove('active');
+  slides[prev].style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
+  slides[prev].style.opacity = '0';
+  setTimeout(() => { slides[prev].style.transform = ''; slides[prev].style.opacity = ''; }, 600);
+
+  slides[current].style.transition = 'none';
+  slides[current].style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
+  slides[current].style.opacity = '0';
+  requestAnimationFrame(() => {
+    slides[current].style.transition = '';
+    slides[current].classList.add('active');
+    slides[current].style.transform = '';
+    slides[current].style.opacity = '';
+  });
+
+  updateUI();
+}
+
+function go(dir) { goTo(current + dir); }
+
+function updateUI() {
+  document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  document.getElementById('prev').classList.toggle('disabled', current === 0);
+  document.getElementById('next').classList.toggle('disabled', current === total - 1);
+  document.getElementById('counter').textContent = `${current + 1} / ${total}`;
+  document.getElementById('progress').style.width = ((current / (total - 1)) * 100) + '%';
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+  if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+  if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+});
+
+let cursorTimeout;
+document.addEventListener('mousemove', () => {
+  document.body.style.cursor = 'default';
+  clearTimeout(cursorTimeout);
+  cursorTimeout = setTimeout(() => { document.body.style.cursor = 'none'; }, 3000);
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.nav')) return;
+  if (e.clientX > window.innerWidth / 2) go(1);
+  else go(-1);
+});
+
+updateUI();
+</script>
+</body>
+</html>

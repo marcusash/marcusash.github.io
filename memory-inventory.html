@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Agent Memory Inventory</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><line x1='10' y1='5' x2='10' y2='27' stroke='%23FFCB05' stroke-width='2' stroke-linecap='round'/><line x1='10' y1='5' x2='26' y2='5' stroke='%23FFCB05' stroke-width='2' stroke-linecap='round'/><line x1='10' y1='16' x2='23' y2='16' stroke='%23FFCB05' stroke-width='2' stroke-linecap='round'/><circle cx='10' cy='5' r='2' fill='%23FFCB05'/><circle cx='10' cy='16' r='2' fill='%23FFCB05'/><circle cx='26' cy='5' r='1.5' fill='none' stroke='%23FFCB05' stroke-width='1.5'/><circle cx='23' cy='16' r='1.5' fill='none' stroke='%23FFCB05' stroke-width='1.5'/><circle cx='10' cy='27' r='1.5' fill='none' stroke='%23FFCB05' stroke-width='1.5'/></svg>">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow: hidden; height: 100%; }
+
+:root {
+  --bg:      #0A0A0F;
+  --surface: #111118;
+  --card:    #16161F;
+  --border:  #1E1E2E;
+  --border2: #2A2A3E;
+  --cyan:    #00D4AA;
+  --maize:   #FFCB05;
+  --purple:  #A78BFA;
+  --orange:  #FB923C;
+  --green:   #34D399;
+  --red:     #FF6B6B;
+  --slate:   #94A3B8;
+  --text:    #E8E8ED;
+  --dim:     #8888A0;
+  --dimmer:  #44445A;
+  --font:    'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono:    'Cascadia Code', 'Cascadia Mono', 'Consolas', monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Scrollbar */
+.canvas::-webkit-scrollbar { width: 6px; }
+.canvas::-webkit-scrollbar-track { background: transparent; }
+.canvas::-webkit-scrollbar-thumb { background: transparent; border-radius: 3px; transition: background 0.2s; }
+.canvas:hover::-webkit-scrollbar-thumb { background: rgba(136,136,160,0.3); }
+.canvas::-webkit-scrollbar-thumb:hover { background: rgba(136,136,160,0.75); }
+
+/* OPTION BAR */
+#option-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 46px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  z-index: 100;
+}
+.bar-label { color: var(--maize); font-size: 16px; line-height: 1; margin-right: 2px; }
+.bar-sep { color: var(--dimmer); margin: 0 4px; font-size: 13px; }
+.opt-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-family: var(--font);
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+.opt-btn:hover { border-color: var(--dim); color: var(--text); }
+.opt-btn.active { border-color: var(--cyan); color: var(--cyan); }
+
+/* SCREENS */
+.canvas {
+  display: none;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 70px 40px 40px;
+}
+.canvas.active { display: block; }
+
+/* SHARED LAYOUT */
+.page-title {
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.page-sub {
+  font-size: 13px;
+  color: var(--dim);
+  margin-bottom: 36px;
+}
+.stat-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 36px;
+  flex-wrap: wrap;
+}
+.stat-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px 24px;
+  min-width: 120px;
+}
+.stat-num {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--cyan);
+  line-height: 1.1;
+}
+.stat-num.maize { color: var(--maize); }
+.stat-num.red { color: var(--red); }
+.stat-num.orange { color: var(--orange); }
+.stat-label { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+.section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--dimmer);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* MEMORY CARDS */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.mem-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  position: relative;
+}
+.mem-card.conflict { border-color: #5a3a1a; background: #12100a; }
+.mem-card.outdated { border-color: var(--dimmer); opacity: 0.6; }
+.mem-card.this-session { border-left: 3px solid var(--maize); }
+
+.mem-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.mem-subject {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tag-strategy  { background: rgba(0,212,170,0.12); color: var(--cyan); }
+.tag-logo      { background: rgba(255,203,5,0.12); color: var(--maize); }
+.tag-testing   { background: rgba(52,211,153,0.12); color: var(--green); }
+.tag-comms     { background: rgba(167,139,250,0.12); color: var(--purple); }
+.tag-ops       { background: rgba(148,163,184,0.12); color: var(--slate); }
+.tag-identity  { background: rgba(251,146,60,0.12); color: var(--orange); }
+.tag-conflict  { background: rgba(255,107,107,0.2); color: var(--red); }
+
+.mem-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+.mem-body {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.mem-body code {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--cyan);
+  background: rgba(0,212,170,0.08);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.mem-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mem-source {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--dimmer);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mem-badge {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.badge-new     { background: rgba(255,203,5,0.15); color: var(--maize); }
+.badge-old     { background: rgba(68,68,90,0.3); color: var(--dimmer); }
+.badge-conflict{ background: rgba(255,107,107,0.15); color: var(--red); }
+.badge-grind   { background: rgba(167,139,250,0.12); color: var(--purple); }
+.badge-journal { background: rgba(0,212,170,0.1); color: var(--cyan); }
+
+.conflict-note {
+  font-size: 11px;
+  color: var(--orange);
+  background: rgba(251,146,60,0.08);
+  border: 1px solid rgba(251,146,60,0.2);
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+/* TABLE VIEW */
+.mem-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.mem-table th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--dimmer);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+.mem-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(30,30,46,0.5);
+  vertical-align: top;
+  color: var(--dim);
+}
+.mem-table tr:hover td { background: rgba(255,255,255,0.02); }
+.mem-table .col-subject { width: 120px; }
+.mem-table .col-fact { color: var(--text); max-width: 420px; }
+.mem-table .col-status { width: 90px; }
+.mem-table .col-repo { width: 80px; }
+
+hr.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+</style>
+</head>
+<body>
+
+<!-- OPTION BAR -->
+<div id="option-bar">
+  <span class="bar-label">&#x2609;</span>
+  <span class="bar-sep">/</span>
+  <button class="opt-btn active" onclick="show('overview',this)">Overview</button>
+  <button class="opt-btn" onclick="show('cards',this)">Cards</button>
+  <button class="opt-btn" onclick="show('conflicts',this)">Conflicts</button>
+  <button class="opt-btn" onclick="show('table',this)">Table</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN: OVERVIEW -->
+<!-- ============================================================ -->
+<div id="screen-overview" class="canvas active">
+  <h1 class="page-title">Agent Memory Inventory</h1>
+  <p class="page-sub">All stored facts visible to agents at session start in this repository. Sourced from session context 2026-02-23. Session store DB unavailable (malformed) so counts are from surfaced memories only.</p>
+
+  <div class="stat-row">
+    <div class="stat-box">
+      <div class="stat-num">27</div>
+      <div class="stat-label">Total memories</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num maize">7</div>
+      <div class="stat-label">This session (FD)</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num red">3</div>
+      <div class="stat-label">Conflicts</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num orange">2</div>
+      <div class="stat-label">Possibly outdated</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="color:var(--purple)">4</div>
+      <div class="stat-label">Grind repo only</div>
+    </div>
+  </div>
+
+  <div class="section-label">By subject</div>
+  <div class="stat-row" style="margin-bottom:32px">
+    <div class="stat-box">
+      <div class="stat-num maize" style="font-size:20px">7</div>
+      <div class="stat-label">Logo system</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="font-size:20px;color:var(--green)">4</div>
+      <div class="stat-label">Testing</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="font-size:20px;color:var(--purple)">4</div>
+      <div class="stat-label">Communication</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="font-size:20px;color:var(--cyan)">4</div>
+      <div class="stat-label">Product strategy</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="font-size:20px;color:var(--slate)">4</div>
+      <div class="stat-label">Ops / infra</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="font-size:20px;color:var(--orange)">2</div>
+      <div class="stat-label">Identity</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" style="font-size:20px;color:var(--purple)">2</div>
+      <div class="stat-label">Variability / math</div>
+    </div>
+  </div>
+
+  <div class="section-label">Conflict summary</div>
+  <div class="memory-grid" style="grid-template-columns:1fr">
+    <div class="mem-card conflict">
+      <div class="conflict-note">Conflict: em dash ban has two entries with different scope. One says prose only. One says everywhere including bullet separators. The stricter one ("I'm tired of reminding you") should win. See Conflicts tab.</div>
+      <div class="mem-title">em dash ban</div>
+      <div class="mem-body">Two stored facts with contradictory scope. First entry says bullet separators (A — Anvil) are fine. Second says no em dashes anywhere, ever. The second was stored after Marcus escalated.</div>
+    </div>
+    <div class="mem-card conflict">
+      <div class="conflict-note">Conflict: FD name is stored as both "Maize" and "Maze". First entry says Marcus made a typo saying Maze when he meant Maize. Second says Marcus chose "Maze" intentionally from Maize. Needs Marcus to clarify which is canonical.</div>
+      <div class="mem-title">agent identity: FD name</div>
+      <div class="mem-body">Two stored facts. One: FD = Maize (named after U of M Maize, typo correction). Two: FD = Maze (Marcus chose it from Maize, intentional). These are logically incompatible.</div>
+    </div>
+    <div class="mem-card conflict">
+      <div class="conflict-note">Outdated: two testing command baselines stored. 1271 passed (Feb 21) and 1304 passed (Feb 22). The newer 1304 count is current. Older entry is stale.</div>
+      <div class="mem-title">testing command: baseline mismatch</div>
+      <div class="mem-body">Test count diverged across two stored facts. Current codebase baseline should be verified with a fresh run before trusting either number.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN: CARDS -->
+<!-- ============================================================ -->
+<div id="screen-cards" class="canvas">
+  <h1 class="page-title">All Memories: Card View</h1>
+  <p class="page-sub">27 entries. Maize left border = stored this session by FD.</p>
+
+  <div class="section-label">Logo system (7 entries)</div>
+  <div class="memory-grid">
+
+    <div class="mem-card this-session">
+      <div class="mem-header">
+        <span class="mem-subject tag-logo">Logo</span>
+        <span class="mem-title">Forge Co. mark: Circuit F</span>
+      </div>
+      <div class="mem-body">Circuit F in Maize <code>#FFCB05</code>. Vertical bar + two horizontal bars. Filled nodes at junctions, open rings at terminals. SVG at 32x32: vertical (10,5)-(10,27), top bar to x=26, mid bar to x=23.</div>
+      <div class="mem-footer">
+        <span class="mem-source">logo-brief.html:450-461</span>
+        <span class="mem-badge badge-new">This session</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card this-session">
+      <div class="mem-header">
+        <span class="mem-subject tag-logo">Logo</span>
+        <span class="mem-title">Inkwell mark: ink drop</span>
+      </div>
+      <div class="mem-body">Ink drop (teardrop path) in Cyan <code>#00D4AA</code>. SVG path: <code>M40,14 C40,14 20,36 20,50 C20,62 29,68 40,68 C51,68 60,62 60,50 C60,36 40,14 40,14 Z</code> in 80x80 viewBox.</div>
+      <div class="mem-footer">
+        <span class="mem-source">logo-brief.html:466-473</span>
+        <span class="mem-badge badge-new">This session</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card this-session">
+      <div class="mem-header">
+        <span class="mem-subject tag-logo">Logo</span>
+        <span class="mem-title">◉ is FD's personal mark only</span>
+      </div>
+      <div class="mem-body">◉ (bullseye/fisheye) is FD/Maize's personal agent mark. NOT the Forge Co. mark. Never use ◉ as a Forge brand favicon or company icon. The ◉ was co-designed with Marcus and assigned to FD.</div>
+      <div class="mem-footer">
+        <span class="mem-source">fd-iconography-color-system.md:91</span>
+        <span class="mem-badge badge-new">This session</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card this-session">
+      <div class="mem-header">
+        <span class="mem-subject tag-logo">Logo</span>
+        <span class="mem-title">Full logo hierarchy</span>
+      </div>
+      <div class="mem-body">Forge Co. (Circuit F, Maize), Inkwell (ink drop, Cyan), Dispatch (arrow, White), Grind (notched circle, Purple), MCM (parabola/M, Purple), Chemistry (bond, Purple). Agent marks separate. Canvas windows spawned from Forge context use Circuit F.</div>
+      <div class="mem-footer">
+        <span class="mem-source">logo-family-brief.md + logo-brief.html</span>
+        <span class="mem-badge badge-new">This session</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card this-session">
+      <div class="mem-header">
+        <span class="mem-subject tag-logo">Logo</span>
+        <span class="mem-title">Canvas taskbar: App Mode limitation</span>
+      </div>
+      <div class="mem-body">Title bar icon = controlled by <code>&lt;link rel=&quot;icon&quot;&gt;</code>. Taskbar icon = Edge process icon (globe). Cannot change in App Mode. Fix requires Phase 2 Electron: <code>new BrowserWindow({ icon: 'forge.ico' })</code>.</div>
+      <div class="mem-footer">
+        <span class="mem-source">fd-tui-canvas.md, session 2026-02-23</span>
+        <span class="mem-badge badge-new">This session</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Product strategy (4 entries)</div>
+  <div class="memory-grid">
+
+    <div class="mem-card this-session">
+      <div class="mem-header">
+        <span class="mem-subject tag-strategy">Strategy</span>
+        <span class="mem-title">TUI = entry points. Canvas = design surface.</span>
+      </div>
+      <div class="mem-body">Terminal is the entry point layer. The actual UX lives in HTML canvas windows (Electron Phase 2). All future screen design = canvas HTML, not TUI panels. This is the app strategy shift, locked 2026-02-23.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input 2026-02-23</span>
+        <span class="mem-badge badge-new">This session</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card this-session">
+      <div class="mem-header">
+        <span class="mem-subject tag-strategy">Strategy</span>
+        <span class="mem-title">Canvas non-negotiables</span>
+      </div>
+      <div class="mem-body">No tabs, no browser chrome, no globe, full screen must look great. Forge Circuit F on taskbar (Phase 2). Used for agent chat visualizations AND app UX. Phase 1 (App Mode) = prototyping only. Phase 2 (Electron) = production, non-negotiable.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input 2026-02-23</span>
+        <span class="mem-badge badge-new">This session</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-strategy">Strategy</span>
+        <span class="mem-title">Prototyping methodology</span>
+      </div>
+      <div class="mem-body">Web mock prototyping: build multiple options (A/B/C/D) in a single HTML file with a sticky selector bar. Each option is a full page div, switching is instant. Marcus reviews and gives verbal/image feedback per option. Iterate on the file, not separate files.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input, multiple sessions</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-strategy">Strategy</span>
+        <span class="mem-title">Variability framework (Grind)</span>
+      </div>
+      <div class="mem-body">QDS (Question Diversity Score) measures structural variation. Target QDS &gt;= 0.45. Baseline RP1-7 was 0.13. Concept-bundle principle: test 2-3 related ideas together. Variant classes rotate per exam. Documented in kai-algebra2-tests.</div>
+      <div class="mem-footer">
+        <span class="mem-source">kai-algebra2-tests/docs/fr-variability-framework.md</span>
+        <span class="mem-badge badge-grind">Grind</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-strategy">Strategy</span>
+        <span class="mem-title">Math problem variability (Grind)</span>
+      </div>
+      <div class="mem-body">Structural variation: vary algorithm required, not just numbers. QDS = 1 - mean(SSI) across 6 dimensions. Surface variation = format lock. Key: same-algorithm variants rejected; different-algorithm variants accepted. Based on Rohrer & Taylor (2007/2019).</div>
+      <div class="mem-footer">
+        <span class="mem-source">kai-algebra2-tests, commits d727d17, ce8e271</span>
+        <span class="mem-badge badge-grind">Grind</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Communication / voice (4 entries)</div>
+  <div class="memory-grid">
+
+    <div class="mem-card conflict">
+      <div class="conflict-note">Conflict: this entry says bullet separators are fine. The second em dash entry below supersedes it.</div>
+      <div class="mem-header">
+        <span class="mem-subject tag-conflict">Conflict</span>
+        <span class="mem-title">Em dash ban (softer, earlier)</span>
+      </div>
+      <div class="mem-body">Em dash ban applies to prose and slide copy only. "A — Anvil" bullet separators are fine. Ban is for em dashes in sentences.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input (earlier session)</span>
+        <span class="mem-badge badge-conflict">Superseded</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-comms">Comms</span>
+        <span class="mem-title">Em dash ban (strict, current)</span>
+      </div>
+      <div class="mem-body">Never use em dashes (— or –) anywhere: not in prose, not in bullet separators, not in slide copy, not in file names. Use a comma, colon, period, or space instead. "A — Anvil" is a violation. Write "A: Anvil".</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input: "I said no em dashes... I'm tired of reminding you"</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-comms">Comms</span>
+        <span class="mem-title">Voice guidelines (em dash, Marcus speech)</span>
+      </div>
+      <div class="mem-body">Marcus uses speech dictation. Messages often have voice transcription errors in acronyms, agent IDs, and technical terms. If anything is unclear or looks like a typo, stop and ask for clarification. Do not guess on major changes.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input, multiple sessions</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-comms">Comms</span>
+        <span class="mem-title">1:1 format</span>
+      </div>
+      <div class="mem-body">Marcus-facing status updates: no markdown tables, use ✅/🔨/📋/🚫 sections, numbered lists, bold topics, under 60 chars per item. End with "🏷️ For you, Marcus:" action items (1-3, verb-first).</div>
+      <div class="mem-footer">
+        <span class="mem-source">working-with-marcus.md:62-99, 156-174</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-comms">Comms</span>
+        <span class="mem-title">Communication: typo protocol</span>
+      </div>
+      <div class="mem-body">When Marcus input conflicts with existing specs (possible typo), do NOT act. Flag it, ask for confirmation, or poll FA/peers before making changes.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input: "You were right, that was a typo..."</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-comms">Comms</span>
+        <span class="mem-title">File paths: always fully qualified</span>
+      </div>
+      <div class="mem-body">Always include fully qualified Windows paths in every file reference. Wrong: "logo-brief.html". Right: "C:\Github\journal\docs\pitch-deck\logo-brief.html". Marcus works across many directories.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Identity (2 entries — conflicting)</div>
+  <div class="memory-grid">
+
+    <div class="mem-card conflict">
+      <div class="conflict-note">Conflict: stored as typo correction (Marcus said "Maze", meant "Maize").</div>
+      <div class="mem-header">
+        <span class="mem-subject tag-conflict">Conflict</span>
+        <span class="mem-title">FD name = Maize (typo correction entry)</span>
+      </div>
+      <div class="mem-body">FD's name is Maize (not Maze). Named after U of M's iconic maize color. Responds to: Maize, FD, design agent, agent design.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input: "Maize I meant that, typo"</span>
+        <span class="mem-badge badge-conflict">Conflict</span>
+      </div>
+    </div>
+
+    <div class="mem-card conflict">
+      <div class="conflict-note">Conflict: stored as intentional choice (Marcus chose "Maze" from "Maize"). Contradicts the first entry.</div>
+      <div class="mem-header">
+        <span class="mem-subject tag-conflict">Conflict</span>
+        <span class="mem-title">FD name = Maze (intentional choice entry)</span>
+      </div>
+      <div class="mem-body">FD's name is Maze. Marcus chose it (from Maize, U of M's iconic color). Responds to: Maze, FD, design agent, agent design. Internal system ID stays FD.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input: "from now on I wanna refer to you as Maze"</span>
+        <span class="mem-badge badge-conflict">Conflict</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Testing (4 entries)</div>
+  <div class="memory-grid">
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-testing">Testing</span>
+        <span class="mem-title">Test command + baseline (Feb 22, current)</span>
+      </div>
+      <div class="mem-body">Run full tests: <code>npx vitest run</code>. Baseline: 1304 passed, 7 skipped, 76 files (commit 618518b, Feb 22 2026).</div>
+      <div class="mem-footer">
+        <span class="mem-source">Command output 2026-02-22</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card outdated">
+      <div class="mem-header">
+        <span class="mem-subject tag-testing">Testing</span>
+        <span class="mem-title">Test command + baseline (Feb 21, stale)</span>
+      </div>
+      <div class="mem-body">Run full tests: <code>npx vitest run</code>. Baseline: 1271 passed, 7 skipped, 65 files (Feb 21 2026). Likely stale.</div>
+      <div class="mem-footer">
+        <span class="mem-source">Command output 2026-02-21</span>
+        <span class="mem-badge badge-conflict">Possibly stale</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-testing">Testing</span>
+        <span class="mem-title">Image pipeline: chafa conditional</span>
+      </div>
+      <div class="mem-body">Image-pipeline integration tests skip strict chafa resolution assertion when chafa is unavailable on host machines.</div>
+      <div class="mem-footer">
+        <span class="mem-source">tests/integration/image-pipeline.test.ts:60-64, commit 70cc2ba</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-testing">Testing</span>
+        <span class="mem-title">better-sqlite3 devDependency</span>
+      </div>
+      <div class="mem-body">better-sqlite3 is a devDependency in journal repo, required by <code>scripts/query-sessions.cjs</code> (FP Sprint 2 P21). Installed Feb 20 2026.</div>
+      <div class="mem-footer">
+        <span class="mem-source">package.json, commit 4eefb13</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Ops / infra (4 entries)</div>
+  <div class="memory-grid">
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-ops">Ops</span>
+        <span class="mem-title">Inbox file encoding: no BOM</span>
+      </div>
+      <div class="mem-body">Write inbox JSON files with <code>[System.Text.UTF8Encoding]::new($false)</code> (no BOM). Default WriteAllText adds BOM. Node JSON.parse rejects BOM. PowerShell ConvertFrom-Json accepts BOM silently — mismatch causes integration test failures.</div>
+      <div class="mem-footer">
+        <span class="mem-source">.agent-comms\ inbox files, 2026-02-22</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-ops">Ops</span>
+        <span class="mem-title">Content exclusion: inbox-* files blocked</span>
+      </div>
+      <div class="mem-body">Content exclusion blocks create/edit writes to <code>.agent-comms/inbox-*</code>. Workaround: use <code>npx tsx scripts/chat-send-message.ts</code> or PowerShell Set-Content + git commit. Docs/agents/*.md files are NOT blocked.</div>
+      <div class="mem-footer">
+        <span class="mem-source">.agent-comms\inbox-FO\ (blocked)</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-ops">Ops</span>
+        <span class="mem-title">Audit tooling: git log parsing</span>
+      </div>
+      <div class="mem-body">compliance-scan.cjs parses git log records with control-char delimiters to preserve multiline commit bodies and detect Co-authored-by trailers correctly.</div>
+      <div class="mem-footer">
+        <span class="mem-source">scripts/compliance-scan.cjs:169-183, commit f172adb</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-ops">Ops</span>
+        <span class="mem-title">Judgment protocol</span>
+      </div>
+      <div class="mem-body">When Marcus input conflicts with existing specs/docs, do NOT act on a major change. Flag it. Ask for confirmation or poll FA/peers. One phase, one gate unless Marcus explicitly approves batched execution.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input + .agent-protocol.md</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN: CONFLICTS -->
+<!-- ============================================================ -->
+<div id="screen-conflicts" class="canvas">
+  <h1 class="page-title">Conflicts and Staleness</h1>
+  <p class="page-sub">3 active conflicts. These represent facts that contradict each other or are known outdated. Action needed from Marcus or agents.</p>
+
+  <div class="section-label">Conflict 1: Em dash ban scope</div>
+  <div class="memory-grid">
+    <div class="mem-card conflict">
+      <div class="mem-header">
+        <span class="mem-subject tag-conflict">Conflict A</span>
+        <span class="mem-title">Softer version (earlier session)</span>
+      </div>
+      <div class="mem-body">Em dash ban applies to prose and slide copy only. Bullet separators ("A — Anvil") are fine. Marcus said "that's OK I'm talking about text."</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input (earlier)</span>
+        <span class="mem-badge badge-conflict">Superseded?</span>
+      </div>
+    </div>
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-comms">Current</span>
+        <span class="mem-title">Strict version (latest session)</span>
+      </div>
+      <div class="mem-body">Never use em dashes anywhere. No bullet separators. No prose. No file names. Marcus escalated: "I'm tired of reminding you." This is the authoritative version.</div>
+      <div class="mem-footer">
+        <span class="mem-source">User input: "I said no em dashes..."</span>
+        <span class="mem-badge badge-journal">journal</span>
+      </div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-bottom:32px">Recommended: delete the softer entry. The strict entry is the final word. FD can do this if Marcus confirms.</p>
+
+  <hr class="divider">
+
+  <div class="section-label">Conflict 2: FD name (Maze vs Maize)</div>
+  <div class="memory-grid">
+    <div class="mem-card conflict">
+      <div class="mem-header">
+        <span class="mem-subject tag-conflict">Version A</span>
+        <span class="mem-title">FD = Maize (U of M color, typo correction)</span>
+      </div>
+      <div class="mem-body">Stored as: Marcus said "Maze" but meant "Maize." Corrected to Maize. FD is named after U of M's iconic maize color.</div>
+    </div>
+    <div class="mem-card conflict">
+      <div class="mem-header">
+        <span class="mem-subject tag-conflict">Version B</span>
+        <span class="mem-title">FD = Maze (Marcus chose intentionally)</span>
+      </div>
+      <div class="mem-body">Stored as: Marcus said "from now on I wanna refer to you as Maze" — treated as intentional choice from Maize. Responds to Maze.</div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-bottom:32px">These cannot both be right. Marcus needs to confirm: is the canonical name Maize or Maze? Both are stored and will confuse agents.</p>
+
+  <hr class="divider">
+
+  <div class="section-label">Conflict 3: Test baseline count</div>
+  <div class="memory-grid">
+    <div class="mem-card outdated">
+      <div class="mem-header">
+        <span class="mem-subject tag-testing">Stale</span>
+        <span class="mem-title">1271 passed (Feb 21)</span>
+      </div>
+      <div class="mem-body">From Feb 21 run. Predates recent test additions (pptx suite, others). Likely off by 30+ tests.</div>
+    </div>
+    <div class="mem-card">
+      <div class="mem-header">
+        <span class="mem-subject tag-testing">Current</span>
+        <span class="mem-title">1304 passed (Feb 22)</span>
+      </div>
+      <div class="mem-body">From Feb 22 run at commit 618518b. This is the current baseline. Stale entry should be removed.</div>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--dim);margin-bottom:32px">Recommended: any agent running tests should update the baseline memory with current count after a clean run.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN: TABLE -->
+<!-- ============================================================ -->
+<div id="screen-table" class="canvas">
+  <h1 class="page-title">All Memories: Table View</h1>
+  <p class="page-sub">27 entries. Sort: newest first (this session at top).</p>
+
+  <table class="mem-table">
+    <thead>
+      <tr>
+        <th class="col-subject">Subject</th>
+        <th class="col-fact">Fact</th>
+        <th class="col-repo">Repo</th>
+        <th class="col-status">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="mem-subject tag-strategy" style="font-size:9px">Strategy</span></td><td class="col-fact">TUI = entry points only. Canvas = design surface. App strategy locked 2026-02-23.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-new">New</span></td></tr>
+      <tr><td><span class="mem-subject tag-strategy" style="font-size:9px">Strategy</span></td><td class="col-fact">Canvas non-negotiables: no tabs, no chrome, no globe, full screen great, Phase 2 Electron production.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-new">New</span></td></tr>
+      <tr><td><span class="mem-subject tag-logo" style="font-size:9px">Logo</span></td><td class="col-fact">Forge Co. = Circuit F, Maize #FFCB05. SVG coordinates defined.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-new">New</span></td></tr>
+      <tr><td><span class="mem-subject tag-logo" style="font-size:9px">Logo</span></td><td class="col-fact">Inkwell = ink drop, Cyan #00D4AA. SVG path defined.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-new">New</span></td></tr>
+      <tr><td><span class="mem-subject tag-logo" style="font-size:9px">Logo</span></td><td class="col-fact">◉ is FD's personal mark only. Never use as Forge Co. favicon.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-new">New</span></td></tr>
+      <tr><td><span class="mem-subject tag-logo" style="font-size:9px">Logo</span></td><td class="col-fact">Full hierarchy: Forge Co. (Circuit F), Inkwell (drop), Dispatch (arrow), Grind (notched), MCM (parabola), Chemistry (bond).</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-new">New</span></td></tr>
+      <tr><td><span class="mem-subject tag-logo" style="font-size:9px">Logo</span></td><td class="col-fact">Canvas App Mode: title bar favicon works, taskbar icon = Edge globe, cannot change. Requires Electron Phase 2.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-new">New</span></td></tr>
+      <tr><td><span class="mem-subject tag-comms" style="font-size:9px">Comms</span></td><td class="col-fact">Em dash ban: STRICT. No em dashes anywhere ever. Not in prose, bullets, file names, or separators.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-conflict" style="font-size:9px">Conflict</span></td><td class="col-fact">Em dash ban: SOFT (earlier). Bullet separators OK. Superseded by strict version.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-conflict">Conflict</span></td></tr>
+      <tr><td><span class="mem-subject tag-comms" style="font-size:9px">Comms</span></td><td class="col-fact">1:1 format: ✅/🔨/📋/🚫 sections, no tables, under 60 chars, verb-first action items.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-comms" style="font-size:9px">Comms</span></td><td class="col-fact">File paths: always fully qualified Windows paths. Never bare filenames.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-comms" style="font-size:9px">Comms</span></td><td class="col-fact">Voice dictation: flag unclear inputs, ask before acting on major change, poll peers if Marcus unavailable.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-comms" style="font-size:9px">Comms</span></td><td class="col-fact">Typo protocol: when Marcus input conflicts with specs, flag it and confirm before acting.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-conflict" style="font-size:9px">Conflict</span></td><td class="col-fact">FD name = Maize (typo correction entry)</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-conflict">Conflict</span></td></tr>
+      <tr><td><span class="mem-subject tag-conflict" style="font-size:9px">Conflict</span></td><td class="col-fact">FD name = Maze (intentional choice entry)</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-conflict">Conflict</span></td></tr>
+      <tr><td><span class="mem-subject tag-testing" style="font-size:9px">Testing</span></td><td class="col-fact">npx vitest run: 1304 passed, 7 skipped, 76 files (Feb 22, commit 618518b).</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-testing" style="font-size:9px">Testing</span></td><td class="col-fact">npx vitest run: 1271 passed, 7 skipped, 65 files (Feb 21). Likely stale.</td><td><span class="mem-badge badge-journal">journal</span></td><td><span class="mem-badge badge-conflict">Stale</span></td></tr>
+      <tr><td><span class="mem-subject tag-testing" style="font-size:9px">Testing</span></td><td class="col-fact">Image pipeline tests: skip chafa assertion when chafa unavailable on host.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-testing" style="font-size:9px">Testing</span></td><td class="col-fact">better-sqlite3 devDependency: required by scripts/query-sessions.cjs.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-ops" style="font-size:9px">Ops</span></td><td class="col-fact">Inbox JSON: no BOM. Use UTF8Encoding($false). BOM breaks Node JSON.parse.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-ops" style="font-size:9px">Ops</span></td><td class="col-fact">Content exclusion: .agent-comms/inbox-* writes blocked. Workaround: chat-send-message.ts or PowerShell.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-ops" style="font-size:9px">Ops</span></td><td class="col-fact">Audit tooling: compliance-scan.cjs uses control-char delimiters for git log parsing.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-ops" style="font-size:9px">Ops</span></td><td class="col-fact">Judgment protocol: one phase, one gate. No major action on ambiguous input.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-strategy" style="font-size:9px">Strategy</span></td><td class="col-fact">Prototyping: single HTML file, A/B/C/D tabs, sticky selector, no separate files.</td><td><span class="mem-badge badge-journal">journal</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-strategy" style="font-size:9px">Strategy</span></td><td class="col-fact">Variability framework: QDS >= 0.45 target, structural variation not surface variation. (Grind)</td><td><span class="mem-badge badge-grind">Grind</span></td><td>Active</td></tr>
+      <tr><td><span class="mem-subject tag-strategy" style="font-size:9px">Strategy</span></td><td class="col-fact">Math variability: vary algorithm not numbers. 6-dimension SSI scoring. Rohrer & Taylor basis. (Grind)</td><td><span class="mem-badge badge-grind">Grind</span></td><td>Active</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.canvas').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Maker Test Plan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0d1117;
+    color: #e6edf3;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 48px 32px;
+    min-height: 100vh;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 24px;
+  }
+  .header svg { flex-shrink: 0; }
+  .header-text h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f0f6fc;
+    letter-spacing: -0.5px;
+  }
+  .header-text p {
+    font-size: 14px;
+    color: #8b949e;
+    margin-top: 4px;
+  }
+  .progress-bar-outer {
+    background: #21262d;
+    border-radius: 8px;
+    height: 8px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    background: linear-gradient(90deg, #238636, #2ea043);
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-label {
+    font-size: 13px;
+    color: #8b949e;
+    margin-top: -32px;
+    margin-bottom: 32px;
+    text-align: right;
+  }
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .section-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .section-num.pre   { background: #1f3a5f; color: #58a6ff; }
+  .section-num.inst  { background: #1f4a2e; color: #3fb950; }
+  .section-num.verif { background: #3a1f5f; color: #bc8cff; }
+  .section-num.live  { background: #4a2010; color: #ffa657; }
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f0f6fc;
+  }
+  .section-subtitle {
+    font-size: 12px;
+    color: #8b949e;
+    margin-left: auto;
+  }
+  .check-list { list-style: none; }
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+    margin-bottom: 6px;
+    user-select: none;
+  }
+  .check-item:hover { background: #161b22; border-color: #30363d; }
+  .check-item.done { background: #0d1f10; border-color: #238636; }
+  .check-item.blocked { background: #1f1409; border-color: #9e6a03; }
+  .check-item.skipped { background: #161b22; border-color: #30363d; opacity: 0.5; }
+  .check-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: 2px solid #30363d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.15s;
+  }
+  .check-item.done .check-box {
+    background: #238636;
+    border-color: #238636;
+  }
+  .check-item.blocked .check-box {
+    background: #9e6a03;
+    border-color: #9e6a03;
+  }
+  .check-box svg { display: none; }
+  .check-item.done .check-box svg { display: block; }
+  .check-item.blocked .check-box svg { display: block; }
+  .check-text { flex: 1; }
+  .check-id {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .check-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e6edf3;
+  }
+  .check-desc {
+    font-size: 12px;
+    color: #8b949e;
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .check-note {
+    font-size: 11px;
+    color: #ffa657;
+    margin-top: 4px;
+    font-style: italic;
+  }
+  .badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-auto { background: #1f3a5f; color: #58a6ff; }
+  .badge-manual { background: #2d2208; color: #ffa657; }
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #21262d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer-left { font-size: 13px; color: #8b949e; }
+  .reset-btn {
+    background: #21262d;
+    color: #8b949e;
+    border: 1px solid #30363d;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover { background: #30363d; color: #e6edf3; }
+  .score-banner {
+    display: none;
+    background: linear-gradient(135deg, #0d1f10, #1a3a20);
+    border: 1px solid #238636;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .score-banner.show { display: block; }
+  .score-banner h2 { color: #3fb950; font-size: 22px; margin-bottom: 8px; }
+  .score-banner p { color: #7ee787; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+    <circle cx="22" cy="22" r="22" fill="#161b22"/>
+    <circle cx="22" cy="22" r="21" stroke="#30363d" stroke-width="1"/>
+    <path d="M22 8C14.268 8 8 14.268 8 22c0 6.197 4.013 11.46 9.593 13.32.7.128.957-.304.957-.675 0-.333-.013-1.438-.02-2.62-3.893.847-4.716-1.678-4.716-1.678-.636-1.617-1.552-2.048-1.552-2.048-1.27-.869.096-.851.096-.851 1.405.099 2.143 1.443 2.143 1.443 1.248 2.138 3.272 1.52 4.07 1.163.127-.904.49-1.52.89-1.869-3.108-.354-6.375-1.554-6.375-6.915 0-1.527.546-2.774 1.44-3.754-.145-.353-.623-1.776.136-3.703 0 0 1.174-.376 3.845 1.434A13.382 13.382 0 0122 14.01c1.189.005 2.386.16 3.507.472 2.668-1.81 3.84-1.434 3.84-1.434.762 1.927.283 3.35.138 3.703.897.98 1.437 2.227 1.437 3.754 0 5.374-3.273 6.556-6.39 6.903.502.434.95 1.29.95 2.6 0 1.876-.017 3.388-.017 3.85 0 .374.253.81.964.674C31.99 33.455 36 28.195 36 22c0-7.732-6.268-14-14-14z" fill="#f0f6fc"/>
+  </svg>
+  <div class="header-text">
+    <h1>AI Maker: Install Test Plan</h1>
+    <p>Walk through every step with Marcus. Click each item to mark it done.</p>
+  </div>
+</div>
+
+<div class="score-banner" id="scoreBanner">
+  <h2>All checks passed.</h2>
+  <p>AI Maker is installed and verified. Ready for real users.</p>
+</div>
+
+<div class="progress-bar-outer">
+  <div class="progress-bar-inner" id="progressBar"></div>
+</div>
+<div class="progress-label" id="progressLabel">0 of 24 complete</div>
+
+<!-- SECTION 0: Before You Start -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num pre">0</div>
+    <span class="section-title">Before You Start</span>
+    <span class="section-subtitle">2 items</span>
+  </div>
+  <ul class="check-list">
+    <li class="check-item" onclick="toggle(this)" data-id="P01">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">P01</div>
+        <div class="check-name">ai-maker.zip is in Downloads <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">C:\Users\marcusash\Downloads\ai-maker.zip should be present and recently built.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="P02">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">P02</div>
+        <div class="check-name">Extract the zip <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">Right-click ai-maker.zip > "Extract All." You'll get an ai-maker\ folder. Open it.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- SECTION 1: Run Install -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num inst">1</div>
+    <span class="section-title">Run the Installer</span>
+    <span class="section-subtitle">9 steps inside install.ps1</span>
+  </div>
+  <ul class="check-list">
+    <li class="check-item" onclick="toggle(this)" data-id="I01">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I01 &mdash; STEP 1</div>
+        <div class="check-name">Run install.ps1 as Administrator <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">Right-click install.ps1 > "Run with PowerShell" OR open PowerShell as Admin and run it. Command: <code style="color:#79c0ff">powershell -ExecutionPolicy Bypass -File install.ps1</code></div>
+        <div class="check-note">Must be run as Administrator. Non-admin runs will fail on winget install steps.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I02">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I02 &mdash; STEP 1</div>
+        <div class="check-name">Node.js installed or found <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Installer checks for node. If missing, installs via winget. Should see "OK: Node.js v20.x.x".</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I03">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I03 &mdash; STEP 1</div>
+        <div class="check-name">Git installed or found <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Installer checks for git. If missing, installs via winget. Should see "OK: git version 2.x.x".</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I04">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I04 &mdash; STEP 1</div>
+        <div class="check-name">GitHub CLI (gh) installed or found <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Installer checks for gh. If missing, installs via winget. Should see "OK: gh version 2.x.x".</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I05">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I05 &mdash; STEP 2</div>
+        <div class="check-name">GitHub authentication active <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">If not logged in, a browser window opens. Sign in to GitHub. Must complete before install continues.</div>
+        <div class="check-note">The user needs a GitHub account with Copilot access. Confirm this before starting.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I06">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I06 &mdash; STEP 3</div>
+        <div class="check-name">Copilot CLI extension installed <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Runs: gh extension install github/gh-copilot. Should see "OK: Copilot extension installed".</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I07">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I07 &mdash; STEP 4</div>
+        <div class="check-name">WorkIQ plugin installed <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Runs install-workiq.ps1. WorkIQ is the task management plugin for Copilot.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I08">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I08 &mdash; STEPS 5-7</div>
+        <div class="check-name">Workspace, Canvas, Vault created at C:\AIMaker <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Folder structure: C:\AIMaker\.github\, C:\AIMaker\canvas\, C:\AIMaker\vault\, C:\AIMaker\logs\. Persona and all 10 skill files copied in.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="I09">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">I09 &mdash; STEP 8</div>
+        <div class="check-name">Desktop shortcut created <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">"AI Maker" shortcut appears on the Desktop. Double-clicking it opens the Copilot CLI in the C:\AIMaker workspace.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- SECTION 2: Automated Verification (T01-T15) -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num verif">2</div>
+    <span class="section-title">Automated Verification (test.ps1)</span>
+    <span class="section-subtitle">15 checks, run at end of install</span>
+  </div>
+  <ul class="check-list">
+    <li class="check-item" onclick="toggle(this)" data-id="T01">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T01</div>
+        <div class="check-name">Node.js available on PATH <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">node --version returns v20.x.x or higher.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T02">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T02</div>
+        <div class="check-name">Git available on PATH <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">git --version succeeds.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T03">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T03</div>
+        <div class="check-name">GitHub CLI (gh) available on PATH <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">gh --version succeeds.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T04">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T04</div>
+        <div class="check-name">GitHub auth active <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">gh auth status exits 0. User is logged in.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T05">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T05</div>
+        <div class="check-name">Copilot CLI extension installed <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">gh extension list shows "copilot".</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T06">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T06</div>
+        <div class="check-name">WorkIQ npm package installed <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">npm list -g @microsoft/workiq finds the package OR mcp.json has workiq entry.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T07">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T07</div>
+        <div class="check-name">Workspace directory exists at C:\AIMaker <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">C:\AIMaker folder exists and is accessible.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T08">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T08</div>
+        <div class="check-name">Persona file present <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">C:\AIMaker\.github\copilot-instructions.md exists and has content.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T09">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T09</div>
+        <div class="check-name">Persona has all required sections <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Checks for: First Session Protocol, Hard Rules, Skills, WorkIQ, Profile Management. All 5 must be present.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T10">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T10</div>
+        <div class="check-name">No em dashes in persona file <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Regex scan for — or – in copilot-instructions.md. Must return 0 matches.</div>
+        <div class="check-note">Hard rule: em dashes break voice consistency. Zero tolerance.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T11">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T11</div>
+        <div class="check-name">Desktop shortcut exists <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Desktop\AI Maker.lnk is present.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T12">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T12</div>
+        <div class="check-name">Launch script passes syntax check <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">PowerShell parser validates launch.ps1 with zero errors.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T13">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T13</div>
+        <div class="check-name">Copilot CLI responds to --help <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">gh copilot --help exits 0 and outputs something.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T14">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T14</div>
+        <div class="check-name">Onboarding interview in workspace <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">C:\AIMaker\onboarding-interview.md exists. This is the first session prompt guide.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="T15">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">T15</div>
+        <div class="check-name">Logs directory is writable <span class="badge badge-auto">auto</span></div>
+        <div class="check-desc">Creates and deletes a test file in C:\AIMaker\logs\. Permissions verified.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<!-- SECTION 3: Live Experience Check -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num live">3</div>
+    <span class="section-title">Live Experience Check</span>
+    <span class="section-subtitle">Launch it and talk to it</span>
+  </div>
+  <ul class="check-list">
+    <li class="check-item" onclick="toggle(this)" data-id="L01">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">L01</div>
+        <div class="check-name">Double-click "AI Maker" shortcut on Desktop <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">Should open a terminal in C:\AIMaker and launch Copilot CLI with the persona loaded.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="L02">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">L02</div>
+        <div class="check-name">First message triggers onboarding interview <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">Type any first message. The agent should introduce itself and begin asking the onboarding questions (name, role, team, top priorities).</div>
+        <div class="check-note">If it responds but does NOT do the interview, the persona did not load correctly.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="L03">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">L03</div>
+        <div class="check-name">Ask it to save something to the vault <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">Say: "Save this to the vault: My top priority is project X." It should write a file to C:\AIMaker\vault\ and tell you the exact path.</div>
+      </div>
+    </li>
+    <li class="check-item" onclick="toggle(this)" data-id="L04">
+      <div class="check-box"><svg width="12" height="10" viewBox="0 0 12 10"><path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+      <div class="check-text">
+        <div class="check-id">L04</div>
+        <div class="check-name">Ask it to open a canvas <span class="badge badge-manual">manual</span></div>
+        <div class="check-desc">Say: "Open a canvas and show me a simple project status dashboard." A browser window should open with an HTML canvas.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div class="footer">
+  <div class="footer-left">AI Maker Test Plan &bull; 24 checks total &bull; auto = runs in test.ps1 &bull; manual = you verify</div>
+  <button class="reset-btn" onclick="resetAll()">Reset all</button>
+</div>
+
+<script>
+  const TOTAL = 24;
+
+  function toggle(el) {
+    if (el.classList.contains('done')) {
+      el.classList.remove('done');
+    } else {
+      el.classList.add('done');
+    }
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done = document.querySelectorAll('.check-item.done').length;
+    const pct  = Math.round((done / TOTAL) * 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = done + ' of ' + TOTAL + ' complete';
+    document.getElementById('scoreBanner').classList.toggle('show', done === TOTAL);
+  }
+
+  function resetAll() {
+    document.querySelectorAll('.check-item').forEach(el => el.classList.remove('done', 'blocked', 'skipped'));
+    updateProgress();
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FD Interaction Design — Dispatch Case Study</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #0A0A0F;
+    --s1:     #111118;
+    --s2:     #161622;
+    --s3:     #1E1E2E;
+    --text:   #E8E8F0;
+    --muted:  #808099;
+    --dim:    #4A4A60;
+    --maize:  #FFCB05;
+    --blue:   #4A90D9;
+    --green:  #22C55E;
+    --orange: #F97316;
+    --red:    #CE1126;
+    --border: #2A2A3E;
+    --ui:     'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --mono:   'Cascadia Code', 'Consolas', monospace;
+  }
+
+  html { background: var(--bg); }
+  body {
+    background: var(--bg);
+    font-family: var(--ui);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    padding: 14px 40px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 16px;
+  }
+
+  .topbar-mark svg { display: block; }
+
+  .topbar-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--maize);
+  }
+
+  .topbar-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: 2px;
+  }
+
+  .topbar-tag {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 0.06em;
+  }
+
+  /* Scroll area */
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 48px 40px 80px;
+    scroll-behavior: smooth;
+  }
+
+  .scroll::-webkit-scrollbar { width: 4px; }
+  .scroll::-webkit-scrollbar-track { background: var(--bg); }
+  .scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Content max-width */
+  .wrap { max-width: 960px; margin: 0 auto; }
+
+  /* Section header */
+  .section-eye {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--maize);
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .section-body {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 680px;
+    margin-bottom: 40px;
+  }
+
+  .rule { border: none; border-top: 1px solid var(--border); margin: 56px 0; }
+
+  /* Hero decision visual */
+  .decision-split {
+    display: grid;
+    grid-template-columns: 1fr 56px 1fr;
+    gap: 0;
+    margin-bottom: 48px;
+    align-items: start;
+  }
+
+  .decision-card {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+  }
+
+  .decision-card.wrong { border-color: var(--red); }
+  .decision-card.right { border-color: var(--green); }
+
+  .decision-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .decision-label .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+
+  .badge-no  { background: rgba(206,17,38,0.15); color: var(--red); }
+  .badge-yes { background: rgba(34,197,94,0.15); color: var(--green); }
+
+  .decision-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .decision-card p {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .vs-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 80px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+  }
+
+  /* Mock UI: toggle vs tabs */
+  .mock-toggle {
+    background: var(--s3);
+    border-radius: 6px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .toggle-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    background: var(--bg);
+    border-radius: 4px;
+    padding: 3px;
+  }
+
+  .toggle-opt {
+    flex: 1;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 3px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+
+  .toggle-opt.on { background: var(--s2); color: var(--text); }
+
+  .toggle-field {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    align-items: center;
+  }
+
+  .tf-label { color: var(--muted); width: 52px; flex-shrink: 0; }
+  .tf-value { color: var(--text); }
+
+  .toggle-warning {
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: rgba(206,17,38,0.1);
+    border-radius: 4px;
+    border-left: 2px solid var(--red);
+    font-size: 11px;
+    color: #E88;
+    line-height: 1.5;
+  }
+
+  .mock-tabs {
+    background: var(--s3);
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .mock-tabbar {
+    display: flex;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mock-tab {
+    padding: 8px 14px;
+    font-size: 11px;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    cursor: default;
+  }
+
+  .mock-tab.active { color: var(--text); border-bottom-color: var(--maize); }
+
+  .mock-tab-body { padding: 16px; }
+
+  .tab-win {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    align-items: center;
+  }
+
+  .twl { color: var(--muted); width: 52px; flex-shrink: 0; }
+
+  .agent-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(74,144,217,0.12);
+    border: 1px solid rgba(74,144,217,0.3);
+    border-radius: 3px;
+    padding: 1px 8px;
+    font-size: 10px;
+    color: var(--blue);
+  }
+
+  .tab-note {
+    margin-top: 12px;
+    padding: 8px 10px;
+    background: rgba(34,197,94,0.08);
+    border-radius: 4px;
+    border-left: 2px solid var(--green);
+    font-size: 11px;
+    color: #6EE7B7;
+    line-height: 1.5;
+  }
+
+  /* Persona table */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr 1fr;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    font-size: 13.5px;
+  }
+
+  .pg-cell {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    line-height: 1.5;
+  }
+
+  .pg-cell:nth-child(3n) { border-right: none; }
+  .pg-cell.header {
+    background: var(--s2);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .pg-cell.header.agent { color: var(--blue); }
+  .pg-cell.header.human { color: var(--orange); }
+  .pg-cell.dim-label { color: var(--muted); font-size: 12px; background: var(--s1); }
+  .pg-cell.agent-val { color: var(--text); }
+  .pg-cell.human-val { color: var(--text); }
+  .pg-last { border-bottom: none; }
+
+  /* Architecture diagram */
+  .arch {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 40px;
+    font-family: var(--mono);
+  }
+
+  .arch-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+
+  .arch-tab {
+    padding: 10px 20px;
+    font-size: 12px;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .arch-tab.on { color: var(--text); border-bottom-color: var(--maize); font-weight: 700; }
+
+  .arch-brand {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--maize);
+    margin-right: 24px;
+    padding: 10px 0;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .arch-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .arch-panel {
+    background: var(--s3);
+    border-radius: 6px;
+    padding: 20px;
+  }
+
+  .arch-panel-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+
+  .arch-subtab {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .ast {
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 11px;
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .ast.on { background: rgba(255,203,5,0.1); color: var(--maize); border-color: rgba(255,203,5,0.3); }
+
+  .arch-row {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 5px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .arch-row .dot { color: var(--blue); }
+  .arch-row .dot-o { color: var(--orange); }
+  .arch-row .tag {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+  }
+
+  .tag-out { background: rgba(34,197,94,0.1); color: var(--green); }
+  .tag-tms { background: rgba(100,100,167,0.2); color: #A5A5D8; }
+
+  /* Principles */
+  .principles { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; }
+
+  .principle {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+  }
+
+  .principle-num {
+    font-family: var(--mono);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--maize);
+    opacity: 0.25;
+    flex-shrink: 0;
+    line-height: 1;
+    width: 32px;
+    text-align: right;
+  }
+
+  .principle-content h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .principle-content p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Diagnostic tool */
+  .diag {
+    background: var(--s2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+
+  .diag-header {
+    background: var(--s3);
+    padding: 14px 24px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .diag-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .diag-row:last-child { border-bottom: none; }
+  .diag-q { color: var(--text); }
+  .diag-a { text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+  .diag-a.no  { color: var(--red); }
+  .diag-a.yes { color: var(--green); }
+
+  .diag-footer {
+    background: var(--s1);
+    border-top: 1px solid var(--border);
+    padding: 16px 24px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .diag-footer strong { color: var(--maize); }
+
+  /* Footer */
+  .doc-footer {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--dim);
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-mark">
+    <svg width="20" height="20" viewBox="0 0 80 80" fill="none">
+      <line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="26" cy="14" r="5" fill="#FFCB05"/>
+      <circle cx="26" cy="42" r="5" fill="#FFCB05"/>
+      <circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+      <circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+      <circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+    </svg>
+  </div>
+  <span class="topbar-title">FD Interaction Design</span>
+  <span class="topbar-sub">Dispatch Case Study</span>
+  <span class="topbar-tag">docs/skills/fd-interaction-design.md · 2026-02-23</span>
+</div>
+
+<!-- Scroll area -->
+<div class="scroll">
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="section-eye">Case Study</div>
+  <div class="section-title">Structural Separation Over Conditional Modes</div>
+  <div class="section-body">Marcus needed one product (Dispatch) to serve two completely different use cases: communicating with AI agents and drafting emails for humans. The word "modes" appeared in the requirements. This is a flag. Here is how the decision was made and why it matters.</div>
+
+  <!-- Decision: toggle vs tabs -->
+  <div class="decision-split">
+    <div class="decision-card wrong">
+      <div class="decision-label">
+        <span style="color:var(--red)">Option A</span>
+        <span class="badge badge-no">Not this</span>
+      </div>
+      <h3>Toggle / Mode Switch</h3>
+      <p>One compose form. A toggle at the top switches between "Agent" and "Human" mode. The same fields change behavior depending on the state.</p>
+      <div class="mock-toggle">
+        <div class="toggle-row">
+          <div class="toggle-opt on">To Agent</div>
+          <div class="toggle-opt">To Human</div>
+        </div>
+        <div class="toggle-field"><span class="tf-label">To:</span><span class="tf-value" style="color:var(--muted)">[which mode am I in?]</span></div>
+        <div class="toggle-field"><span class="tf-label">Subject:</span><span class="tf-value">_</span></div>
+        <div class="toggle-field"><span class="tf-label">Type:</span><span class="tf-value" style="color:var(--muted)">[hidden in human mode?]</span></div>
+        <div class="toggle-warning">Hidden state. User must remember which mode before acting. Mistake sends agent command to a human, or a personal email to an agent.</div>
+      </div>
+    </div>
+
+    <div class="vs-col">VS</div>
+
+    <div class="decision-card right">
+      <div class="decision-label">
+        <span style="color:var(--green)">Option B</span>
+        <span class="badge badge-yes">This</span>
+      </div>
+      <h3>Two Tabs</h3>
+      <p>Compose has two permanent tabs: To Agent and To Human. Each tab has its own form shaped for its persona. No hidden state.</p>
+      <div class="mock-tabs">
+        <div class="mock-tabbar">
+          <div class="mock-tab active">To Agent</div>
+          <div class="mock-tab">To Human</div>
+        </div>
+        <div class="mock-tab-body">
+          <div class="tab-win"><span class="twl">To:</span><span class="agent-pill"><span style="color:var(--blue)">FA</span> Chief Architect</span></div>
+          <div class="tab-win"><span class="twl">Type:</span><span style="color:var(--orange);font-size:11px">action-required</span></div>
+          <div class="tab-win"><span class="twl">Body:</span><span style="color:var(--muted)">_</span></div>
+          <div class="tab-note">User always knows where they are. Two different forms. Two different delivery paths. No ambiguity.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- Persona table -->
+  <div class="section-eye">The Diagnostic</div>
+  <div class="section-title">Two Personas. Four Differences.</div>
+  <div class="section-body">Before choosing tabs over toggle, ask four questions. If all four answers differ between the two use cases, they are not modes. They are separate workflows.</div>
+
+  <div class="persona-grid">
+    <div class="pg-cell header">Dimension</div>
+    <div class="pg-cell header agent">Agent Compose</div>
+    <div class="pg-cell header human">Human Compose</div>
+
+    <div class="pg-cell dim-label">Recipient</div>
+    <div class="pg-cell agent-val">Known list of 13 agents</div>
+    <div class="pg-cell human-val">Freeform email address</div>
+
+    <div class="pg-cell dim-label">Input shape</div>
+    <div class="pg-cell agent-val">Structured: type, priority, subject, body</div>
+    <div class="pg-cell human-val">Freeform prose</div>
+
+    <div class="pg-cell dim-label">Output artifact</div>
+    <div class="pg-cell agent-val">JSON file to .agent-comms/inbox/</div>
+    <div class="pg-cell human-val">Text copied to Outlook or Teams</div>
+
+    <div class="pg-cell dim-label">Mental state</div>
+    <div class="pg-cell agent-val">Command mode: directing an org</div>
+    <div class="pg-cell human-val">Communication mode: crafting for a relationship</div>
+
+    <div class="pg-cell dim-label pg-last" style="border-bottom:none">Verdict</div>
+    <div class="pg-cell agent-val pg-last" style="border-bottom:none;color:var(--maize)">Tab</div>
+    <div class="pg-cell human-val pg-last" style="border-bottom:none;color:var(--maize)">Tab</div>
+  </div>
+
+  <!-- Diagnostic tool -->
+  <div class="section-eye">The Test</div>
+  <div class="section-title">When You Hear "Modes"</div>
+  <div class="section-body">The word "modes" in a requirement is a flag. Run this diagnostic before accepting it as a design constraint.</div>
+
+  <div class="diag">
+    <div class="diag-row" style="background:var(--s3);font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)">
+      <div>Question</div><div style="text-align:center">Agent</div><div style="text-align:center">Human</div>
+    </div>
+    <div class="diag-row">
+      <div class="diag-q">Are the inputs the same shape?</div>
+      <div class="diag-a no">No</div>
+      <div class="diag-a no">No</div>
+    </div>
+    <div class="diag-row">
+      <div class="diag-q">Is the output the same artifact?</div>
+      <div class="diag-a no">No</div>
+      <div class="diag-a no">No</div>
+    </div>
+    <div class="diag-row">
+      <div class="diag-q">Is the delivery path the same?</div>
+      <div class="diag-a no">No</div>
+      <div class="diag-a no">No</div>
+    </div>
+    <div class="diag-row">
+      <div class="diag-q">Is the mental state the same?</div>
+      <div class="diag-a no">No</div>
+      <div class="diag-a no">No</div>
+    </div>
+    <div class="diag-footer">Four <strong>No</strong> answers. This is not a mode switch. These are two separate workflows. Use tabs.</div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- Architecture -->
+  <div class="section-eye">The Result</div>
+  <div class="section-title">Dispatch: Final Architecture</div>
+  <div class="section-body">One product. Three top-level tabs. Compose and Sent each split internally by persona. Inbox stays agent-only because urgency levels must never be mixed.</div>
+
+  <div class="arch">
+    <div class="arch-tabs">
+      <span class="arch-brand">DISPATCH</span>
+      <div class="arch-tab on">01 Inbox</div>
+      <div class="arch-tab">02 Compose</div>
+      <div class="arch-tab">03 Sent</div>
+    </div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px">Agent messages only. High-urgency, action-required. No draft history mixed in.</div>
+
+    <div class="arch-body">
+      <div class="arch-panel">
+        <div class="arch-panel-label">02 Compose</div>
+        <div class="arch-subtab">
+          <div class="ast on">To Agent</div>
+          <div class="ast">To Human</div>
+        </div>
+        <div class="arch-row"><span class="dot">·</span> Recipient: agent roster (13)</div>
+        <div class="arch-row"><span class="dot">·</span> Type: fyi / action-required / high</div>
+        <div class="arch-row"><span class="dot">·</span> Delivers: JSON to .agent-comms/</div>
+        <div style="border-top:1px solid var(--border);margin:12px 0"></div>
+        <div class="arch-subtab">
+          <div class="ast">To Agent</div>
+          <div class="ast on">To Human</div>
+        </div>
+        <div class="arch-row"><span class="dot-o">·</span> Recipient: freeform address</div>
+        <div class="arch-row"><span class="dot-o">·</span> Body: freeform prose</div>
+        <div class="arch-row"><span class="dot-o">·</span> Delivers: mailto or clipboard copy</div>
+      </div>
+
+      <div class="arch-panel">
+        <div class="arch-panel-label">03 Sent</div>
+        <div class="arch-subtab">
+          <div class="ast on">Agent Sent</div>
+          <div class="ast">Human Drafts</div>
+        </div>
+        <div class="arch-row"><span class="dot">·</span> To: FA · action-required</div>
+        <div class="arch-row"><span class="dot">·</span> To: FR · fyi</div>
+        <div class="arch-row"><span class="dot">·</span> To: FO · high</div>
+        <div style="border-top:1px solid var(--border);margin:12px 0"></div>
+        <div class="arch-subtab">
+          <div class="ast">Agent Sent</div>
+          <div class="ast on">Human Drafts</div>
+        </div>
+        <div class="arch-row"><span class="dot-o">·</span> Greg Cox <span class="tag tag-out">Outlook</span></div>
+        <div class="arch-row"><span class="dot-o">·</span> Angie Cox <span class="tag tag-tms">Teams</span></div>
+        <div style="font-size:10px;color:var(--dim);margin-top:8px">Copy format stamped on every human draft. Audit trail.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+
+  <!-- Principles -->
+  <div class="section-eye">The Principles</div>
+  <div class="section-title">Five Rules From This Work</div>
+  <div class="section-body">These came from the Dispatch decision. They apply to every interaction design problem FD touches.</div>
+
+  <div class="principles">
+    <div class="principle">
+      <div class="principle-num">1</div>
+      <div class="principle-content">
+        <h4>Structural over conditional</h4>
+        <p>Tabs beat modes when the task, artifact, or persona differs between the two cases. Modes hide cognitive state. Tabs make the distinction explicit and permanent.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">2</div>
+      <div class="principle-content">
+        <h4>Separate by urgency</h4>
+        <p>Never mix action-required and reference material in one view. Agent inbox messages carry urgency. Draft history is reference. Mixing them trains users to ignore the view.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">3</div>
+      <div class="principle-content">
+        <h4>The audit trail is the product</h4>
+        <p>Every send, copy, or delete leaves a trace the user can read later. The copy-format stamp on Human Drafts exists because users will not remember how they sent something six months later.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">4</div>
+      <div class="principle-content">
+        <h4>Name the personas first</h4>
+        <p>Before any component decision, name who is using this surface and what they are trying to do. Design decisions follow from persona clarity, not from layout preferences.</p>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">5</div>
+      <div class="principle-content">
+        <h4>"Modes" is a flag</h4>
+        <p>When a requirement uses the word "mode," stop and run the four-question diagnostic. If input shape, output artifact, delivery path, and mental state all differ: it is not a mode. It is two workflows.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <span>FD · Forge Design Director · Interaction Design Reference</span>
+    <span>2026-02-23 · docs/skills/fd-interaction-design.md</span>
+  </div>
+
+</div>
+</div>
+
+</body>
+</html>

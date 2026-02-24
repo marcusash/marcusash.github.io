@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greg: Feedback Session</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #0A0A0F;
+    --surface: #161622;
+    --border:  #2A2A3E;
+    --text:    #E8E8F0;
+    --muted:   #B0B0C4;
+    --dim:     #6A6A80;
+    --accent:  #fe57a1;
+    --sans:    'Gill Sans', 'Gill Sans MT', 'Segoe UI', Calibri, system-ui, sans-serif;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    font-family: var(--sans);
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  /* ── STEP SCREEN ── */
+  #step-screen {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+    gap: 0;
+  }
+
+  #progress {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+
+  #progress span {
+    color: var(--accent);
+  }
+
+  #step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 48px 56px;
+    max-width: 760px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  #step-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  #step-title {
+    font-size: 2.2rem;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  #step-desc {
+    font-size: 14px;
+    color: var(--dim);
+    line-height: 1.6;
+    max-width: 540px;
+  }
+
+  #feedback-area {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #feedback-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  #feedback-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 300;
+    padding: 16px 18px;
+    resize: none;
+    height: 96px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+  }
+  #feedback-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  #feedback-input::placeholder { color: #3A3A55; }
+
+  #next-btn {
+    align-self: flex-end;
+    background: var(--accent);
+    color: #0A0A0F;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 12px 32px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  #next-btn:hover { background: #ffd633; }
+  #skip-link {
+    align-self: flex-end;
+    font-size: 12px;
+    color: var(--dim);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    margin-top: -6px;
+  }
+  #skip-link:hover { color: var(--text); }
+
+  /* ── END SCREEN ── */
+  #end-screen {
+    display: none;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 48px;
+    text-align: center;
+  }
+
+  #end-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  #end-heading {
+    font-size: 3rem;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  #end-sub {
+    font-size: 15px;
+    color: var(--dim);
+    max-width: 420px;
+    line-height: 1.6;
+  }
+
+  #end-btn {
+    background: var(--accent);
+    color: #0A0A0F;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    padding: 22px 72px;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: background 0.1s, transform 0.1s;
+  }
+  #end-btn:hover { background: #ffd633; transform: scale(1.02); }
+
+  /* ── RESULTS SCREEN ── */
+  #results-screen {
+    display: none;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 64px 80px;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .results-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+  }
+
+  .results-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .results-title {
+    font-size: 2.6rem;
+    font-weight: 300;
+    color: var(--text);
+  }
+
+  .results-sub {
+    font-size: 14px;
+    color: var(--dim);
+    line-height: 1.6;
+    max-width: 600px;
+    margin-top: 4px;
+  }
+
+  .results-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 16px;
+  }
+
+  /* Raw feedback */
+  .feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .feedback-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .feedback-item-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding-top: 2px;
+  }
+
+  .feedback-item-text {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  .feedback-item-text.empty {
+    color: var(--dim);
+    font-style: italic;
+  }
+
+  /* Themes */
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .theme-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .theme-card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .theme-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .theme-card-detail {
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.5;
+  }
+
+  /* Actions */
+  .actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 14px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .action-num {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+
+  .action-text {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .results-footer {
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--dim);
+    text-align: center;
+    padding-bottom: 48px;
+  }
+</style>
+</head>
+<body>
+
+<!-- STEP SCREEN -->
+<div id="step-screen">
+  <div id="progress">Step <span id="progress-current">1</span> of <span id="progress-total">12</span></div>
+  <div id="step-card">
+    <div id="step-eyebrow"></div>
+    <div id="step-title"></div>
+    <div id="step-desc"></div>
+    <div id="feedback-area">
+      <div id="feedback-label">Your feedback</div>
+      <textarea id="feedback-input" placeholder="What worked, what was confusing, what was missing..."></textarea>
+      <button id="next-btn" onclick="submitStep()">Next</button>
+      <div id="skip-link" onclick="skipStep()">Skip, no feedback</div>
+    </div>
+  </div>
+</div>
+
+<!-- END SCREEN -->
+<div id="end-screen">
+  <div id="end-eyebrow">Feedback complete</div>
+  <div id="end-heading">That's everything.</div>
+  <div id="end-sub">When you're ready, press End to see your feedback compiled and what we'll change in version two.</div>
+  <button id="end-btn" onclick="showResults()">End</button>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="results-screen">
+  <div class="results-header">
+    <div class="results-eyebrow">Session summary</div>
+    <div class="results-title">Greg's feedback on the materials</div>
+    <div class="results-sub" id="results-sub"></div>
+  </div>
+
+  <div>
+    <div class="results-section-title">All feedback, by step</div>
+    <div class="feedback-list" id="feedback-list"></div>
+  </div>
+
+  <div>
+    <div class="results-section-title">Themes</div>
+    <div class="themes-grid" id="themes-grid"></div>
+  </div>
+
+  <div>
+    <div class="results-section-title">What changes in v2</div>
+    <div class="actions-list" id="actions-list"></div>
+  </div>
+
+  <div class="results-footer">FD will use this feedback to rebuild the materials before the next conversation.</div>
+</div>
+
+<script>
+const STEPS = [
+  {
+    eyebrow: 'The email',
+    title: 'The invite Marcus sent you',
+    desc: 'Short note, attached pre-read, confirmed tonight. Warm but not sentimental. One ask: 15 minutes with the pre-read before dinner.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 1',
+    title: 'Why this conversation, why now',
+    desc: 'Sets the premise: two builders doing similar things from different angles. The timing argument for having this exchange.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 2',
+    title: 'The Forge deck',
+    desc: 'A brief look at Forge itself, embedded as context before diving into what Marcus wanted to share tonight.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 3',
+    title: 'What Forge is',
+    desc: 'Definition slide: 13 agents, two organizations, one human (Marcus) directing. The core model.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 4',
+    title: 'The hard problems are not technical',
+    desc: 'Framing the real challenge: the management and judgment layer, not the code. What agents still cannot do on their own.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 5: Demo 1',
+    title: 'The communication system',
+    desc: 'How agents send mail to each other and to Marcus. Forge comms as organizational infrastructure.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 6: Demo 2',
+    title: 'Live prototyping',
+    desc: 'The canvas system: Marcus briefs, agent builds, result opens in 60 seconds. The speed argument.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 7: Demo 3',
+    title: 'Recruiting, evaluating, and training agents',
+    desc: 'How Marcus brings a new agent into the org: the onboarding sequence, the eval scorecard, probation and promotion.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 8',
+    title: 'Three things Marcus wants to understand from Greg',
+    desc: 'The exchange side: how Greg integrates agents into product building at ExpertVoice, top learnings, what broke first.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 9',
+    title: 'Three things to bring tonight',
+    desc: "Greg's pre-work ask: a real example, a failure, and one question he hasn't been able to answer yet."
+  },
+  {
+    eyebrow: 'Pre-read, slide 10',
+    title: '90 minutes. No slides at the table.',
+    desc: 'The format: dinner is conversational. This pre-read is the only structured material. The arc: Marcus shares, Greg shares, synthesis.'
+  },
+  {
+    eyebrow: 'Pre-read, slide 11',
+    title: 'Say it out loud.',
+    desc: 'The one ground rule for the session. Silence is not agreement. If something does not land, say so in the moment.'
+  }
+];
+
+const feedback = {
+  4: "This slide is kind of telling me as the customer what my problems are, which is not what I would expect. I would expect something trying to figure out from me what the problems are. That annoyed me a little. Also the language here is sort of how a person would write a LinkedIn post. Almost too well written and vaguely annoying. Like the first sentence: 'The tooling works. What is hard is organizational.' It is very opinionated. Whereas I thought it is my opinion you need, but this is just throwing an opinion at me. I do think the hard problems are technical, but I think they are also organizational and communication. Figuring out the place AI has in workflows between humans and agents. My thoughts.",
+  11: "I like the sentiment of this slide, but it kind of represents something about the whole deck. It feels very stylized, not usable. Things are still a bit small to read. It feels like a very stylized designed slide, which puts pressure on me. It does not put me at ease. It makes me feel like I also need to live up to this stylized expectation. If you are doing user research, you really want to be low-key and put somebody at ease. Low-key would make me feel more at ease and I would be in a better position to make a contribution. I feel like I was succeeding at what you were asking of me as you asked these questions."
+};
+let currentStep = 0;
+
+function showStep(n) {
+  currentStep = n;
+  const step = STEPS[n];
+
+  document.getElementById('progress-current').textContent = n + 1;
+  document.getElementById('progress-total').textContent = STEPS.length;
+  document.getElementById('step-eyebrow').textContent = step.eyebrow;
+  document.getElementById('step-title').textContent = step.title;
+  document.getElementById('step-desc').textContent = step.desc;
+
+  const input = document.getElementById('feedback-input');
+  input.value = feedback[n] || '';
+  input.focus();
+
+  const isLast = n === STEPS.length - 1;
+  document.getElementById('next-btn').textContent = isLast ? 'Done' : 'Next';
+}
+
+function submitStep() {
+  const val = document.getElementById('feedback-input').value.trim();
+  if (val) feedback[currentStep] = val;
+
+  if (currentStep < STEPS.length - 1) {
+    showStep(currentStep + 1);
+  } else {
+    showEndScreen();
+  }
+}
+
+function skipStep() {
+  if (currentStep < STEPS.length - 1) {
+    showStep(currentStep + 1);
+  } else {
+    showEndScreen();
+  }
+}
+
+function showEndScreen() {
+  document.getElementById('step-screen').style.display = 'none';
+  const end = document.getElementById('end-screen');
+  end.style.display = 'flex';
+}
+
+function showResults() {
+  document.getElementById('end-screen').style.display = 'none';
+  const results = document.getElementById('results-screen');
+  results.style.display = 'flex';
+
+  const count = Object.values(feedback).filter(v => v).length;
+  document.getElementById('results-sub').textContent =
+    `${count} of ${STEPS.length} steps received feedback. Synthesized below.`;
+
+  // Raw feedback list
+  const list = document.getElementById('feedback-list');
+  list.innerHTML = '';
+  STEPS.forEach((step, i) => {
+    const text = feedback[i] || '';
+    const item = document.createElement('div');
+    item.className = 'feedback-item';
+    item.innerHTML = `
+      <div class="feedback-item-label">${step.eyebrow}</div>
+      <div class="feedback-item-text ${text ? '' : 'empty'}">${text || 'No feedback'}</div>
+    `;
+    list.appendChild(item);
+  });
+
+  // Themes: simple keyword clustering
+  const allText = Object.values(feedback).join(' ').toLowerCase();
+  const themes = detectThemes(allText, feedback);
+  const grid = document.getElementById('themes-grid');
+  grid.innerHTML = '';
+  themes.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'theme-card';
+    card.innerHTML = `
+      <div class="theme-card-label">${t.label}</div>
+      <div class="theme-card-title">${t.title}</div>
+      <div class="theme-card-detail">${t.detail}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Actions
+  const actions = buildActions(feedback);
+  const actionList = document.getElementById('actions-list');
+  actionList.innerHTML = '';
+  actions.forEach((a, i) => {
+    const row = document.createElement('div');
+    row.className = 'action-row';
+    row.innerHTML = `<div class="action-num">${String(i + 1).padStart(2,'0')}</div><div class="action-text">${a}</div>`;
+    actionList.appendChild(row);
+  });
+}
+
+function detectThemes(allText, feedback) {
+  const themes = [];
+
+  // Positive signal
+  const posWords = ['good','great','love','like','clear','excellent','nice','strong','well','perfect','makes sense','helpful'];
+  const posCount = posWords.filter(w => allText.includes(w)).length;
+  if (posCount >= 2) {
+    themes.push({
+      label: 'Positive signal',
+      title: 'What landed',
+      detail: 'Multiple pieces received affirming language. The core framing and structure are working.'
+    });
+  }
+
+  // Clarity issues
+  const clarityWords = ['confus','unclear','lost','don\'t understand','not sure','what does','huh','vague'];
+  const clarityHits = Object.entries(feedback).filter(([,v]) =>
+    clarityWords.some(w => v.toLowerCase().includes(w)));
+  if (clarityHits.length > 0) {
+    themes.push({
+      label: 'Clarity',
+      title: 'Needs clearer framing',
+      detail: `${clarityHits.length} step${clarityHits.length > 1 ? 's' : ''} flagged for clarity. Greg had to work to understand the point.`
+    });
+  }
+
+  // Too much / too long
+  const densityWords = ['too much','too long','a lot','dense','simplif','shorter','trim','overwhelm','busy'];
+  if (densityWords.some(w => allText.includes(w))) {
+    themes.push({
+      label: 'Density',
+      title: 'Some pieces are overloaded',
+      detail: 'Feedback points to sections with too much content. v2 should cut or split these.'
+    });
+  }
+
+  // Missing content
+  const missingWords = ['missing','where is','what about','no mention','should include','add','didn\'t see','expected'];
+  if (missingWords.some(w => allText.includes(w))) {
+    themes.push({
+      label: 'Gaps',
+      title: 'Content Greg expected but did not see',
+      detail: 'Greg noted things he expected to find and did not. Worth reviewing what was omitted.'
+    });
+  }
+
+  // Tone / register
+  const toneWords = ['formal','informal','tone','voice','stiff','casual','reads like','sounds like'];
+  if (toneWords.some(w => allText.includes(w))) {
+    themes.push({
+      label: 'Tone',
+      title: 'Register needs tuning',
+      detail: 'Greg noted something about how the materials sound. The voice may need adjustment for this audience.'
+    });
+  }
+
+  // If no themes detected, add a generic one
+  if (themes.length === 0) {
+    themes.push({
+      label: 'Overall',
+      title: 'Light feedback session',
+      detail: 'Greg did not flag major issues. A light round of polish is the likely v2 path.'
+    });
+  }
+
+  return themes;
+}
+
+function buildActions(feedback) {
+  const actions = [];
+  const allText = Object.values(feedback).join(' ').toLowerCase();
+
+  // Specific step callouts
+  Object.entries(feedback).forEach(([i, text]) => {
+    const step = STEPS[parseInt(i)];
+    const t = text.toLowerCase();
+    if (t.includes('confus') || t.includes('unclear') || t.includes('lost')) {
+      actions.push(`Rewrite "${step.title}" for clarity. Greg found it unclear.`);
+    } else if (t.includes('too much') || t.includes('too long') || t.includes('dense')) {
+      actions.push(`Cut "${step.title}" down. Greg found it overloaded.`);
+    } else if (t.includes('missing') || t.includes('should') || t.includes('add') || t.includes('where')) {
+      actions.push(`Add what Greg expected in "${step.title}". Review his exact note.`);
+    }
+  });
+
+  // Global actions if nothing specific
+  if (actions.length === 0) {
+    if (allText.includes('tone') || allText.includes('voice') || allText.includes('reads')) {
+      actions.push('Do a voice pass on all materials based on Greg\'s tone feedback.');
+    }
+    if (Object.keys(feedback).length === 0) {
+      actions.push('No written feedback collected. Schedule a follow-up conversation to capture Greg\'s reactions.');
+    } else {
+      actions.push('Review each feedback note and apply targeted edits in v2 of the pre-read.');
+      actions.push('Rebuild the email to reflect any tone notes Greg gave on slide 1.');
+    }
+  }
+
+  // Always add
+  actions.push('Share v2 with Greg as a follow-up within 48 hours.');
+
+  return actions;
+}
+
+// Keyboard shortcut: Enter to submit
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submitStep();
+});
+
+// Init
+showStep(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<title>Dispatch</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/icons/forge-mark.svg">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+button{outline:none;}
+
+/* THEMES */
+[data-theme="dark"]{
+  --bg:#0A0A0F;--s1:#111118;--s2:#181824;--border:#252535;
+  --text:#E4E4F0;--sub:#9090A8;--dim:#404058;--muted:#60607A;
+  --maize:#FFCB05;--active-tab-text:#E4E4F0;
+  --titlebar-bg:#0A0A0F;--titlebar-border:#1E1E2E;
+  --tab-bg:transparent;--tab-on-bg:transparent;
+  --pill-bg:#1E1E2E;--pill-on:#2A2A40;
+  --msg-hover:#161622;--msg-on:#1A1A28;
+  --compose-input:#1A1A26;--compose-border:#2A2A3A;
+  --btn-send-bg:#FFCB05;--btn-send-fg:#0A0A0F;
+  --btn-ol:#0078D4;--btn-tm:#5B5EA6;
+  --canvas-card:#13131F;--canvas-border:#252545;
+}
+[data-theme="light"]{
+  --bg:#F2F2F7;--s1:#FAFAFA;--s2:#FFFFFF;--border:#E0E0EA;
+  --text:#1A1A2E;--sub:#606078;--dim:#C8C8D8;--muted:#909098;
+  --maize:#D4A800;--active-tab-text:#1A1A2E;
+  --titlebar-bg:#FFFFFF;--titlebar-border:#E4E4EE;
+  --tab-bg:transparent;--tab-on-bg:transparent;
+  --pill-bg:#EBEBF4;--pill-on:#FFFFFF;
+  --msg-hover:#F7F7FC;--msg-on:#EFF0FA;
+  --compose-input:#FFFFFF;--compose-border:#D8D8E8;
+  --btn-send-bg:#1A1A2E;--btn-send-fg:#FFFFFF;
+  --btn-ol:#0078D4;--btn-tm:#5B5EA6;
+  --canvas-card:#FFFFFF;--canvas-border:#D8D8EC;
+}
+
+html,body{height:100vh;overflow:hidden;font-family:'Segoe UI Variable','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+body{display:flex;flex-direction:column}
+
+/* TITLEBAR */
+.titlebar{height:44px;background:var(--titlebar-bg);border-bottom:1px solid var(--titlebar-border);display:flex;align-items:center;padding:0 4px 0 8px;flex-shrink:0;gap:0;user-select:none}
+
+
+.tabs{display:flex;align-items:stretch;height:100%;gap:2px;margin-left:2px}
+.tab{background:none;border:none;border-bottom:2px solid transparent;padding:0 18px;font-family:inherit;font-size:12.5px;font-weight:500;color:var(--sub);cursor:pointer;letter-spacing:.01em;display:flex;align-items:center;gap:6px;margin-bottom:-1px;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--active-tab-text);border-bottom-color:var(--maize);font-weight:600}
+.bdg{background:#CE1126;color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:0 5px;line-height:16px;font-family:'Cascadia Code','Consolas',monospace}
+.wbtns{margin-left:auto;display:flex;align-items:center;gap:1px}
+.wb{background:none;border:none;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--sub);border-radius:4px;font-size:12px;transition:background .1s,color .1s}
+.wb:hover{background:var(--s2);color:var(--text)}
+.wb.cl:hover{background:#CE1126;color:#fff}
+.wb-theme{width:32px;height:32px;padding:0;border:none;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--sub)}.wb-theme:hover{background:var(--s2);color:var(--text)}.wb-theme svg{width:16px;height:16px;flex-shrink:0}
+
+/* APP */
+.app{flex:1;display:flex;overflow:hidden}
+.scr{display:none;flex:1;overflow:hidden}
+.scr.on{display:flex}
+
+/* LIST PANEL */
+.lpanel{width:264px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--s1);overflow:hidden}
+.lhdr{height:36px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
+.lhdr-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--sub);font-family:'Cascadia Code','Consolas',monospace}
+.lhdr-count{font-size:11px;color:var(--muted);font-family:'Cascadia Code','Consolas',monospace}
+.mlist{flex:1;overflow-y:auto}
+.mlist::-webkit-scrollbar{width:3px}
+.mlist::-webkit-scrollbar-thumb{background:var(--dim)}
+
+/* MESSAGE ROW */
+.mrow{padding:11px 14px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.mrow:hover{background:var(--msg-hover)}
+.mrow.on{background:var(--msg-on)}
+.mrow-top{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.agdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mrow-from{font-size:13px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow.unread .mrow-from{color:var(--text)}
+.mrow:not(.unread) .mrow-from{color:var(--sub)}
+.mrow-date{font-size:11px;color:var(--muted);font-family:'Cascadia Code','Consolas',monospace;flex-shrink:0}
+.mrow-subj{font-size:13px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;padding-left:14px}
+.mrow.unread .mrow-subj{color:var(--text);font-weight:500}
+.mrow-badges{display:flex;gap:5px;align-items:center;margin-top:4px;padding-left:14px}
+.tbdg{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;padding:1px 6px;border-radius:2px}
+.tbdg-a{background:rgba(206,17,38,.1);color:#F87171}
+.tbdg-h{background:rgba(249,115,22,.1);color:#FB923C}
+.cvbdg{display:flex;align-items:center;gap:3px;font-family:'Cascadia Code','Consolas',monospace;font-size:10px;color:var(--muted)}
+.udot-inline{width:5px;height:5px;border-radius:50%;background:var(--maize);flex-shrink:0;margin-left:auto}
+
+/* DETAIL */
+.detail{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.empty{flex:1;display:flex;align-items:center;justify-content:center;font-family:'Cascadia Code','Consolas',monospace;font-size:12px;color:var(--dim)}
+.dcontent{display:none;flex:1;flex-direction:column}
+.dhdr{padding:20px 24px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.dsubj{font-size:20px;font-weight:700;line-height:1.3;margin-bottom:10px;color:var(--text)}
+.dmeta{display:flex;align-items:center;gap:10px;font-size:12px}
+.dfrom{display:flex;align-items:center;gap:6px;color:var(--sub)}
+.dfrom strong{color:var(--text)}
+.dbody{flex:1;overflow-y:auto;padding:20px 24px;font-family:'Cascadia Code','Consolas',monospace;font-size:13px;line-height:1.85;color:var(--text);white-space:pre-wrap}
+.dbody::-webkit-scrollbar{width:3px}
+.dbody::-webkit-scrollbar-thumb{background:var(--dim)}
+
+/* CANVAS CARD */
+.cvcard{margin:0 24px 16px;background:var(--canvas-card);border:1px solid var(--canvas-border);border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.cvcard-icon{opacity:.7;flex-shrink:0}
+.cvcard-name{flex:1;font-family:'Cascadia Code','Consolas',monospace;font-size:12px;color:var(--text)}
+.cvcard-label{font-size:10px;color:var(--muted);margin-top:2px;font-family:'Cascadia Code','Consolas',monospace}
+.cv-open{background:none;border:1px solid var(--border);color:var(--sub);font-family:'Cascadia Code','Consolas',monospace;font-size:11px;padding:4px 12px;border-radius:3px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.cv-open:hover{border-color:var(--maize);color:var(--maize)}
+
+.dacts{padding:12px 24px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0;background:var(--s1)}
+.dab{font-family:'Cascadia Code','Consolas',monospace;font-size:11px;padding:5px 14px;border-radius:3px;border:1px solid var(--border);cursor:pointer;color:var(--sub);background:none;letter-spacing:.03em}
+.dab-r:hover{border-color:#4A90D9;color:#4A90D9}
+.dab-d:hover{border-color:#CE1126;color:#CE1126}
+.dab-m:hover{border-color:var(--maize);color:var(--maize)}
+
+/* COMPOSE */
+.cview{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.cmode{padding:14px 22px 0;display:flex;align-items:center;gap:8px;flex-shrink:0;border-bottom:1px solid var(--border);padding-bottom:12px;background:var(--s1)}
+.pill{display:flex;background:var(--pill-bg);border-radius:6px;padding:2px;gap:2px}
+.pmb{background:none;border:none;padding:5px 16px;border-radius:5px;font-family:inherit;font-size:12px;font-weight:500;color:var(--sub);cursor:pointer;transition:all .12s}
+.pmb.on{background:var(--pill-on);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.cpanel{display:none;flex:1;flex-direction:column;overflow:hidden}
+.cpanel.on{display:flex}
+
+/* AGENT FORM */
+.aform{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:14px}
+.aform::-webkit-scrollbar{width:3px}
+.aform::-webkit-scrollbar-thumb{background:var(--dim)}
+.frow{display:flex;align-items:flex-start;gap:12px}
+.flabel{font-size:12px;color:var(--muted);width:64px;flex-shrink:0;padding-top:5px;font-weight:500}
+.fval{flex:1;min-width:0}
+.agchips{display:flex;flex-wrap:wrap;gap:5px}
+.agchip{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);cursor:pointer;font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:var(--sub);background:var(--s1)}
+.agchip:hover{color:var(--text)}
+.agchip.on{border-color:var(--maize);color:var(--text);background:var(--msg-on)}
+.agdot-s{width:6px;height:6px;border-radius:50%}
+.typepills{display:flex;gap:4px}
+.typepill{padding:4px 12px;border-radius:3px;border:1px solid var(--border);font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:var(--sub);cursor:pointer;background:none;transition:all .12s}
+.typepill:hover{color:var(--text)}
+.typepill.on.fyi{border-color:rgba(74,144,217,.5);color:#4A90D9;background:rgba(74,144,217,.08)}
+.typepill.on.act{border-color:rgba(206,17,38,.5);color:#F87171;background:rgba(206,17,38,.08)}
+.typepill.on.hi{border-color:rgba(249,115,22,.5);color:#FB923C;background:rgba(249,115,22,.08)}
+.cinput{width:100%;background:var(--compose-input);border:1px solid var(--compose-border);border-radius:4px;padding:6px 10px;font-family:'Cascadia Code','Consolas',monospace;font-size:13px;color:var(--text);outline:none;caret-color:var(--maize)}
+.cinput:focus{border-color:rgba(255,203,5,.35)}
+.ctarea{width:100%;background:var(--compose-input);border:1px solid var(--compose-border);border-radius:4px;padding:8px 10px;font-family:'Cascadia Code','Consolas',monospace;font-size:12.5px;color:var(--text);outline:none;caret-color:var(--maize);resize:none;flex:1;min-height:80px;line-height:1.75}
+.ctarea:focus{border-color:rgba(255,203,5,.35)}
+.bodyrow{flex:1;min-height:0;display:flex;align-items:stretch;gap:12px}
+.bodyrow .flabel{padding-top:8px}
+
+/* CANVAS ATTACH */
+.cv-attach{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cv-btn{background:none;border:1px solid var(--border);color:var(--sub);font-family:'Cascadia Code','Consolas',monospace;font-size:11px;padding:4px 12px;border-radius:3px;cursor:pointer;transition:all .12s}
+.cv-btn:hover{border-color:var(--maize);color:var(--maize)}
+.cv-sel{font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:var(--text);background:var(--s2);padding:3px 10px;border-radius:3px;border:1px solid var(--canvas-border);display:flex;align-items:center;gap:6px}
+.cv-sel-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;line-height:1;padding:0 2px}
+.cv-sel-x:hover{color:#CE1126}
+
+.cfoot{padding:11px 22px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:var(--s1);flex-shrink:0}
+.sendbtn{font-family:'Cascadia Code','Consolas',monospace;font-size:12px;padding:6px 18px;border-radius:3px;border:none;cursor:pointer;font-weight:700;letter-spacing:.05em;background:var(--btn-send-bg);color:var(--btn-send-fg);transition:opacity .12s}
+.sendbtn:hover{opacity:.88}
+.hint{font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:var(--dim)}
+.flash{font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:#22C55E;opacity:0;transition:opacity .2s}
+.flash.on{opacity:1}
+
+/* HUMAN FORM */
+.hform{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:12px}
+.hform::-webkit-scrollbar{width:3px}
+.hform::-webkit-scrollbar-thumb{background:var(--dim)}
+.hinput{width:100%;background:var(--compose-input);border:1px solid var(--compose-border);border-radius:4px;padding:6px 10px;font-family:'Cascadia Code','Consolas',monospace;font-size:13px;color:var(--text);outline:none;caret-color:var(--maize)}
+.hinput:focus{border-color:rgba(255,203,5,.35)}
+.hfrom-val{font-family:'Cascadia Code','Consolas',monospace;font-size:12.5px;color:var(--maize)}
+.hbodyrow{flex:1;min-height:80px;display:flex;align-items:stretch;gap:12px}
+.hfoot{padding:11px 22px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;background:var(--s1);flex-shrink:0}
+.hbtn{font-family:'Cascadia Code','Consolas',monospace;font-size:12px;padding:6px 16px;border-radius:3px;border:none;cursor:pointer;font-weight:600;color:#fff;transition:opacity .12s}
+.hbtn:hover{opacity:.85}
+.hbtn-ol{background:var(--btn-ol)}
+.hbtn-tm{background:var(--btn-tm)}
+
+/* SENT */
+.sview{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.spanel{display:none;flex:1;flex-direction:column;overflow:hidden}
+.spanel.on{display:flex}
+.slist{flex:1;overflow-y:auto}
+.slist::-webkit-scrollbar{width:3px}
+.slist::-webkit-scrollbar-thumb{background:var(--dim)}
+.srow{display:flex;align-items:center;gap:10px;padding:11px 22px;border-bottom:1px solid var(--border);cursor:default}
+.srow:hover{background:var(--msg-hover)}
+.srow .agdot{flex-shrink:0}
+.sto{font-family:'Cascadia Code','Consolas',monospace;font-size:12px;color:var(--text);width:100px;flex-shrink:0}
+.ssub{font-size:12px;color:var(--sub);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stag{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;padding:2px 7px;border-radius:2px;flex-shrink:0}
+.stag-fyi{background:rgba(74,144,217,.1);color:#4A90D9}
+.stag-act{background:rgba(206,17,38,.1);color:#F87171}
+.stag-hi{background:rgba(249,115,22,.1);color:#FB923C}
+.stag-ol{background:rgba(0,120,212,.12);color:#60AAEF}
+.stag-tm{background:rgba(91,94,166,.18);color:#9B9ED4}
+.sdate{font-family:'Cascadia Code','Consolas',monospace;font-size:10px;color:var(--muted);flex-shrink:0;width:72px;text-align:right}
+.scv{display:flex;align-items:center;gap:4px;font-family:'Cascadia Code','Consolas',monospace;font-size:10px;color:var(--muted);flex-shrink:0}
+
+.sempty{flex:1;display:flex;align-items:center;justify-content:center;font-family:'Cascadia Code','Consolas',monospace;font-size:12px;color:var(--dim)}
+
+/* CANVAS PICKER MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center}
+.modal-overlay.on{display:flex}
+.modal{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:20px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.cvlist{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto}
+.cvlist::-webkit-scrollbar{width:3px}
+.cvlist::-webkit-scrollbar-thumb{background:var(--dim)}
+.cvopt{padding:9px 12px;border-radius:4px;cursor:pointer;font-family:'Cascadia Code','Consolas',monospace;font-size:12px;color:var(--sub);transition:background .1s;display:flex;align-items:center;gap:8px}
+.cvopt:hover{background:var(--msg-hover);color:var(--text)}
+.modal-cancel{margin-top:14px;width:100%;background:none;border:1px solid var(--border);color:var(--sub);font-family:'Cascadia Code','Consolas',monospace;font-size:12px;padding:7px;border-radius:4px;cursor:pointer;transition:all .12s}
+.modal-cancel:hover{border-color:var(--muted);color:var(--text)}
+</style>
+</head>
+<body>
+
+<div class="titlebar">
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('inbox')" id="t-inbox">Inbox <span class="bdg" id="ibdg">3</span></button>
+    <button class="tab" onclick="showTab('compose')" id="t-compose">Compose</button>
+    <button class="tab" onclick="showTab('sent')" id="t-sent">Sent</button>
+  </div>
+  <div class="wbtns">
+    <button class="wb wb-theme" onclick="toggleTheme()" id="themebtn" title="Switch to light theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- INBOX -->
+  <div class="scr on" id="s-inbox">
+    <div class="lpanel">
+      <div class="lhdr">
+        <span class="lhdr-label">INBOX</span>
+        <span class="lhdr-count" id="ucnt">3 unread</span>
+      </div>
+      <div class="mlist" id="mlist"></div>
+    </div>
+    <div class="detail">
+      <div class="empty" id="empty">Select a message</div>
+      <div class="dcontent" id="dcontent">
+        <div class="dhdr">
+          <div class="dsubj" id="d-subj"></div>
+          <div class="dmeta">
+            <div class="dfrom"><span class="agdot" id="d-dot" style="width:8px;height:8px;border-radius:50%;flex-shrink:0"></span>&nbsp;<strong id="d-name"></strong>&nbsp;<span id="d-aid" style="font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:var(--muted)"></span></div>
+            <span id="d-tbdg" class="tbdg" style="margin-left:6px"></span>
+            <span style="font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:var(--muted);margin-left:auto" id="d-date"></span>
+          </div>
+        </div>
+        <div class="dbody" id="d-body"></div>
+        <div class="cvcard" id="d-cvcard" style="display:none">
+          <div class="cvcard-icon"><svg width="20" height="20" viewBox="0 0 80 80" fill="none">
+<line x1="26" y1="14" x2="26" y2="66" stroke="var(--maize)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="26" y1="14" x2="64" y2="14" stroke="var(--maize)" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="26" y1="42" x2="56" y2="42" stroke="var(--maize)" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="26" cy="14" r="5" fill="var(--maize)"/>
+<circle cx="26" cy="42" r="5" fill="var(--maize)"/>
+<circle cx="64" cy="14" r="4" fill="none" stroke="var(--maize)" stroke-width="2"/>
+<circle cx="56" cy="42" r="4" fill="none" stroke="var(--maize)" stroke-width="2"/>
+<circle cx="26" cy="66" r="4" fill="none" stroke="var(--maize)" stroke-width="2"/>
+</svg></div>
+          <div style="flex:1">
+            <div class="cvcard-name" id="d-cvname"></div>
+            <div class="cvcard-label">canvas artifact</div>
+          </div>
+          <button class="cv-open" onclick="openCanvas()">Open</button>
+        </div>
+        <div class="dacts">
+          <button class="dab dab-r" onclick="doReply()">Reply</button>
+          <button class="dab dab-m" onclick="doMark()">Mark read</button>
+          <button class="dab dab-d" onclick="doDelete()">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPOSE -->
+  <div class="scr" id="s-compose">
+    <div class="cview">
+      <div class="cmode">
+        <div class="pill">
+          <button class="pmb on" onclick="showCMode('agent')" id="cm-agent">To Agent</button>
+          <button class="pmb" onclick="showCMode('human')" id="cm-human">To Human</button>
+        </div>
+      </div>
+      <div class="cpanel on" id="cp-agent">
+        <div class="aform">
+          <div class="frow"><span class="flabel">To:</span><div class="agchips fval" id="agpicker"></div></div>
+          <div class="frow"><span class="flabel">Type:</span>
+            <div class="typepills fval">
+              <button class="typepill fyi on" onclick="setType(this,'fyi')">fyi</button>
+              <button class="typepill act" onclick="setType(this,'act')">action-required</button>
+              <button class="typepill hi" onclick="setType(this,'hi')">high</button>
+            </div>
+          </div>
+          <div class="frow"><span class="flabel">Subject:</span><input class="cinput fval" id="a-subj" type="text" placeholder="Subject"></div>
+          <div class="bodyrow frow"><span class="flabel">Body:</span><textarea class="ctarea" id="a-body" placeholder="Write your message..."></textarea></div>
+          <div class="frow"><span class="flabel">Canvas:</span>
+            <div class="cv-attach fval" id="cv-attach-area">
+              <button class="cv-btn" onclick="openCanvasPicker()">Attach canvas</button>
+              <span id="cv-sel-display" style="display:none" class="cv-sel">
+                <span id="cv-sel-name"></span>
+                <button class="cv-sel-x" onclick="clearCanvas()">&#x2715;</button>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="cfoot">
+          <button class="sendbtn" onclick="sendAgent()">Send</button>
+          <span class="hint">Ctrl+Enter</span>
+          <span class="flash" id="aflash">Sent.</span>
+        </div>
+      </div>
+      <div class="cpanel" id="cp-human">
+        <div class="hform">
+          <div class="frow"><span class="flabel">To:</span><input class="hinput fval" id="h-to" type="text" placeholder="Name or email"></div>
+          <div class="frow"><span class="flabel">From:</span><span class="hfrom-val">Marcus Ash &lt;marcusash@microsoft.com&gt;</span></div>
+          <div class="frow"><span class="flabel">Subject:</span><input class="hinput fval" id="h-subj" type="text" placeholder="Subject"></div>
+          <div class="hbodyrow frow"><span class="flabel">Body:</span><textarea class="ctarea" id="h-body" placeholder="Write your message..."></textarea></div>
+        </div>
+        <div class="hfoot">
+          <button class="hbtn hbtn-ol" onclick="doOutlook()">Copy to Outlook</button>
+          <button class="hbtn hbtn-tm" onclick="doTeams()">Copy to Teams</button>
+          <span class="flash" id="hflash" style="margin-left:6px"></span>
+          <span style="flex:1"></span>
+          <span class="hint">Esc discard</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SENT -->
+  <div class="scr" id="s-sent">
+    <div class="sview">
+      <div class="cmode" style="background:var(--s1)">
+        <div class="pill">
+          <button class="pmb on" onclick="showSMode('agent')" id="sm-agent">Agent Sent</button>
+          <button class="pmb" onclick="showSMode('human')" id="sm-human">Human Drafts</button>
+        </div>
+      </div>
+      <div class="spanel on" id="sp-agent"><div class="slist" id="asl"></div></div>
+      <div class="spanel" id="sp-human"><div class="slist" id="hsl"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CANVAS PICKER MODAL -->
+<div class="modal-overlay" id="cv-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title"><svg width="14" height="14" viewBox="0 0 80 80" fill="none">
+<line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+<line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="2.5" stroke-linecap="round"/>
+<circle cx="26" cy="14" r="5" fill="#FFCB05"/>
+<circle cx="26" cy="42" r="5" fill="#FFCB05"/>
+<circle cx="64" cy="14" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+<circle cx="56" cy="42" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+<circle cx="26" cy="66" r="4" fill="none" stroke="#FFCB05" stroke-width="2"/>
+</svg> Choose a canvas</div>
+    <div class="cvlist" id="cvlist"></div>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const AGENTS=[
+  {id:'FA',name:'Chief Architect',color:'#4A90D9'},
+  {id:'FD',name:'Design Director',color:'#FFCB05'},
+  {id:'FF',name:'Quality Lead',color:'#22C55E'},
+  {id:'FI',name:'Data Lead',color:'#6D28D9'},
+  {id:'FO',name:'Chief of Ops',color:'#94A3B8'},
+  {id:'FP',name:'Security & Ops',color:'#CE1126'},
+  {id:'FR',name:'Research Lead',color:'#F97316'},
+];
+
+const CANVASES=[
+  {name:'dispatch.html',label:'Dispatch app'},
+  {name:'fd-interaction-design-reference.html',label:'Interaction design reference'},
+  {name:'forge-deck-v5.html',label:'Forge pitch deck v5'},
+  {name:'forge-brand-showcase.html',label:'Forge brand showcase'},
+  {name:'fd-iconography-color-system.html',label:'Iconography & color system'},
+];
+
+let inbox=[
+  {id:1,from:'FA',subj:'Architecture review: entry-manager.ts refactor',type:'action-required',date:'23 Feb 22:14',unread:true,canvas:null,
+   body:'Marcus,\n\nReviewed the entry-manager.ts refactor proposal from last sprint.\n\nThe current writeEntry() path has a risk: the AES-256-GCM encryption step runs synchronously before the atomic rename. Under high write frequency this creates a window where a crash leaves a partial tmp file.\n\nRecommend: move encryption inside the tmp write and validate before rename. Fully atomic.\n\nI can implement this next session. Estimated: 2 hours. Blocking nothing else right now.\n\nAwaiting your sign-off.\n\nFA'},
+  {id:2,from:'FR',subj:'Eval results: prompt scoring Q1 baseline',type:'fyi',date:'23 Feb 21:50',unread:true,canvas:'prompt-scoring-q1-baseline.html',
+   body:'Marcus,\n\nQ1 prompt scoring baseline is complete.\n\nResults across 847 prompts evaluated:\n  Mean quality score:  0.71  (target: 0.75)\n  Top performer:       reflective prompts (0.84)\n  Lowest:              time-pressure prompts (0.58)\n\nThe gap in time-pressure prompts is systematic. Hypothesis: the prompt assumes context the user often does not have at 11pm. FR recommends a context-injection pass before time-pressure prompts fire.\n\nCanvas attached for full breakdown.\n\nFR'},
+  {id:3,from:'FO',subj:'Health check: FR session shows stall indicators',type:'high',date:'23 Feb 20:33',unread:true,canvas:null,
+   body:'Marcus,\n\nFlagging a potential FM-3 condition in FR\'s current session.\n\nIndicators:\n  events.jsonl grew 340KB in 12 minutes with no commits\n  No inbox messages sent in 90 minutes\n  Plan.md last updated 2 hours ago, task marked in_progress\n\nThis matches the FM-3 pattern: agent appears active but outputs are dropped.\n\nRecommended action: force session migration for FR.\n\nWaiting on your call.\n\nFO'},
+  {id:4,from:'FP',subj:'Launcher update ready for review',type:'action-required',date:'23 Feb 18:10',unread:false,canvas:null,
+   body:'Marcus,\n\nThe launcher sync-sessions.ps1 update is staged and ready.\n\nChanges:\n  Added 30s stability check before re-firing (FM-3 prevention)\n  Switched from time-based loop to file-state polling\n  Added FO inbox alert on startup failure\n\nNeeds your review before merge.\n  C:\\GitHub\\pc-setup\\sync-sessions.ps1\n\nFP'},
+  {id:5,from:'FF',subj:'Sprint 5 test coverage report',type:'fyi',date:'23 Feb 16:45',unread:false,canvas:'sprint5-coverage.html',
+   body:'Marcus,\n\nSprint 5 coverage numbers:\n\n  Tests passing:  2,035\n  Tests skipped:  7\n  Files covered:  99\n  Mutation score: 78% (target: 80%)\n\nThe mutation gap is in two files: queue-depth-monitor and ff-queue-seed. FF will address in Sprint 6.\n\nCanvas attached for full report.\n\nFF'},
+];
+
+let agentSent=[
+  {to:'FR',color:'#F97316',subj:'Launcher tab color fix + decision lock',type:'fyi',date:'23 Feb 21:55',canvas:null},
+  {to:'FO',color:'#94A3B8',subj:'Design idea: Forge Notes',type:'fyi',date:'23 Feb 21:55',canvas:null},
+  {to:'FR',color:'#F97316',subj:'Design idea: Forge Notes',type:'fyi',date:'23 Feb 21:55',canvas:'fd-interaction-design-reference.html'},
+];
+let humanSent=[
+  {to:'Greg Cox',subj:'Tonight, quick read',via:'outlook',date:'23 Feb 20:01'},
+];
+
+let activeId=null,selAgent=null,selType='fyi',selCanvas=null;
+
+const ac=id=>(AGENTS.find(a=>a.id===id)||{color:'#808099'}).color;
+const aname=id=>(AGENTS.find(a=>a.id===id)||{name:id}).name;
+
+function renderInbox(){
+  const u=inbox.filter(m=>m.unread).length;
+  document.getElementById('ucnt').textContent=u?u+' unread':'all read';
+  const b=document.getElementById('ibdg');b.textContent=u;b.style.display=u?'':'none';
+  document.getElementById('mlist').innerHTML=inbox.map(m=>`
+    <div class="mrow ${m.unread?'unread':''} ${activeId===m.id?'on':''}" onclick="openMsg(${m.id})">
+      <div class="mrow-top">
+        <span class="agdot" style="background:${ac(m.from)}"></span>
+        <span class="mrow-from">${m.from}</span>
+        <span class="mrow-date">${m.date.split(' ').slice(-1)[0]}</span>
+        ${m.unread?'<span class="udot-inline"></span>':''}
+      </div>
+      <div class="mrow-subj">${m.subj}</div>
+      <div class="mrow-badges">
+        ${m.type==='action-required'?'<span class="tbdg tbdg-a">action-required</span>':''}
+        ${m.type==='high'?'<span class="tbdg tbdg-h">high</span>':''}
+        ${m.canvas?'<span class="cvbdg"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><line x1="26" y1="14" x2="26" y2="66" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="14" x2="64" y2="14" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="42" x2="56" y2="42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg> canvas</span>':''}
+      </div>
+    </div>`).join('');
+}
+
+function openMsg(id){
+  const m=inbox.find(x=>x.id===id);if(!m)return;
+  activeId=id;m.unread=false;
+  document.getElementById('empty').style.display='none';
+  document.getElementById('dcontent').style.display='flex';
+  document.getElementById('d-subj').textContent=m.subj;
+  document.getElementById('d-dot').style.background=ac(m.from);
+  document.getElementById('d-name').textContent=aname(m.from);
+  document.getElementById('d-aid').textContent='('+m.from+')';
+  const tb=document.getElementById('d-tbdg');
+  if(m.type==='action-required'){tb.textContent='action-required';tb.className='tbdg tbdg-a';}
+  else if(m.type==='high'){tb.textContent='high';tb.className='tbdg tbdg-h';}
+  else{tb.textContent='';tb.className='tbdg';}
+  document.getElementById('d-date').textContent=m.date;
+  document.getElementById('d-body').textContent=m.body;
+  const cc=document.getElementById('d-cvcard');
+  if(m.canvas){cc.style.display='flex';document.getElementById('d-cvname').textContent=m.canvas;cc.dataset.cv=m.canvas;}
+  else cc.style.display='none';
+  renderInbox();
+}
+
+function openCanvas(){
+  const n=document.getElementById('d-cvcard').dataset.cv;
+  alert('Open canvas: '+n+'\n\nIn production: launches via canvas.ps1');
+}
+function doReply(){
+  if(!activeId)return;
+  const m=inbox.find(x=>x.id===activeId);
+  showTab('compose');showCMode('agent');
+  selAgent=m.from;renderPicker();
+  document.getElementById('a-subj').value='Re: '+m.subj;
+  document.getElementById('a-body').focus();
+}
+function doMark(){if(activeId){const m=inbox.find(x=>x.id===activeId);if(m)m.unread=false;renderInbox();}}
+function doDelete(){
+  if(!activeId)return;
+  inbox=inbox.filter(x=>x.id!==activeId);activeId=null;
+  document.getElementById('empty').style.display='flex';
+  document.getElementById('dcontent').style.display='none';
+  renderInbox();
+}
+
+function renderPicker(){
+  document.getElementById('agpicker').innerHTML=AGENTS.map(a=>`
+    <div class="agchip ${selAgent===a.id?'on':''}" onclick="pickAgent('${a.id}')">
+      <span class="agdot-s" style="background:${a.color}"></span>${a.id}
+    </div>`).join('');
+}
+function pickAgent(id){selAgent=selAgent===id?null:id;renderPicker();}
+function setType(btn,t){
+  selType=t;
+  document.querySelectorAll('.typepill').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+function openCanvasPicker(){
+  document.getElementById('cvlist').innerHTML=CANVASES.map(c=>`
+    <div class="cvopt" onclick="selectCanvas('${c.name}','${c.label}')">
+      <svg width="12" height="12" viewBox="0 0 80 80" fill="none"><line x1="26" y1="14" x2="26" y2="66" stroke="#FFCB05" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="14" x2="64" y2="14" stroke="#FFCB05" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="42" x2="56" y2="42" stroke="#FFCB05" stroke-width="4" stroke-linecap="round"/></svg>
+      ${c.label} <span style="color:var(--dim);margin-left:4px">${c.name}</span>
+    </div>`).join('');
+  document.getElementById('cv-modal').classList.add('on');
+}
+function selectCanvas(name,label){
+  selCanvas=name;
+  document.getElementById('cv-sel-name').textContent=label;
+  document.getElementById('cv-sel-display').style.display='flex';
+  closeModal();
+}
+function clearCanvas(){selCanvas=null;document.getElementById('cv-sel-display').style.display='none';}
+function closeModal(){document.getElementById('cv-modal').classList.remove('on');}
+
+function sendAgent(){
+  if(!selAgent)return;
+  const s=document.getElementById('a-subj').value.trim();
+  const b=document.getElementById('a-body').value.trim();
+  if(!s||!b)return;
+  agentSent.unshift({to:selAgent,color:ac(selAgent),subj:s,type:selType,date:'just now',canvas:selCanvas});
+  document.getElementById('a-subj').value='';
+  document.getElementById('a-body').value='';
+  selAgent=null;selCanvas=null;
+  document.getElementById('cv-sel-display').style.display='none';
+  renderPicker();renderSent();flash('aflash','Sent.');
+}
+function doOutlook(){
+  const to=document.getElementById('h-to').value;
+  const s=document.getElementById('h-subj').value;
+  const b=document.getElementById('h-body').value;
+  if(s||b)humanSent.unshift({to:to||'(no recipient)',subj:s||'(no subject)',via:'outlook',date:'just now'});
+  renderSent();
+  window.location.href=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(s)}&body=${encodeURIComponent(b)}`;
+  flash('hflash','Opening Outlook...');
+}
+function doTeams(){
+  const to=document.getElementById('h-to').value;
+  const s=document.getElementById('h-subj').value;
+  const b=document.getElementById('h-body').value;
+  navigator.clipboard.writeText(`To: ${to}\nSubject: ${s}\n\n${b}`).then(()=>{
+    if(s||b)humanSent.unshift({to:to||'(no recipient)',subj:s||'(no subject)',via:'teams',date:'just now'});
+    renderSent();flash('hflash','Copied for Teams.');
+  });
+}
+function flash(id,msg){
+  const el=document.getElementById(id);el.textContent=msg;el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'),2200);
+}
+
+function renderSent(){
+  const asl=document.getElementById('asl');
+  asl.innerHTML=agentSent.length?agentSent.map(s=>`
+    <div class="srow">
+      <span class="agdot" style="background:${s.color}"></span>
+      <span class="sto">${s.to}</span>
+      <span class="ssub">${s.subj}</span>
+      ${s.canvas?'<span class="scv"><svg width="10" height="10" viewBox="0 0 80 80" fill="none"><line x1="26" y1="14" x2="26" y2="66" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="14" x2="64" y2="14" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><line x1="26" y1="42" x2="56" y2="42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></span>':''}
+      <span class="stag stag-${s.type==='action-required'?'act':s.type==='high'?'hi':'fyi'}">${s.type}</span>
+      <span class="sdate">${s.date}</span>
+    </div>`).join(''):'<div class="sempty">No agent messages sent</div>';
+  const hsl=document.getElementById('hsl');
+  hsl.innerHTML=humanSent.length?humanSent.map(s=>`
+    <div class="srow">
+      <span class="agdot" style="background:#808099"></span>
+      <span class="sto">${s.to}</span>
+      <span class="ssub">${s.subj}</span>
+      <span class="stag ${s.via==='outlook'?'stag-ol':'stag-tm'}">${s.via==='outlook'?'Outlook':'Teams'}</span>
+      <span class="sdate">${s.date}</span>
+    </div>`).join(''):'<div class="sempty">No human drafts sent</div>';
+}
+
+function showTab(n){
+  ['inbox','compose','sent'].forEach(t=>{
+    document.getElementById('s-'+t).classList.toggle('on',t===n);
+    document.getElementById('t-'+t).classList.toggle('on',t===n);
+  });
+}
+function showCMode(n){
+  ['agent','human'].forEach(t=>{
+    document.getElementById('cp-'+t).classList.toggle('on',t===n);
+    document.getElementById('cm-'+t).classList.toggle('on',t===n);
+  });
+}
+function showSMode(n){
+  ['agent','human'].forEach(t=>{
+    document.getElementById('sp-'+t).classList.toggle('on',t===n);
+    document.getElementById('sm-'+t).classList.toggle('on',t===n);
+  });
+}
+
+let dark=true;
+function toggleTheme(){
+  dark=!dark;
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  const btn=document.getElementById('themebtn');
+  if(dark){
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+    btn.title='Switch to light theme';
+  }else{
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+    btn.title='Switch to dark theme';
+  }
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();return;}
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){
+    if(document.getElementById('s-compose').classList.contains('on')){
+      if(document.getElementById('cp-agent').classList.contains('on'))sendAgent();
+      else doOutlook();
+    }
+  }
+});
+
+renderInbox();renderPicker();renderSent();
+
+// Pre-load Greg thank-you draft
+showTab('compose');
+showCMode('human');
+document.getElementById('h-to').value = 'Greg Cox <greg@expertvoice.com>';
+document.getElementById('h-subj').value = 'After tonight';
+document.getElementById('h-body').value = `Greg,
+
+Thank you. To you and Angie for the evening, and to you specifically for how seriously you engaged with what we put in front of you.
+
+You gave us three things we are acting on:
+
+The deck told you what your problems are instead of asking. That is wrong and we know it now. Starting with the problem in one sentence, before anything else, is the fix.
+
+The format felt like a survey. You were generous enough to say it directly. Next time it is a conversation, not a form. Voice questions, follow-ups, less structure showing.
+
+The real question underneath everything you said: how do agents fit into a team of humans? Not the technical question. The organizational one. That is the one nobody has answered yet, including us.
+
+That last one is worth its own conversation.
+
+When can we get back together? I want to try a different format with you. Smaller. One topic. You talk more, I listen more. I think we get something more useful out of it for both of us.
+
+Marcus`;
+document.getElementById('h-body').focus();
+</script>
+</body>
+</html>

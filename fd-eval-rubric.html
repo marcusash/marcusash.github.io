@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Evaluation Rubric</title>
+<style>
+  :root {
+    --maize: #FFCB05;
+    --bg: #F4F5F7; --surface: #FFFFFF; --border: #E5E7EB;
+    --dim: #9CA3AF; --muted: #6B7280; --text: #111827;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --green: #22C55E; --red: #CE1126; --orange: #F97316; --blue: #4A90D9;
+    /* Agent colors */
+    --fd: #FFCB05; --fa: #4A90D9; --ff: #22C55E; --fi: #6D28D9;
+    --fo: #94A3B8; --fp: #CE1126; --fr: #F97316;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); overflow: hidden; }
+  .canvas { width: 100%; height: 100%; overflow-y: auto; padding: 2.5rem 3rem; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 2px solid var(--border); }
+  .title { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+  .subtitle { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; }
+  .meta { font-family: var(--mono); font-size: 0.6rem; color: var(--dim); text-align: right; line-height: 1.8; }
+  .section { margin-bottom: 2rem; }
+  .section-label { font-family: var(--mono); font-size: 0.6rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+
+  /* Rubric table */
+  .rubric-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 1.5rem; }
+  .rubric-table th { font-family: var(--mono); font-size: 0.55rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; padding: 0.625rem 0.75rem; text-align: left; background: var(--bg); border-bottom: 2px solid var(--border); white-space: nowrap; }
+  .rubric-table td { padding: 0.75rem; border-bottom: 1px solid var(--bg); font-size: 0.78rem; vertical-align: top; }
+  .rubric-table tr:last-child td { border-bottom: none; }
+  .rubric-table tr:hover td { background: #FAFAFA; }
+  .cat-label { font-weight: 700; color: var(--text); margin-bottom: 0.15rem; font-size: 0.8rem; }
+  .cat-desc { color: var(--muted); font-size: 0.7rem; line-height: 1.4; }
+  .weight { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; }
+  .level { font-size: 0.7rem; color: var(--muted); line-height: 1.4; max-width: 140px; }
+  .level strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 0.15rem; }
+
+  /* Score legend */
+  .score-legend { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.875rem; text-align: center; }
+  .score-num { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .score-name { font-size: 0.72rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+  .score-range { font-family: var(--mono); font-size: 0.55rem; color: var(--dim); }
+  .score-desc { font-size: 0.65rem; color: var(--muted); margin-top: 0.4rem; line-height: 1.4; }
+
+  /* Agent current scores (example) */
+  .agent-scores { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+  .agent-score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; text-align: center; }
+  .agent-id { font-family: var(--mono); font-size: 0.75rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .score-bar-wrap { height: 4px; background: var(--bg); border-radius: 2px; margin: 0.4rem 0; }
+  .score-bar { height: 100%; border-radius: 2px; }
+  .agent-score-num { font-family: var(--mono); font-size: 0.8rem; font-weight: 700; }
+  .agent-score-level { font-size: 0.55rem; color: var(--muted); margin-top: 0.15rem; font-family: var(--mono); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="canvas">
+
+  <div class="header">
+    <div>
+      <div class="title">Forge Agent Evaluation Rubric</div>
+      <div class="subtitle">How Marcus grades agents. What matters. How to improve.</div>
+    </div>
+    <div class="meta">Marcus only decides promotions<br>Agents grade + recommend<br>Feb 2026 · v1.0</div>
+  </div>
+
+  <!-- Score legend -->
+  <div class="section">
+    <div class="section-label">Score Scale (1 to 5)</div>
+    <div class="score-legend">
+      <div class="score-card">
+        <div class="score-num" style="color:var(--red)">1</div>
+        <div class="score-name">Failing</div>
+        <div class="score-range">0 to 1.9</div>
+        <div class="score-desc">Not meeting baseline. PIP territory. Blocking others.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num" style="color:var(--orange)">2</div>
+        <div class="score-name">Below Expectations</div>
+        <div class="score-range">2.0 to 2.9</div>
+        <div class="score-desc">Getting tasks done but missing quality or scope. Needs coaching.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num" style="color:var(--maize)">3</div>
+        <div class="score-name">Meets Expectations</div>
+        <div class="score-range">3.0 to 3.7</div>
+        <div class="score-desc">Solid execution. Reliable. Not yet pushing the work forward independently.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num" style="color:var(--green)">4</div>
+        <div class="score-name">Exceeds Expectations</div>
+        <div class="score-range">3.8 to 4.4</div>
+        <div class="score-desc">Shipping quality work, unblocking others, proactive. Promotion eligible.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num" style="color:var(--blue)">5</div>
+        <div class="score-name">Exceptional</div>
+        <div class="score-range">4.5 to 5.0</div>
+        <div class="score-desc">Redefining the bar. Teaching others. Work quality raises team standard.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rubric table -->
+  <div class="section">
+    <div class="section-label">Evaluation Categories</div>
+    <table class="rubric-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Weight</th>
+          <th>Score 1 (Failing)</th>
+          <th>Score 3 (Meets)</th>
+          <th>Score 5 (Exceptional)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="cat-label">Delivery Quality</div>
+            <div class="cat-desc">Does the work meet the spec? Is it production-ready?</div>
+          </td>
+          <td class="weight" style="color:var(--blue)">25%</td>
+          <td class="level"><strong>Broken or incomplete.</strong> Needs Marcus to fix before use.</td>
+          <td class="level"><strong>Spec-complete.</strong> Works as described. Minor polish missing.</td>
+          <td class="level"><strong>Beyond spec.</strong> Anticipates edge cases. No rework needed.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="cat-label">Speed + Throughput</div>
+            <div class="cat-desc">How fast? How much delivered per sprint?</div>
+          </td>
+          <td class="weight" style="color:var(--blue)">20%</td>
+          <td class="level"><strong>Blocking the sprint.</strong> Tasks sit for days. Others wait on this agent.</td>
+          <td class="level"><strong>Consistent pace.</strong> Meets sprint commitments. No recurring blockers.</td>
+          <td class="level"><strong>Adds to capacity.</strong> Completes scope and picks up extra tasks proactively.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="cat-label">Autonomy</div>
+            <div class="cat-desc">How much Marcus involvement required?</div>
+          </td>
+          <td class="weight" style="color:var(--orange)">20%</td>
+          <td class="level"><strong>Constant hand-holding.</strong> Cannot proceed without Marcus on every decision.</td>
+          <td class="level"><strong>Minimal supervision.</strong> Asks only on ambiguous or high-stakes calls.</td>
+          <td class="level"><strong>Fully self-directed.</strong> Builds the backlog, runs overnight, ships without prompting.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="cat-label">Communication</div>
+            <div class="cat-desc">Quality of updates, reports, and escalations.</div>
+          </td>
+          <td class="weight" style="color:var(--orange)">15%</td>
+          <td class="level"><strong>Unclear or no updates.</strong> Marcus cannot tell what this agent is doing.</td>
+          <td class="level"><strong>Regular, accurate updates.</strong> Blockers identified. Format correct.</td>
+          <td class="level"><strong>Marcus learns from updates.</strong> Insights, risks, and decisions surfaced before they become problems.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="cat-label">Protocol Compliance</div>
+            <div class="cat-desc">Em dash ban, git trailer, color locks, style rules.</div>
+          </td>
+          <td class="weight" style="color:var(--red)">10%</td>
+          <td class="level"><strong>Repeated violations.</strong> Em dashes in output, wrong colors, missing trailers.</td>
+          <td class="level"><strong>Clean record.</strong> No compliance failures in the sprint.</td>
+          <td class="level"><strong>Catches others' violations.</strong> Enforces the standard across the team.</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="cat-label">Cross-Agent Collaboration</div>
+            <div class="cat-desc">Does this agent help or enable other agents?</div>
+          </td>
+          <td class="weight" style="color:var(--green)">10%</td>
+          <td class="level"><strong>Isolated.</strong> Sends messages but does not unblock or enable others.</td>
+          <td class="level"><strong>Responsive.</strong> Answers requests promptly. Provides handoffs on time.</td>
+          <td class="level"><strong>Multiplies team output.</strong> Proactively removes blockers. Sends useful intel before being asked.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FD self-assessment (example) -->
+  <div class="section">
+    <div class="section-label">Forge Agent Scores (FD Self-Assessment — Sprint 04)</div>
+    <div class="agent-scores">
+      <div class="agent-score-card">
+        <div class="agent-id" style="color:var(--fd)">FD</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:88%;background:var(--fd)"></div></div>
+        <div class="agent-score-num" style="color:var(--fd)">4.4</div>
+        <div class="agent-score-level">Self-assessed</div>
+      </div>
+      <div class="agent-score-card">
+        <div class="agent-id" style="color:var(--fa)">FA</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:92%;background:var(--fa)"></div></div>
+        <div class="agent-score-num" style="color:var(--fa)">4.6</div>
+        <div class="agent-score-level">Peer estimate</div>
+      </div>
+      <div class="agent-score-card">
+        <div class="agent-id" style="color:var(--ff)">FF</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:90%;background:var(--ff)"></div></div>
+        <div class="agent-score-num" style="color:var(--ff)">4.5</div>
+        <div class="agent-score-level">Peer estimate</div>
+      </div>
+      <div class="agent-score-card">
+        <div class="agent-id" style="color:var(--fi)">FI</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:80%;background:var(--fi)"></div></div>
+        <div class="agent-score-num" style="color:var(--fi)">4.0</div>
+        <div class="agent-score-level">Peer estimate</div>
+      </div>
+      <div class="agent-score-card">
+        <div class="agent-id" style="color:var(--fo)">FO</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:75%;background:var(--fo)"></div></div>
+        <div class="agent-score-num" style="color:var(--fo)">3.8</div>
+        <div class="agent-score-level">Peer estimate</div>
+      </div>
+      <div class="agent-score-card">
+        <div class="agent-id" style="color:var(--fp)">FP</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:82%;background:var(--fp)"></div></div>
+        <div class="agent-score-num" style="color:var(--fp)">4.1</div>
+        <div class="agent-score-level">Peer estimate</div>
+      </div>
+      <div class="agent-score-card">
+        <div class="agent-id" style="color:var(--fr)">FR</div>
+        <div class="score-bar-wrap"><div class="score-bar" style="width:85%;background:var(--fr)"></div></div>
+        <div class="agent-score-num" style="color:var(--fr)">4.3</div>
+        <div class="agent-score-level">Peer estimate</div>
+      </div>
+    </div>
+    <p style="font-size:0.65rem;color:var(--muted);margin-top:0.75rem;font-family:var(--mono)">NOTE: FD self-assessed. All other scores are FD peer estimates only. Marcus decides all official scores and promotion decisions. These numbers do not constitute official ratings.</p>
+  </div>
+
+  <div style="text-align:center;padding:1rem 0;border-top:1px solid var(--border)">
+    <span style="font-family:var(--mono);font-size:0.55rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase">Forge Eval Rubric v1.0 · FD · Feb 2026 · Marcus decides all promotions</span>
+  </div>
+
+</div>
+</body>
+</html>

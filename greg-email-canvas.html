@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email to Greg</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f0f0f5;
+    font-family: 'Segoe UI Variable', 'Segoe UI', -apple-system, system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .window {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08);
+    max-width: 680px;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  /* Title bar */
+  .titlebar {
+    background: #f5f5f7;
+    border-bottom: 1px solid #dcdcdc;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .traffic-lights {
+    display: flex; gap: 7px;
+  }
+  .dot-r { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+  .dot-y { width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e; }
+  .dot-g { width: 12px; height: 12px; border-radius: 50%; background: #28c840; }
+
+  .titlebar-label {
+    flex: 1; text-align: center;
+    font-size: 13px; font-weight: 600; color: #444;
+    margin-right: 48px;
+  }
+
+  /* Header fields */
+  .fields {
+    border-bottom: 1px solid #ececec;
+  }
+
+  .field-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+    padding: 11px 24px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .field-row:last-child { border-bottom: none; }
+
+  .field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    width: 64px;
+    flex-shrink: 0;
+  }
+
+  .field-value {
+    font-size: 14px;
+    color: #1a1a1a;
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .field-value .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #eef2ff; border: 1px solid #c7d2fe;
+    border-radius: 20px; padding: 2px 10px 2px 6px;
+    font-size: 13px; color: #3730a3;
+  }
+
+  .field-value .chip .avatar {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #4f46e5; color: #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .attach-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 24px;
+    border-bottom: 1px solid #ececec;
+    flex-wrap: wrap;
+  }
+
+  .attach-label {
+    font-size: 12px; font-weight: 600; color: #888;
+    width: 64px; flex-shrink: 0;
+  }
+
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #f8f8fa; border: 1px solid #ddd;
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; color: #444;
+  }
+
+  .file-chip .file-icon {
+    font-size: 14px;
+  }
+
+  /* Body */
+  .body {
+    padding: 28px 24px 32px;
+  }
+
+  .body p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: #1a1a1a;
+    margin-bottom: 18px;
+  }
+  .body p:last-child { margin-bottom: 0; }
+
+  .sig {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #ececec;
+  }
+
+  .sig-name {
+    font-size: 14px; font-weight: 600; color: #1a1a1a;
+    margin-bottom: 2px;
+  }
+
+  .sig-title {
+    font-size: 12px; color: #888;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    background: #f9f9fb;
+    border-top: 1px solid #ececec;
+    padding: 12px 24px;
+    display: flex; gap: 12px; align-items: center;
+  }
+
+  .send-btn {
+    background: #1d6bf3;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .toolbar-hint {
+    font-size: 12px; color: #aaa;
+  }
+</style>
+</head>
+<body>
+<div class="window">
+
+  <!-- Title bar -->
+  <div class="titlebar">
+    <div class="traffic-lights">
+      <div class="dot-r"></div>
+      <div class="dot-y"></div>
+      <div class="dot-g"></div>
+    </div>
+    <div class="titlebar-label">New Message</div>
+  </div>
+
+  <!-- Fields -->
+  <div class="fields">
+    <div class="field-row">
+      <span class="field-label">To</span>
+      <span class="field-value">
+        <span class="chip">
+          <span class="avatar">GC</span>
+          Greg Cox
+        </span>
+      </span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">From</span>
+      <span class="field-value">Marcus Ash &lt;marcusash@microsoft.com&gt;</span>
+    </div>
+    <div class="field-row">
+      <span class="field-label">Subject</span>
+      <span class="field-value" style="font-weight:600;">Tonight, quick read</span>
+    </div>
+  </div>
+
+  <!-- Attachments -->
+  <div class="attach-row">
+    <span class="attach-label">Files</span>
+    <span class="file-chip"><span class="file-icon">&#128196;</span> Pre-Read (open this first).html</span>
+    <span class="file-chip"><span class="file-icon">&#128196;</span> Forge Deck.html</span>
+    <span class="file-chip"><span class="file-icon">&#128196;</span> How Marcus Works.md</span>
+    <span class="file-chip"><span class="file-icon">&#128196;</span> Greg Profile and Tuning.md</span>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+    <p>Greg,</p>
+
+    <p>Attached is a short pre-read for tonight. 15 minutes max. Covers what I have been building with AI at Microsoft, three things I want to ask you about, and a brief for you to bring something real from ExpertVoice.</p>
+
+    <p>Also in there: the full Forge pitch deck. Skim it if you have time before dinner. It is the context for the demos I will show you.</p>
+
+    <p>Two profile docs are in the folder. One is how I work. One is what I know about how you evaluate ideas and how I planned tonight around that. Read them or don't. Either way I think tonight will be good.</p>
+
+    <p>Bringing the laptop. No slides at the table, just conversation.</p>
+
+    <div class="sig">
+      <div class="sig-name">Marcus</div>
+      <div class="sig-title">CVP of Design, Microsoft</div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button class="send-btn">Send</button>
+    <span class="toolbar-hint">Copy and paste into your email client</span>
+  </div>
+
+</div>
+</body>
+</html>

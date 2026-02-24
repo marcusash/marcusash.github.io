@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>◉ Inkwell</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0A0A0F;
+  --bg-card: #111118;
+  --bg-subtle: #16161F;
+  --cyan: #00D4AA;
+  --cyan-dim: rgba(0,212,170,0.5);
+  --cyan-glow: rgba(0,212,170,0.15);
+  --yellow: #FFD700;
+  --white: #E8E8ED;
+  --gray: #6E6E80;
+  --dim: #444455;
+  --green: #27C93F;
+  --green-bright: #39FF6B;
+  --red: #FF5F56;
+  --font: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Code', 'Consolas', 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+html { font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--font);
+  line-height: 1.7;
+  overflow: hidden;
+  height: 100vh;
+  cursor: none;
+}
+
+/* ── Slide Container ─────────────────────────────── */
+.deck {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 80px;
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* exit-left handled inline */
+
+/* ── Navigation ──────────────────────────────────── */
+.nav {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  z-index: 100;
+}
+
+.nav-arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid #222233;
+  background: var(--bg-card);
+  color: var(--gray);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  user-select: none;
+}
+.nav-arrow:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,212,170,0.05); cursor: pointer; }
+.nav-arrow.disabled { opacity: 0.2; pointer-events: none; }
+
+.nav-dots {
+  display: flex;
+  gap: 8px;
+}
+.nav-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dim);
+  transition: background 0.3s, transform 0.3s;
+}
+.nav-dot.active { background: var(--cyan); transform: scale(1.4); }
+
+.slide-counter {
+  position: fixed;
+  top: 32px;
+  right: 40px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--dim);
+  z-index: 100;
+  letter-spacing: 0.1em;
+}
+
+/* ── Progress bar ────────────────────────────────── */
+.progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--cyan);
+  z-index: 200;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 12px var(--cyan-dim);
+}
+
+/* ── Typography ──────────────────────────────────── */
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.025em; }
+h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); line-height: 1.08; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 3rem); line-height: 1.15; }
+h3 { font-size: clamp(1.1rem, 1.5vw, 1.4rem); line-height: 1.3; }
+.accent { color: var(--cyan); }
+.dim-text { color: var(--gray); }
+.label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--cyan);
+  opacity: 0.6;
+  margin-bottom: 1.5rem;
+}
+
+p { color: var(--gray); font-size: 1.125rem; max-width: 640px; line-height: 1.8; }
+p.large { font-size: 1.3rem; }
+
+/* ── Stagger animations for child elements ───────── */
+.slide.active .stagger { animation: fadeUp 0.5s ease both; }
+.slide.active .stagger:nth-child(1) { animation-delay: 0.1s; }
+.slide.active .stagger:nth-child(2) { animation-delay: 0.25s; }
+.slide.active .stagger:nth-child(3) { animation-delay: 0.4s; }
+.slide.active .stagger:nth-child(4) { animation-delay: 0.55s; }
+.slide.active .stagger:nth-child(5) { animation-delay: 0.7s; }
+.slide.active .stagger:nth-child(6) { animation-delay: 0.85s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hero ────────────────────────────────────────── */
+.hero { text-align: center; }
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 45%, var(--cyan-glow) 0%, transparent 70%),
+    radial-gradient(ellipse 30% 30% at 25% 65%, rgba(0,212,170,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.hero-mark {
+  font-size: 6rem;
+  color: var(--cyan);
+  animation: breathe 4s ease-in-out infinite;
+  text-shadow: 0 0 80px var(--cyan-dim), 0 0 160px var(--cyan-glow);
+  position: relative;
+  z-index: 1;
+  margin-bottom: 2.5rem;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+.hero h1 { position: relative; z-index: 1; margin-bottom: 1.5rem; }
+.hero p { position: relative; z-index: 1; margin: 0 auto 2.5rem; }
+.hero-sub {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--dim);
+  letter-spacing: 0.15em;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Terminal Recreation ─────────────────────────── */
+.terminal {
+  background: #0D0D14;
+  border: 1px solid #1E1E2A;
+  border-radius: 0;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  width: 100%;
+  max-width: 780px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 1px rgba(255,255,255,0.05);
+}
+
+.terminal-bar {
+  background: #1A1A24;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #1E1E2A;
+}
+.terminal-bar .tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #0D0D14;
+  padding: 5px 14px;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: -1px;
+  border: 1px solid #1E1E2A;
+  border-bottom: 1px solid #0D0D14;
+}
+.terminal-bar .tab-icon { color: var(--cyan); font-size: 0.7rem; }
+.terminal-bar .tab-title { color: var(--gray); font-size: 0.72rem; }
+.terminal-bar .win-controls { display: flex; gap: 0; }
+.terminal-bar .win-btn {
+  width: 46px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray);
+  font-size: 0.65rem;
+  font-family: 'Segoe Fluent Icons', 'Segoe MDL2 Assets', sans-serif;
+}
+.terminal-bar .win-btn-close { }
+.terminal-bar .win-btn svg { width: 10px; height: 10px; stroke: var(--gray); stroke-width: 1.5; fill: none; }
+
+.terminal-body { padding: 20px 24px; }
+.t-line { white-space: pre; min-height: 1.55em; }
+.t-cyan { color: var(--cyan); }
+.t-cyan-b { color: var(--cyan); font-weight: bold; }
+.t-yellow { color: var(--yellow); }
+.t-yellow-i { color: var(--yellow); font-style: italic; }
+.t-green { color: var(--green); }
+.t-green-b { color: var(--green-bright); font-weight: bold; }
+.t-dim { color: var(--dim); }
+.t-gray { color: var(--gray); }
+.t-white { color: var(--white); }
+.t-white-b { color: var(--white); font-weight: bold; }
+.t-red { color: var(--red); }
+
+/* ── Layout Helpers ──────────────────────────────── */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; width: 100%; max-width: 1200px; }
+.split-text { max-width: 520px; }
+@media (max-width: 1024px) { .split { grid-template-columns: 1fr; gap: 40px; } }
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; width: 100%; max-width: 1100px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; width: 100%; max-width: 1100px; }
+@media (max-width: 1024px) { .grid-3, .grid-4 { grid-template-columns: 1fr 1fr; } }
+
+.center { text-align: center; display: flex; flex-direction: column; align-items: center; }
+
+/* ── Cards ───────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid #1E1E2A;
+  border-radius: 14px;
+  padding: 32px;
+  transition: border-color 0.3s, transform 0.25s;
+}
+.card:hover { border-color: var(--cyan-dim); transform: translateY(-3px); }
+.card .icon { font-size: 1.8rem; margin-bottom: 1rem; display: block; }
+.card h3 { color: var(--white); margin-bottom: 0.6rem; }
+.card p { color: var(--gray); font-size: 0.95rem; max-width: none; }
+
+/* Feature card with top-line accent */
+.fcard {
+  background: var(--bg-subtle);
+  border: 1px solid #1a1a28;
+  border-radius: 12px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.fcard::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 10%, var(--cyan) 50%, transparent 90%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.fcard:hover::after { opacity: 1; }
+.fcard h3 { color: var(--cyan); font-size: 1.05rem; margin-bottom: 0.5rem; }
+.fcard p { font-size: 0.92rem; max-width: none; }
+
+/* ── Stats ───────────────────────────────────────── */
+.stat { text-align: center; padding: 20px 12px; }
+.stat-num { font-size: clamp(2.5rem, 4vw, 3.8rem); font-weight: 700; color: var(--cyan); line-height: 1; }
+.stat-label { font-size: 0.8rem; color: var(--dim); margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* ── Quote ───────────────────────────────────────── */
+.quote {
+  border-left: 3px solid var(--cyan);
+  padding: 1.25rem 1.75rem;
+  background: var(--bg-card);
+  border-radius: 0 10px 10px 0;
+  margin: 1.25rem 0;
+  max-width: 560px;
+}
+.grid-3 .quote { max-width: none; }
+.quote p { color: var(--white); font-style: italic; font-size: 1.05rem; line-height: 1.75; max-width: none; }
+.grid-3 .quote p { font-size: 0.88rem; line-height: 1.6; }
+.quote .attr { color: var(--dim); font-style: normal; font-size: 0.8rem; margin-top: 0.6rem; }
+
+/* ── Agent cards ─────────────────────────────────── */
+.agent {
+  background: var(--bg-card);
+  border: 1px solid #1E1E2A;
+  border-radius: 12px;
+  padding: 24px;
+  transition: border-color 0.3s;
+}
+.agent:hover { border-color: var(--cyan-dim); }
+.agent-id { font-family: var(--mono); font-size: 1.8rem; font-weight: 700; color: var(--cyan); margin-bottom: 0.25rem; }
+.agent h4 { color: var(--white); font-size: 1rem; margin-bottom: 0.4rem; }
+.agent p { font-size: 0.82rem; color: var(--dim); line-height: 1.5; max-width: none; }
+
+/* ── Badge pills ─────────────────────────────────── */
+.badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1rem; justify-content: center; }
+.badge {
+  background: var(--bg-card);
+  border: 1px solid #222233;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: border-color 0.2s;
+}
+.badge:hover { border-color: var(--cyan-dim); }
+.badge-e { font-size: 1rem; }
+.badge-n { color: var(--gray); }
+
+/* ── Timeline ────────────────────────────────────── */
+.timeline { position: relative; padding-left: 36px; text-align: left; max-width: 600px; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 10px; top: 4px; bottom: 4px;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--cyan), var(--cyan-dim), transparent);
+}
+.tl-item { position: relative; margin-bottom: 36px; }
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -30px; top: 7px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan-dim);
+}
+.tl-item h3 { color: var(--white); margin-bottom: 0.35rem; font-size: 1.15rem; }
+.tl-item p { font-size: 0.95rem; }
+
+/* ── Closing ─────────────────────────────────────── */
+.closing .hero-mark { font-size: 3.5rem; margin-bottom: 2rem; }
+.closing h2 { margin-bottom: 1rem; line-height: 1.25; }
+.closing .tagline {
+  font-family: var(--mono);
+  color: var(--dim);
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  margin-top: 3rem;
+}
+.closing .author { color: var(--gray); font-size: 0.95rem; margin-top: 1.5rem; }
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .slide { padding: 40px 24px; }
+  .terminal { font-size: 0.7rem; }
+  .nav { bottom: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="slide-counter" id="counter"></div>
+
+<div class="deck" id="deck" role="region" aria-label="Inkwell pitch deck presentation">
+
+<!-- ═══════ ACT I: THE ITCH ══════════════════════════ -->
+
+<!-- SLIDE 1: COLD OPEN — the prompt, no context -->
+<div class="slide hero active" data-slide="0">
+  <div class="hero-mark stagger">◉</div>
+  <h1 class="stagger" style="max-width:800px;font-style:italic;font-weight:400;color:var(--yellow);">What did your father teach you that you're only now starting to understand?</h1>
+  <p class="stagger" style="margin-top:3rem;font-family:var(--mono);font-size:0.85rem;color:var(--dim);">Generated from 14 years of your own journal entries.</p>
+  <!-- SPEAKER NOTES: Don't explain anything. Let this sit for 3 seconds. The room will go quiet. That's the product. One question, pulled from your own writing, that stops you cold. -->
+</div>
+
+<!-- SLIDE 2: THE GAP — universal anxiety, then personal -->
+<div class="slide center" data-slide="1">
+  <div class="label stagger">The Gap</div>
+  <h2 class="stagger" style="max-width:800px">Everyone's talking about what agents will do.<br>Nobody's anxious about the technology.</h2>
+  <p class="large stagger" style="margin-top:2.5rem;max-width:640px">They're anxious about themselves.</p>
+  <p class="stagger" style="margin-top:1.5rem;max-width:640px">About whether the instincts they built over decades still matter. About the gap between reviewing other people's work and actually making something. I manage 220 designers. I review work. I give feedback. I set vision. All important. All one step removed from making. I hadn't built something myself in years.</p>
+  <!-- SPEAKER NOTES: Start broad — the room will nod. Everyone feels this. Then make it personal. "I hadn't built something in years." That's the itch. Not a technology problem. A permission problem. -->
+</div>
+
+<!-- ═══════ ACT II: THE BUILD ════════════════════════ -->
+
+<!-- SLIDE 3: THE VISION — Forge, three circles -->
+<div class="slide center" data-slide="2">
+  <div class="label stagger">The Vision</div>
+  <h2 class="stagger" style="max-width:800px">A system for the <span class="accent">human side</span><br>of the AI era.</h2>
+  <div class="grid-3 stagger" style="max-width:1000px;margin-top:3rem;">
+    <div class="card" style="text-align:center;"><span class="icon">🪶</span><h3>Inner Self</h3><p style="font-size:0.92rem">Private writing. Reflection. The thoughts you haven't processed. A journal that already knows your story.</p><p style="margin-top:0.75rem;font-family:var(--mono);font-size:0.78rem;color:var(--cyan)">◉ Inkwell</p></div>
+    <div class="card" style="text-align:center;"><span class="icon">📡</span><h3>Communication</h3><p style="font-size:0.92rem">Voice and text shaped into clear messages. For humans who don't live in your repos and agent systems.</p><p style="margin-top:0.75rem;font-family:var(--mono);font-size:0.78rem;color:var(--cyan)">◉ Dispatch</p></div>
+    <div class="card" style="text-align:center;"><span class="icon">⚡</span><h3>Command</h3><p style="font-size:0.92rem">One terminal view of every agent. What shipped. What's blocked. What needs you. Type a command, it routes.</p><p style="margin-top:0.75rem;font-family:var(--mono);font-size:0.78rem;color:var(--cyan)">◉ Forge</p></div>
+  </div>
+  <p class="stagger" style="margin-top:2.5rem;color:var(--dim);font-family:var(--mono);font-size:0.8rem">Terminal-native. Model-driven. Built by a design team.</p>
+  <!-- SPEAKER NOTES: Don't explain everything. Three cards, three words: reflect, communicate, command. "We started with the innermost circle." That transitions to the next slide. -->
+</div>
+
+<!-- SLIDE 4: THE MOMENT — Saturday night -->
+<div class="slide center" data-slide="3">
+  <div class="label stagger">The Inner Circle</div>
+  <h2 class="stagger" style="max-width:800px">We started with the most personal piece.</h2>
+  <p class="large stagger" style="margin-top:2rem;max-width:640px">Last Saturday at 9pm I opened a terminal and typed <code style="color:var(--cyan);background:var(--bg-card);padding:2px 10px;border-radius:4px;font-family:var(--mono);font-size:0.85em">npm init</code>. By Sunday morning I had a working app.</p>
+  <p class="stagger" style="margin-top:1.25rem;max-width:640px">I didn't write the code. I talked the way I talk to my designers and researchers. I used screenshots as specs. And I managed 6 AI agents the way I've always wanted to manage a team. Clear ownership. Direct feedback. High standards. No meetings.</p>
+  <p class="stagger" style="margin-top:1rem;max-width:640px">All my instincts work in this kind of environment. They just work faster.</p>
+  <!-- SPEAKER NOTES: "We started with the innermost circle. The journal. Because that's where everything begins — with your own thinking." Then pause on "By Sunday morning." Let the speed land. -->
+</div>
+
+<!-- SLIDE 5: THE TOOL — one screenshot, let the craft speak -->
+<div class="slide center" data-slide="4">
+  <div class="label stagger">The App</div>
+  <h2 class="stagger" style="margin-bottom:1.5rem">Built in a terminal. Designed like it's not.</h2>
+  <div class="terminal stagger">
+    <div class="terminal-bar"><div class="tab"><span class="tab-icon">◉</span><span class="tab-title">inkwell</span></div><div class="win-controls"><div class="win-btn"><svg viewBox="0 0 10 10"><line x1="1" y1="5" x2="9" y2="5"/></svg></div><div class="win-btn"><svg viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" rx="0.5"/></svg></div><div class="win-btn win-btn-close"><svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/></svg></div></div></div>
+    <div class="terminal-body">
+<div class="t-line"><span class="t-cyan-b">◉ Inkwell</span> <span class="t-dim">— private daily writing</span></div>
+<div class="t-line"></div>
+<div class="t-line"> 📅 <span class="t-white-b">Tuesday, February 17, 2026</span></div>
+<div class="t-line">    <span class="t-dim">░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░ ░</span> <span class="t-green">▓</span> <span class="t-green-b">█</span> <span class="t-dim">· · · · · · · · · · ·</span></div>
+<div class="t-line"></div>
+<div class="t-line"> <span class="t-dim">TODAY</span>              <span class="t-dim">ALL TIME</span></div>
+<div class="t-line"> <span class="t-green-b">387/350</span><span class="t-white"> words</span> <span class="t-green">✅</span>   <span class="t-white-b">352</span> entries</div>
+<div class="t-line"> <span class="t-dim">12:34 elapsed</span>      <span class="t-white-b">210,418</span> words</div>
+<div class="t-line">                    <span class="t-white-b">16</span> day best streak</div>
+<div class="t-line"></div>
+<div class="t-line"> 🔥 <span class="t-white-b">14</span> day streak</div>
+<div class="t-line"></div>
+<div class="t-line"> <span class="t-dim">BADGES</span> 🏕️ <span class="t-dim">Bonfire</span>  📚 <span class="t-dim">Novel</span>  🕯️ <span class="t-dim">First Light</span></div>
+<div class="t-line"></div>
+<div class="t-line"> <span class="t-cyan">❯</span> 🪶 Write</div>
+<div class="t-line">   📖 Browse entries</div>
+<div class="t-line">   🔍 Search</div>
+<div class="t-line">   📊 Stats</div>
+<div class="t-line">   ⚙️ Settings</div>
+<div class="t-line">   👋 Exit</div>
+    </div>
+  </div>
+  <!-- SPEAKER NOTES: Don't narrate the screen. Let them look. The point is that this doesn't look like a terminal app. It looks designed. Because it is. 19 design specs. Choreographed animations. Every character placed on purpose. -->
+</div>
+
+<!-- SLIDE 6: THE TEAM — the management parallel -->
+<div class="slide center" data-slide="5">
+  <div class="label stagger">The Team</div>
+  <h2 class="stagger" style="max-width:800px">I managed 6 AI agents the same way<br>I manage my <span class="accent">design team</span>.</h2>
+  <p class="stagger" style="margin-top:2.5rem;max-width:640px;text-align:left">Clear file ownership. No ambiguity about who builds what. A shared status board everyone reads before they start. A blocker protocol: try one alternative, then skip and log it. And an overnight brief so detailed the team ships while I sleep.</p>
+  <p class="stagger" style="margin-top:1.25rem;max-width:640px;text-align:left">It worked. Not because the agents are smart. Because the structure was right. And now I know something I suspected but couldn't prove: the management principles I've been teaching for 20 years work better when you follow them to the letter. No ego. No politics. Just the work.</p>
+  <p class="stagger" style="margin-top:1rem;max-width:640px;text-align:left;color:var(--dim)">I was the CPO, the CEO, the final decision maker on everything. And I felt incredibly free. That's an experience I haven't had in my career here.</p>
+  <!-- SPEAKER NOTES: This is the slide that matters for this audience. Not the technology. The insight: a design leader can build a product using the same instincts they use to lead a team. The tools just let those instincts work faster. -->
+</div>
+
+<!-- SLIDE 7: THE SOUL — the prompt system -->
+<div class="slide" data-slide="6">
+  <div class="split">
+    <div class="split-text">
+      <div class="label stagger">The Soul</div>
+      <h2 class="stagger">The best part of the app<br>already knows you.</h2>
+      <p class="large stagger" style="margin-top:1.5rem">1,449 writing prompts. 939 mined from my own journal entries. They reference real names, real events, real moments from 14 years of writing.</p>
+      <p class="stagger" style="margin-top:1rem">One per day. Never repeated. After all that writing, I can get a prompt that makes me stop. Makes me want to be better. Pushes me to say the thing I've been avoiding.</p>
+      <p class="stagger" style="margin-top:1rem;color:var(--dim)">That's the thing nobody expects from a terminal app.</p>
+    </div>
+    <div>
+      <div class="quote stagger"><p>"In 2013 you wrote: Be the first person in the office and the last one to leave. You don't believe that anymore. What do you believe about work ethic now?"</p><div class="attr">Personal prompt, mined from 2013 entry</div></div>
+      <div class="quote stagger"><p>"Name someone you appreciate but haven't told recently. Write it like you're telling them directly."</p><div class="attr">Curated prompt, Relationships</div></div>
+    </div>
+  </div>
+  <!-- SPEAKER NOTES: Read the first prompt out loud. Slowly. Let it land. "That's from my own journal. 2013. The app found it and turned it into a question. That's what makes this different from every other journaling tool. It already knows your story." -->
+</div>
+
+<!-- ═══════ ACT III: THE POINT ═══════════════════════ -->
+
+<!-- SLIDE 8: WHAT I LEARNED — three honest things -->
+<div class="slide center" data-slide="7">
+  <div class="label stagger">What I Learned</div>
+  <h2 class="stagger" style="margin-bottom:3rem;max-width:800px">Three things I didn't expect.</h2>
+  <div class="grid-3 stagger" style="max-width:1000px;">
+    <div class="card" style="text-align:left;"><span class="icon">⚡</span><h3>Speed changes everything.</h3><p>Making a decision and testing it in 10 seconds. Seeing the first screen render in your terminal within hours. It's like snowboarding. A few days of grinding and falling. And then you see the potential.</p></div>
+    <div class="card" style="text-align:left;"><span class="icon">🎯</span><h3>Design taste accelerates.</h3><p>I'm not writing code. I'm using screenshots and plain language. But every instinct about quality, about what feels right, about when something is almost there, all of that works. It just works faster than it does in a review cycle.</p></div>
+    <div class="card" style="text-align:left;"><span class="icon">🔓</span><h3>Permission is the real barrier.</h3><p>The tools are ready. They've been ready. The thing stopping most of us isn't technical skill. It's giving ourselves permission to build something instead of just reviewing what others build.</p></div>
+  </div>
+  <!-- SPEAKER NOTES: Don't rush these. Read the headlines only, then let the room read the cards. The third one is the call to action. -->
+</div>
+
+<!-- SLIDE 9: WHAT'S NEXT — the roadmap, not a feature list -->
+<div class="slide center" data-slide="8">
+  <div class="label stagger">What's Next</div>
+  <h2 class="stagger" style="max-width:800px;margin-bottom:2.5rem">We're building the other two circles.</h2>
+  <div class="grid-3 stagger" style="max-width:1000px;">
+    <div class="fcard" style="text-align:left;"><h3>◉ Dispatch</h3><p>Record your voice or type some bullets. AI shapes it into a status update, a team message, a note to your manager. Voice shapes down. Text shapes up. Spec complete. Building next.</p></div>
+    <div class="fcard" style="text-align:left;"><h3>◉ Forge Command</h3><p>One terminal. Every agent. What shipped overnight. What's blocked. What needs a decision. Type a command, it routes. Spec complete.</p></div>
+    <div class="fcard" style="text-align:left;"><h3>◉ Grind</h3><p>Personalized learning for my son's Algebra II. Same agents. Same craft. Different mission. A dad helping his kid the Detroit way. 208 tests. Active.</p></div>
+  </div>
+  <p class="stagger" style="margin-top:2rem;color:var(--dim);font-size:0.95rem;max-width:640px">We started with the smallest, most personal piece. And it works. The rest is a matter of time and taste.</p>
+  <!-- SPEAKER NOTES: Quick. Don't linger. Three cards. "Dispatch is next. Forge ties it together. And Grind — that's a separate story. A dad and his kid and some math." Move on. -->
+</div>
+
+<!-- SLIDE 10: THE INVITATION -->
+<div class="slide center" data-slide="9">
+  <h2 class="stagger" style="max-width:750px;line-height:1.3;">The tools are ready.<br><br>The question is whether we give ourselves<br><span class="accent">permission to build</span>.</h2>
+  <p class="stagger" style="margin-top:3rem;max-width:600px">Not "learn to code." Build something. Use your taste. Talk to the tools the way you talk to your team. Stay up too late because you can't stop. Remember what it felt like before you got promoted out of making things.</p>
+  <!-- SPEAKER NOTES: This is the moment. Look at the room. "How many of you have an idea for something that doesn't exist? Something you sketched on a napkin, or described to an engineer, but never built yourself? You can build it now. Tonight." -->
+</div>
+
+<!-- SLIDE 11: CLOSE -->
+<div class="slide hero closing" data-slide="10">
+  <div class="hero-mark stagger">◉</div>
+  <h2 class="stagger" style="max-width:600px">Your words. Your hands.<br>Go make something.</h2>
+  <div class="tagline stagger">reflect · communicate · command</div>
+  <div class="author stagger">Marcus Ash · Corporate Vice President of Design, Microsoft<br>Built with GitHub Copilot · ◉ Forge · February 2026</div>
+  <!-- SPEAKER NOTES: "◉ Forge. A system for the human side of the AI era. We started with a journal. We're building everything else. And the best decision I've made in ten years as a design leader is giving myself permission to make something again." End. -->
+</div>
+
+<!-- ═══════ APPENDIX ═════════════════════════════════ -->
+
+<!-- SLIDE 12: THE NUMBERS — for the curious -->
+<div class="slide center" data-slide="11">
+  <div class="label stagger">Appendix</div>
+  <h2 class="stagger" style="margin-bottom:3rem">The Numbers</h2>
+  <div class="grid-4 stagger">
+    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Years of Writing</div></div>
+    <div class="stat"><div class="stat-num">352</div><div class="stat-label">Entries Imported</div></div>
+    <div class="stat"><div class="stat-num">210K</div><div class="stat-label">Words</div></div>
+    <div class="stat"><div class="stat-num">1,450</div><div class="stat-label">Prompts</div></div>
+  </div>
+  <div class="grid-4 stagger" style="margin-top:16px;">
+    <div class="stat"><div class="stat-num">72</div><div class="stat-label">Badges</div></div>
+    <div class="stat"><div class="stat-num">513</div><div class="stat-label">Tests</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">AI Agents</div></div>
+    <div class="stat"><div class="stat-num">293</div><div class="stat-label">Commits</div></div>
+  </div>
+  <div class="grid-4 stagger" style="margin-top:16px;">
+    <div class="stat"><div class="stat-num">7,856</div><div class="stat-label">Lines of Source</div></div>
+    <div class="stat"><div class="stat-num">5,556</div><div class="stat-label">Lines of Tests</div></div>
+    <div class="stat"><div class="stat-num">1,892</div><div class="stat-label">Curated Quotes</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">Words Lost</div></div>
+  </div>
+  <!-- SPEAKER NOTES: "This slide is for anyone who wants proof. 642 tests. 294 commits. 8,003 lines of TypeScript I didn't write but I reviewed every one. And zero words lost. That's the number I care about most." -->
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div class="nav" id="nav" role="navigation" aria-label="Slide navigation">
+  <div class="nav-arrow" id="prev" onclick="go(-1)" role="button" aria-label="Previous slide" tabindex="0">←</div>
+  <div class="nav-dots" id="dots" role="tablist" aria-label="Slide indicators"></div>
+  <div class="nav-arrow" id="next" onclick="go(1)" role="button" aria-label="Next slide" tabindex="0">→</div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let current = 0;
+
+// Build dots
+const dotsEl = document.getElementById('dots');
+for (let i = 0; i < total; i++) {
+  const d = document.createElement('div');
+  d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  d.style.cursor = 'pointer';
+  dotsEl.appendChild(d);
+}
+
+function goTo(n) {
+  if (n < 0 || n >= total || n === current) return;
+  const dir = n > current ? 1 : -1;
+  const prev = current;
+  current = n;
+
+  // Exit previous slide
+  slides[prev].classList.remove('active');
+  slides[prev].style.transform = dir > 0 ? 'translateX(-60px)' : 'translateX(60px)';
+  slides[prev].style.opacity = '0';
+  setTimeout(() => { slides[prev].style.transform = ''; slides[prev].style.opacity = ''; }, 600);
+
+  // Enter new slide
+  slides[current].style.transition = 'none';
+  slides[current].style.transform = dir > 0 ? 'translateX(60px)' : 'translateX(-60px)';
+  slides[current].style.opacity = '0';
+  requestAnimationFrame(() => {
+    slides[current].style.transition = '';
+    slides[current].classList.add('active');
+    slides[current].style.transform = '';
+    slides[current].style.opacity = '';
+  });
+
+  updateUI();
+}
+
+function go(dir) { goTo(current + dir); }
+
+function updateUI() {
+  // Dots
+  document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  // Arrows
+  document.getElementById('prev').classList.toggle('disabled', current === 0);
+  document.getElementById('next').classList.toggle('disabled', current === total - 1);
+  // Counter
+  document.getElementById('counter').textContent = `${current + 1} / ${total}`;
+  // Progress
+  document.getElementById('progress').style.width = ((current / (total - 1)) * 100) + '%';
+}
+
+// Keyboard nav
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+  if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+  if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+});
+
+// Show cursor on mouse move
+let cursorTimeout;
+document.addEventListener('mousemove', () => {
+  document.body.style.cursor = 'default';
+  clearTimeout(cursorTimeout);
+  cursorTimeout = setTimeout(() => { document.body.style.cursor = 'none'; }, 3000);
+});
+
+// Click left/right halves
+document.addEventListener('click', (e) => {
+  if (e.target.closest('.nav')) return;
+  if (e.clientX > window.innerWidth / 2) go(1);
+  else go(-1);
+});
+
+updateUI();
+</script>
+</body>
+</html>

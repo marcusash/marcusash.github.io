@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Tab Colors — From Brand Guide</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: #0A0A0F; color: #E8E8ED; font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif; }
+
+.page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 40px; padding: 48px; }
+
+.section-label { font-family: 'Cascadia Code', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8888A0; margin-bottom: 14px; text-align: center; }
+
+/* Palette row */
+.palette { display: flex; gap: 12px; }
+.chip { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.chip-dot { width: 40px; height: 40px; border-radius: 50%; }
+.chip-id { font-family: 'Cascadia Code', monospace; font-size: 11px; font-weight: 700; }
+.chip-hex { font-family: 'Cascadia Code', monospace; font-size: 10px; color: #8888A0; }
+
+/* Tab strip */
+.tab-strip { display: flex; background: #111118; border: 1px solid #2A2A3A; border-radius: 8px; overflow: hidden; }
+.tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 12px 22px;
+  font-family: 'Cascadia Code', monospace; font-size: 12px; font-weight: 600;
+  color: #8888A0; border-right: 1px solid #2A2A3A; cursor: pointer;
+  transition: background .15s;
+}
+.tab:last-child { border-right: none; }
+.tab:hover { background: #16161F; }
+.tab.active { background: #16161F; }
+.tab .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Larger preview dots */
+.dot-row { display: flex; gap: 20px; align-items: center; justify-content: center; }
+.big-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.big-dot { border-radius: 50%; }
+.big-label { font-family: 'Cascadia Code', monospace; font-size: 10px; color: #8888A0; }
+
+.note { background: #111118; border: 1px solid #2A2A3A; border-left: 3px solid #F97316; border-radius: 0 10px 10px 0; padding: 16px 24px; max-width: 700px; }
+.note-title { font-size: 13px; font-weight: 600; color: #F97316; margin-bottom: 6px; }
+.note-body { font-size: 12px; color: #8888A0; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div>
+    <div class="section-label">Brand colors — exact from guide. No changes.</div>
+    <div class="palette">
+      <div class="chip">
+        <div class="chip-dot" style="background:#FFCB05"></div>
+        <div class="chip-id" style="color:#FFCB05">FD</div>
+        <div class="chip-hex">#FFCB05</div>
+      </div>
+      <div class="chip">
+        <div class="chip-dot" style="background:#4A90D9"></div>
+        <div class="chip-id" style="color:#4A90D9">FA</div>
+        <div class="chip-hex">#4A90D9</div>
+      </div>
+      <div class="chip">
+        <div class="chip-dot" style="background:#22C55E"></div>
+        <div class="chip-id" style="color:#22C55E">FF</div>
+        <div class="chip-hex">#22C55E</div>
+      </div>
+      <div class="chip">
+        <div class="chip-dot" style="background:#6D28D9"></div>
+        <div class="chip-id" style="color:#6D28D9">FI</div>
+        <div class="chip-hex">#6D28D9</div>
+      </div>
+      <div class="chip">
+        <div class="chip-dot" style="background:#94A3B8"></div>
+        <div class="chip-id" style="color:#94A3B8">FO</div>
+        <div class="chip-hex">#94A3B8</div>
+      </div>
+      <div class="chip">
+        <div class="chip-dot" style="background:#78909C"></div>
+        <div class="chip-id" style="color:#78909C">FP</div>
+        <div class="chip-hex">#78909C</div>
+      </div>
+      <div class="chip">
+        <div class="chip-dot" style="background:#F97316"></div>
+        <div class="chip-id" style="color:#F97316">FR</div>
+        <div class="chip-hex">#F97316</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">Tab strip — brand colors applied exactly</div>
+    <div class="tab-strip">
+      <div class="tab active"><div class="dot" style="background:#FFCB05"></div><span style="color:#FFCB05">FD</span></div>
+      <div class="tab"><div class="dot" style="background:#4A90D9"></div><span style="color:#4A90D9">FA</span></div>
+      <div class="tab"><div class="dot" style="background:#22C55E"></div><span style="color:#22C55E">FF</span></div>
+      <div class="tab"><div class="dot" style="background:#6D28D9"></div><span style="color:#6D28D9">FI</span></div>
+      <div class="tab"><div class="dot" style="background:#94A3B8"></div><span style="color:#94A3B8">FO</span></div>
+      <div class="tab"><div class="dot" style="background:#78909C"></div><span style="color:#78909C">FP</span></div>
+      <div class="tab"><div class="dot" style="background:#F97316"></div><span style="color:#F97316">FR</span></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">Dots at actual render size (8px)</div>
+    <div class="dot-row">
+      <div class="big-dot-wrap"><div class="big-dot" style="width:8px;height:8px;background:#FFCB05"></div><div class="big-label">FD</div></div>
+      <div class="big-dot-wrap"><div class="big-dot" style="width:8px;height:8px;background:#4A90D9"></div><div class="big-label">FA</div></div>
+      <div class="big-dot-wrap"><div class="big-dot" style="width:8px;height:8px;background:#22C55E"></div><div class="big-label">FF</div></div>
+      <div class="big-dot-wrap"><div class="big-dot" style="width:8px;height:8px;background:#6D28D9"></div><div class="big-label">FI</div></div>
+      <div class="big-dot-wrap"><div class="big-dot" style="width:8px;height:8px;background:#94A3B8"></div><div class="big-label">FO</div></div>
+      <div class="big-dot-wrap"><div class="big-dot" style="width:8px;height:8px;background:#78909C"></div><div class="big-label">FP</div></div>
+      <div class="big-dot-wrap"><div class="big-dot" style="width:8px;height:8px;background:#F97316"></div><div class="big-label">FR</div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <div class="note-title">The real issue</div>
+    <div class="note-body">FO (#94A3B8 silver) and FP (#78909C steel) are very close — both cool gray. That is likely what you saw in the screenshot. FF (green) and FI (indigo) are distinct hues. FO and FP are the actual clash. They share the same hue family and nearly the same brightness. Should FP stay Steel, or go back to Red Wings Red (#CE1126)?</div>
+  </div>
+
+</div>
+</body>
+</html>

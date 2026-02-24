@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Marcus Ash — marcusash.github.io</title>
+<style>
+  /* ============================================================
+     marcusash.github.io — GitHub Pages Design Mockup
+     FD (Maize) for FO + Marcus | Feb 23 2026
+     Constraints: system fonts only, static HTML, no CDN
+     Platform: GitHub Pages (full HTML/CSS/JS control)
+     Theme: Light (readability-first per fd-dashboard-design.md)
+     Fonts: Segoe UI Variable (Windows) → Arial (all others)
+  ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #F8FAFC;
+    --surface:  #FFFFFF;
+    --border:   #E2E8F0;
+    --text:     #1E293B;
+    --muted:    #64748B;
+    --subtle:   #94A3B8;
+    --maize:    #FFCB05;
+    --navy:     #1E293B;
+    --green:    #22C55E;
+    --font:     'Segoe UI Variable', 'Segoe UI', Arial, sans-serif;
+    --mono:     'Cascadia Code', 'Consolas', 'Courier New', monospace;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    height: 100%; width: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  /* ---- HEADER / NAV ---- */
+  .site-header {
+    background: var(--navy);
+    padding: 0 64px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  .site-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--maize);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: var(--navy);
+    font-family: var(--mono);
+  }
+
+  .logo-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #FFFFFF;
+    letter-spacing: -0.01em;
+  }
+
+  .site-nav {
+    margin-left: auto;
+    display: flex;
+    gap: 28px;
+    align-items: center;
+  }
+
+  .site-nav a {
+    font-size: 13px;
+    color: #94A3B8;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+  }
+  .site-nav a:hover { color: #FFFFFF; }
+
+  .nav-gh-link {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #FFFFFF !important;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    background: var(--navy);
+    padding: 80px 64px 72px;
+    display: flex;
+    align-items: center;
+    gap: 80px;
+    flex-shrink: 0;
+    border-bottom: 3px solid var(--maize);
+  }
+
+  .hero-text { flex: 1; }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--maize);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .hero-name {
+    font-size: clamp(2.4rem, 4vw, 3.4rem);
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .hero-title {
+    font-size: 18px;
+    color: #94A3B8;
+    font-weight: 400;
+    margin-bottom: 28px;
+    line-height: 1.4;
+  }
+
+  .hero-title strong {
+    color: #CBD5E1;
+    font-weight: 500;
+  }
+
+  .hero-links {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hero-btn {
+    padding: 10px 22px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+  }
+  .hero-btn.primary {
+    background: var(--maize);
+    color: var(--navy);
+  }
+  .hero-btn.secondary {
+    background: rgba(255,255,255,0.08);
+    color: #FFFFFF;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  /* Kai live card in hero */
+  .kai-live-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,203,5,0.25);
+    border-radius: 14px;
+    padding: 28px 32px;
+    width: 280px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+
+  .kai-card-eyebrow {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--maize);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .kai-score-big {
+    font-size: 64px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .kai-score-label {
+    font-size: 12px;
+    color: #64748B;
+    margin-top: 6px;
+    font-family: var(--mono);
+  }
+
+  .kai-subject {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #94A3B8;
+  }
+
+  .kai-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    font-size: 10px;
+    color: var(--green);
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+  }
+  .kai-live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  /* ---- MAIN CONTENT ---- */
+  .site-main {
+    flex: 1;
+    padding: 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+
+  /* Section label */
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--subtle);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  /* ---- FEATURED PROJECT: MCM ---- */
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    gap: 0;
+  }
+
+  .project-accent {
+    width: 4px;
+    background: var(--maize);
+    flex-shrink: 0;
+  }
+
+  .project-body {
+    padding: 36px 40px;
+    flex: 1;
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+  }
+
+  .project-info { flex: 1; }
+
+  .project-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--maize);
+    text-transform: uppercase;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-bottom: 14px;
+    display: inline-block;
+  }
+
+  .project-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+
+  .project-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.65;
+    margin-bottom: 20px;
+    max-width: 48ch;
+  }
+
+  .project-tech {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .tech-chip {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: #F1F5F9;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .project-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex-shrink: 0;
+    width: 180px;
+  }
+
+  .pstat {
+    text-align: center;
+    padding: 16px;
+    background: #F8FAFC;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .pstat-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .pstat-num.green { color: var(--green); }
+  .pstat-label {
+    font-size: 11px;
+    color: var(--subtle);
+    margin-top: 3px;
+    font-family: var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    text-decoration: none;
+    border-bottom: 2px solid var(--maize);
+    padding-bottom: 1px;
+  }
+
+  /* ---- ABOUT ---- */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .about-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px 30px;
+  }
+
+  .about-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .about-card-body {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* ---- FOOTER ---- */
+  .site-footer {
+    background: var(--navy);
+    padding: 20px 64px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-shrink: 0;
+  }
+
+  .footer-copy {
+    font-size: 12px;
+    color: #475569;
+    font-family: var(--mono);
+  }
+
+  .footer-links {
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+  }
+
+  .footer-links a {
+    font-size: 12px;
+    color: #475569;
+    text-decoration: none;
+  }
+  .footer-links a:hover { color: #94A3B8; }
+
+  /* ---- CANVAS META STRIP (not on real site) ---- */
+  .canvas-meta {
+    background: #1A1600;
+    border-top: 1px solid #3A2E00;
+    padding: 6px 64px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .cm-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #FFCB05;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .cm-text {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: #78350F;
+  }
+</style>
+</head>
+<body>
+
+<!-- CANVAS META: design notes, not on real site -->
+<div class="canvas-meta">
+  <span class="cm-label">FD DESIGN MOCKUP</span>
+  <span class="cm-text">marcusash.github.io — Platform: GitHub Pages (static HTML, system fonts, full CSS control) — Light theme — Feb 23 2026</span>
+</div>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="site-logo">
+    <div class="logo-mark">M</div>
+    <span class="logo-name">Marcus Ash</span>
+  </div>
+  <nav class="site-nav">
+    <a href="#projects">Projects</a>
+    <a href="#about">About</a>
+    <a href="https://github.com/marcusash" class="nav-gh-link">GitHub</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Design Leader · Microsoft</div>
+    <h1 class="hero-name">Marcus Ash</h1>
+    <p class="hero-title">
+      Principal Design Manager at <strong>Microsoft</strong>.<br>
+      Building at the intersection of design and AI.
+    </p>
+    <div class="hero-links">
+      <a href="#projects" class="hero-btn primary">View Projects</a>
+      <a href="https://github.com/marcusash" class="hero-btn secondary">GitHub Profile</a>
+    </div>
+  </div>
+
+  <!-- LIVE KAI SCORE — fetched from marcusash.github.io/motor-city-math/data/kai-scores-latest.json -->
+  <div class="kai-live-card">
+    <div class="kai-card-eyebrow">Kai · Latest Score</div>
+    <div class="kai-score-big" id="kai-score">94</div>
+    <div class="kai-subject" id="kai-subject">Algebra 2</div>
+    <div class="kai-score-label" id="kai-date">2026-02-22</div>
+    <div class="kai-live-badge">
+      <div class="kai-live-dot"></div>
+      LIVE · motor-city-math
+    </div>
+  </div>
+</section>
+
+<!-- MAIN -->
+<main class="site-main">
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-label">Featured Projects</div>
+
+    <div class="project-card">
+      <div class="project-accent"></div>
+      <div class="project-body">
+        <div class="project-info">
+          <div class="project-tag">Open Source · Live</div>
+          <div class="project-name">Motor City Math</div>
+          <p class="project-desc">
+            A personalized Algebra 2 practice system built for my son Kai.
+            Generates adaptive problem sets, tracks mastery by topic, and publishes
+            verified scores with full solution steps. 3,000+ problems verified.
+          </p>
+          <div class="project-tech">
+            <div class="tech-chip">TypeScript</div>
+            <div class="tech-chip">Node.js</div>
+            <div class="tech-chip">Vitest</div>
+            <div class="tech-chip">GitHub Pages</div>
+          </div>
+          <a href="https://marcusash.github.io/motor-city-math" class="project-link">
+            View project →
+          </a>
+        </div>
+        <div class="project-stats">
+          <div class="pstat">
+            <div class="pstat-num">3008</div>
+            <div class="pstat-label">Problems</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-num green" id="pstat-score">94%</div>
+            <div class="pstat-label">Latest Score</div>
+          </div>
+          <div class="pstat">
+            <div class="pstat-num">10</div>
+            <div class="pstat-label">Exams</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-label">About</div>
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-card-title">Design leadership at Microsoft</div>
+        <div class="about-card-body">
+          Principal Design Manager building AI-first products. Focused on the intersection
+          of design systems, developer experience, and large language model interfaces.
+        </div>
+      </div>
+      <div class="about-card">
+        <div class="about-card-title">Projects built on this account</div>
+        <div class="about-card-body">
+          Personal projects I build and ship. Motor City Math is live.
+          More coming. All work on this account is public and open source.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-copy">marcusash.github.io</div>
+  <div class="footer-links">
+    <a href="https://github.com/marcusash">GitHub</a>
+    <a href="https://marcusash.github.io/motor-city-math">Motor City Math</a>
+  </div>
+</footer>
+
+<script>
+// Live score fetch — runs on real GitHub Pages site
+// Source: https://marcusash.github.io/motor-city-math/data/kai-scores-latest.json
+(async () => {
+  try {
+    const res = await fetch('https://marcusash.github.io/motor-city-math/data/kai-scores-latest.json');
+    if (!res.ok) return;
+    const data = await res.json();
+    // Adapt to actual JSON shape from FA arch doc
+    const score = data.score ?? data.percentage ?? data.pct;
+    const subject = data.subject ?? data.topic ?? 'Algebra 2';
+    const date = data.date ?? data.session_date ?? '';
+    if (score !== undefined) {
+      document.getElementById('kai-score').textContent = Math.round(score);
+      document.getElementById('pstat-score').textContent = Math.round(score) + '%';
+    }
+    if (subject) document.getElementById('kai-subject').textContent = subject;
+    if (date) document.getElementById('kai-date').textContent = date.slice(0, 10);
+  } catch (e) {
+    // Fail silently — static fallback values are already shown
+  }
+})();
+</script>
+
+<script src="canvas-feedback.js"></script>
+</body>
+</html>

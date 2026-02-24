@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FP Color Decision</title>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: #0A0A0F; color: #E8E8ED; font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif; }
+.page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 48px; padding: 48px; }
+.row { display: flex; gap: 48px; align-items: flex-start; }
+.option { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.swatch { width: 160px; height: 100px; border-radius: 14px; }
+.opt-name { font-size: 1.1rem; font-weight: 700; }
+.opt-hex { font-family: 'Cascadia Code', monospace; font-size: 13px; color: #8888A0; }
+.opt-desc { font-size: 12px; color: #8888A0; text-align: center; max-width: 160px; line-height: 1.5; }
+.vs { font-size: 1.5rem; color: #2A2A3A; align-self: center; }
+
+.tab-row { display: flex; flex-direction: column; gap: 20px; }
+.tab-label { font-family: 'Cascadia Code', monospace; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8888A0; margin-bottom: 4px; }
+.tab-strip { display: flex; background: #111118; border: 1px solid #2A2A3A; border-radius: 8px; overflow: hidden; }
+.tab { display: flex; align-items: center; gap: 7px; padding: 11px 20px; font-family: 'Cascadia Code', monospace; font-size: 12px; font-weight: 600; border-right: 1px solid #2A2A3A; }
+.tab:last-child { border-right: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.banner { background: #111118; border: 1px solid #CE1126; border-radius: 10px; padding: 16px 28px; max-width: 680px; text-align: center; }
+.banner-title { font-size: 13px; font-weight: 600; color: #CE1126; margin-bottom: 6px; }
+.banner-body { font-size: 12px; color: #8888A0; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="banner">
+    <div class="banner-title">What happened</div>
+    <div class="banner-body">An agent committed "Fix FP color chip: Steel #78909C (was Red Wings Red #CE1126)" on Feb 22 without approval. The skill file always said Red Wings Red. The agent changed it unilaterally. That was wrong.</div>
+  </div>
+
+  <div class="row">
+    <div class="option">
+      <div class="swatch" style="background:#CE1126"></div>
+      <div class="opt-name" style="color:#CE1126">Red Wings Red</div>
+      <div class="opt-hex">#CE1126</div>
+      <div class="opt-desc">Original brand color. Security = protection. Red Wings = defense.</div>
+    </div>
+    <div class="vs">vs</div>
+    <div class="option">
+      <div class="swatch" style="background:#78909C"></div>
+      <div class="opt-name" style="color:#78909C">Steel</div>
+      <div class="opt-hex">#78909C</div>
+      <div class="opt-desc">What an agent changed it to. Infrastructure = steel. Too close to FO silver.</div>
+    </div>
+  </div>
+
+  <div class="tab-row">
+    <div>
+      <div class="tab-label">With Red Wings Red (original)</div>
+      <div class="tab-strip">
+        <div class="tab"><div class="dot" style="background:#FFCB05"></div><span style="color:#FFCB05">FD</span></div>
+        <div class="tab"><div class="dot" style="background:#4A90D9"></div><span style="color:#4A90D9">FA</span></div>
+        <div class="tab"><div class="dot" style="background:#22C55E"></div><span style="color:#22C55E">FF</span></div>
+        <div class="tab"><div class="dot" style="background:#6D28D9"></div><span style="color:#6D28D9">FI</span></div>
+        <div class="tab"><div class="dot" style="background:#94A3B8"></div><span style="color:#94A3B8">FO</span></div>
+        <div class="tab"><div class="dot" style="background:#CE1126"></div><span style="color:#CE1126">FP</span></div>
+        <div class="tab"><div class="dot" style="background:#F97316"></div><span style="color:#F97316">FR</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="tab-label">With Steel (agent change — likely wrong)</div>
+      <div class="tab-strip">
+        <div class="tab"><div class="dot" style="background:#FFCB05"></div><span style="color:#FFCB05">FD</span></div>
+        <div class="tab"><div class="dot" style="background:#4A90D9"></div><span style="color:#4A90D9">FA</span></div>
+        <div class="tab"><div class="dot" style="background:#22C55E"></div><span style="color:#22C55E">FF</span></div>
+        <div class="tab"><div class="dot" style="background:#6D28D9"></div><span style="color:#6D28D9">FI</span></div>
+        <div class="tab"><div class="dot" style="background:#94A3B8"></div><span style="color:#94A3B8">FO</span></div>
+        <div class="tab"><div class="dot" style="background:#78909C"></div><span style="color:#78909C">FP</span></div>
+        <div class="tab"><div class="dot" style="background:#F97316"></div><span style="color:#F97316">FR</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

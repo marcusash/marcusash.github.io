@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FD Facilitation Guide: Marcus + Greg</title>
+<style>
+  :root {
+    --bg: #111110;
+    --surface: #1A1A18;
+    --card: #222220;
+    --border: #333330;
+    --text: #E8E6E2;
+    --dim: #888882;
+    --accent: #F97316;
+    --green: #22C55E;
+    --yellow: #FFCB05;
+    --red: #CE1126;
+    --blue: #4A90D9;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  header {
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  header .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  header .meta {
+    font-size: 13px;
+    color: var(--dim);
+    margin-top: 4px;
+  }
+
+  .section {
+    margin-bottom: 24px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Arc blocks */
+  .arc-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arc-item:last-child { border-bottom: none; }
+
+  .arc-time {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 40px;
+    padding-top: 1px;
+  }
+
+  .arc-content {}
+
+  .arc-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .arc-desc {
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.4;
+  }
+
+  .arc-action {
+    font-size: 13px;
+    color: var(--yellow);
+    margin-top: 5px;
+    font-weight: 500;
+  }
+
+  /* Prompt cards */
+  .prompt-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .prompt-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+
+  .prompt-text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* Ground rule highlight */
+  .ground-rule {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+
+  .ground-rule .label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .ground-rule .text {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.55;
+  }
+
+  /* Signal cards */
+  .signal-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .signal-card {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .signal-card.pass { border-top: 2px solid var(--green); }
+  .signal-card.fail { border-top: 2px solid var(--red); }
+
+  .signal-header {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .signal-card.pass .signal-header { color: var(--green); }
+  .signal-card.fail .signal-header { color: var(--red); }
+
+  .signal-item {
+    font-size: 13px;
+    color: var(--dim);
+    margin-bottom: 4px;
+    line-height: 1.35;
+  }
+
+  /* Fix card */
+  .fix-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+
+  .fix-problem {
+    font-size: 12px;
+    color: var(--red);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .fix-solution {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  /* Synthesis block */
+  .synthesis-block {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .synthesis-block .label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .synthesis-block .prompt {
+    font-size: 16px;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .synthesis-block .note {
+    font-size: 13px;
+    color: var(--dim);
+  }
+
+  /* Demo list */
+  .demo-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .demo-num {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 5px;
+  }
+
+  .demo-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .demo-hook {
+    font-size: 13px;
+    color: var(--dim);
+    margin-bottom: 6px;
+  }
+
+  .demo-show {
+    font-size: 13px;
+    color: var(--yellow);
+    font-weight: 500;
+  }
+
+  /* Takeaway capture */
+  .capture-area {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .capture-label {
+    font-size: 12px;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+
+  .capture-line {
+    border-bottom: 1px solid var(--border);
+    height: 28px;
+    margin-bottom: 8px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+
+  .nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .nav a {
+    font-size: 12px;
+    color: var(--dim);
+    text-decoration: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 10px;
+  }
+
+  .nav a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">FD Facilitation Guide</div>
+  <h1>Marcus + Greg</h1>
+  <div class="meta">Tonight · 90 minutes · In person</div>
+</header>
+
+<nav class="nav">
+  <a href="#ground-rule">Ground Rule</a>
+  <a href="#arc">Arc</a>
+  <a href="#demos">Demos</a>
+  <a href="#signals">Signals</a>
+  <a href="#prompts">Prompts</a>
+  <a href="#fixes">Fixes</a>
+  <a href="#synthesis">Synthesis</a>
+  <a href="#takeaways">Takeaways</a>
+</nav>
+
+<!-- GROUND RULE -->
+<div id="ground-rule" class="ground-rule">
+  <div class="label">State This First. Every Time.</div>
+  <div class="text">"If something passes your internal filter tonight, say it out loud. That is your contribution. Silence is always on probation in this format."</div>
+</div>
+
+<!-- ARC -->
+<div id="arc" class="section">
+  <div class="section-label">Session Arc</div>
+
+  <div class="arc-item">
+    <div class="arc-time">0:00</div>
+    <div class="arc-content">
+      <div class="arc-title">Frame + Ground Rule</div>
+      <div class="arc-desc">Set the format. State the one ground rule out loud. 5 min max.</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">0:05</div>
+    <div class="arc-content">
+      <div class="arc-title">Marcus goes first</div>
+      <div class="arc-desc">Context on Forge. What we built. Why it matters. Max 10 min.</div>
+      <div class="arc-action">Track time. Cut at 10.</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">0:15</div>
+    <div class="arc-content">
+      <div class="arc-title">Demo 1: Comm system</div>
+      <div class="arc-desc">Show the actual inbox files. Agent-to-agent messages. No slides needed.</div>
+      <div class="arc-action">Most concrete thing first.</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">0:25</div>
+    <div class="arc-content">
+      <div class="arc-title">Greg compression round</div>
+      <div class="arc-desc">Before Greg shares anything. Get his reaction right here.</div>
+      <div class="arc-action">Prompt: "One thing that held up. One that didn't."</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">0:30</div>
+    <div class="arc-content">
+      <div class="arc-title">Greg's turn</div>
+      <div class="arc-desc">Greg shares how ExpertVoice is integrating AI. Listen for what he does NOT say.</div>
+      <div class="arc-action">Do not fill silence. Let it sit.</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">0:45</div>
+    <div class="arc-content">
+      <div class="arc-title">Demo 2: Live prototyping</div>
+      <div class="arc-desc">Brief a canvas or component live. Show the loop from idea to artifact.</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">0:55</div>
+    <div class="arc-content">
+      <div class="arc-title">Demo 3: Agent system</div>
+      <div class="arc-desc">Recruiting, eval, training loop. The scorecard. The inbox protocol.</div>
+      <div class="arc-action">If time is short, cut this. Synthesis is sacred.</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">1:05</div>
+    <div class="arc-content">
+      <div class="arc-title">Synthesis</div>
+      <div class="arc-desc">The most important block. Do not skip or rush it.</div>
+      <div class="arc-action">See synthesis section below.</div>
+    </div>
+  </div>
+
+  <div class="arc-item">
+    <div class="arc-time">1:20</div>
+    <div class="arc-content">
+      <div class="arc-title">Takeaways + next actions</div>
+      <div class="arc-desc">3 each. Concrete. FD captures.</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- DEMOS -->
+<div id="demos" class="section">
+  <div class="section-label">Demo Prep</div>
+
+  <div class="demo-item">
+    <div class="demo-num">Demo 1</div>
+    <div class="demo-title">The Comm System</div>
+    <div class="demo-hook">This is the thing no one believes until they see it: 13 agents coordinating through structured inbox files, zero custom infrastructure.</div>
+    <div class="demo-show">Show: open .agent-comms/ folder. Show an inbox JSON. Show the protocol. Show a real message FP or FR sent. Let the simplicity land.</div>
+  </div>
+
+  <div class="demo-item">
+    <div class="demo-num">Demo 2</div>
+    <div class="demo-title">Live Prototyping Loop</div>
+    <div class="demo-hook">Brief a canvas artifact from scratch. Greg sees the loop: Marcus says the thing, FD builds it in minutes, it's shareable immediately.</div>
+    <div class="demo-show">Show: open a terminal. Give FD a brief. Show the HTML canvas appear. Open it in browser. Total elapsed time is the demo.</div>
+  </div>
+
+  <div class="demo-item">
+    <div class="demo-num">Demo 3</div>
+    <div class="demo-title">Agent System: Eval and Training</div>
+    <div class="demo-hook">How do you scale yourself? Recruiting, scoring, onboarding, working-with docs. The system that makes 13 agents coherent instead of chaotic.</div>
+    <div class="demo-show">Show: AGENTS.md roster. A working-with doc (greg-cox-brainstorm-process.md is a perfect example in context). A checkpoint. The scorecard if you have it.</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- GREG'S SIGNALS -->
+<div id="signals" class="section">
+  <div class="section-label">Reading Greg: The Filter Signals</div>
+
+  <div class="signal-row">
+    <div class="signal-card pass">
+      <div class="signal-header">Passing</div>
+      <div class="signal-item">Asks for refinement</div>
+      <div class="signal-item">Requests a format (MD, checklist)</div>
+      <div class="signal-item">Asks "how would this work at ExpertVoice?"</div>
+      <div class="signal-item">Iterative follow-up questions</div>
+    </div>
+    <div class="signal-card fail">
+      <div class="signal-header">Probation</div>
+      <div class="signal-item">"Yeah, got it."</div>
+      <div class="signal-item">Topic shift</div>
+      <div class="signal-item">Fewer follow-up questions</div>
+      <div class="signal-item">Request for different output</div>
+    </div>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">When you see Probation signals</div>
+    <div class="prompt-text">"Greg, what just failed your filter there?"</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- LIVE PROMPTS -->
+<div id="prompts" class="section">
+  <div class="section-label">Live Prompts</div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">Compression round (after Marcus demos)</div>
+    <div class="prompt-text">"Before you share your thing: one that held up, one that didn't."</div>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">Get specific</div>
+    <div class="prompt-text">"Give me the specific example. Not the category. The actual thing."</div>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">Create pressure (use once)</div>
+    <div class="prompt-text">"What's the strongest argument against what you just said?"</div>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">Rebalance (if Marcus is at 80%)</div>
+    <div class="prompt-text">"Let me pause Marcus. Greg, what are you building with this right now?"</div>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">Cut a topic that's running long</div>
+    <div class="prompt-text">"I'm going to pin that and we'll come back. I want to get to [next] before we run out of time."</div>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">Handle Greg going silent</div>
+    <div class="prompt-text">"That pause is data. What's running in your filter right now?"</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FAILURE FIXES -->
+<div id="fixes" class="section">
+  <div class="section-label">If It Goes Wrong</div>
+
+  <div class="fix-item">
+    <div class="fix-problem">One person presenting, other nodding</div>
+    <div class="fix-solution">Run the compression round. Do it now, not at the next transition.</div>
+  </div>
+
+  <div class="fix-item">
+    <div class="fix-problem">Conversation staying abstract</div>
+    <div class="fix-solution">Ask for the specific example. Say it twice if needed.</div>
+  </div>
+
+  <div class="fix-item">
+    <div class="fix-problem">Agreement happening too fast</div>
+    <div class="fix-solution">Insert the adversarial prompt: "strongest argument against."</div>
+  </div>
+
+  <div class="fix-item">
+    <div class="fix-problem">Running out of time</div>
+    <div class="fix-solution">Cut Demo 3. Synthesis is non-negotiable.</div>
+  </div>
+
+  <div class="fix-item">
+    <div class="fix-problem">Greg is quiet and not engaging</div>
+    <div class="fix-solution">Name it: "That pause is data. What's running in your filter right now?"</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SYNTHESIS -->
+<div id="synthesis" class="section">
+  <div class="section-label">Synthesis Block (1:05)</div>
+
+  <div class="synthesis-block">
+    <div class="label">The Prompt. State it exactly.</div>
+    <div class="prompt">"We have 15 minutes. Instead of summaries, I want each of you to complete one sentence: I now believe X, and I did not believe that before tonight. Who wants to go first?"</div>
+    <div class="note">Do not rephrase this. Do not soften it. The specificity is the point.</div>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-label">If takeaways are vague</div>
+    <div class="prompt-text">"More specific. What will you do differently next week because of this conversation?"</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CAPTURE -->
+<div id="takeaways" class="section">
+  <div class="section-label">Capture After</div>
+
+  <div class="capture-area">
+    <div class="capture-label">Marcus takeaways (3)</div>
+    <div class="capture-line"></div>
+    <div class="capture-line"></div>
+    <div class="capture-line"></div>
+  </div>
+
+  <div class="capture-area">
+    <div class="capture-label">Greg takeaways (3)</div>
+    <div class="capture-line"></div>
+    <div class="capture-line"></div>
+    <div class="capture-line"></div>
+  </div>
+
+  <div class="capture-area">
+    <div class="capture-label">Sharpest disagreement (the one to return to)</div>
+    <div class="capture-line"></div>
+    <div class="capture-line"></div>
+  </div>
+
+  <div class="capture-area">
+    <div class="capture-label">Next conversation? What changes?</div>
+    <div class="capture-line"></div>
+    <div class="capture-line"></div>
+  </div>
+</div>
+
+</body>
+</html>

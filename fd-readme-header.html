@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge GitHub README Header</title>
+<style>
+  :root {
+    --bg: #F4F5F7; --card: #FFFFFF; --border: #E5E7EB;
+    --text: #111827; --secondary: #6B7280; --dim: #9CA3AF;
+    --fd: #FFCB05; --fa: #4A90D9; --ff: #22C55E; --fi: #6D28D9;
+    --fo: #94A3B8; --fp: #CE1126; --fr: #F97316;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; min-height: 100vh; background: var(--bg); color: var(--text); font-family: var(--sans); }
+  .page-header { background: #0A0A0F; border-bottom: 1px solid #1E1E2A; padding: 1rem 2rem; }
+  .page-header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .page-title { font-size: 0.9rem; font-weight: 700; color: var(--fd); }
+  .page-sub { font-family: var(--mono); font-size: 0.45rem; color: #555568; margin-top: 0.15rem; }
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+  .section-label { font-family: var(--mono); font-size: 0.55rem; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.75rem; margin-top: 2rem; }
+  .variant-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+  .variant-label { background: #F9FAFB; border-bottom: 1px solid var(--border); padding: 0.5rem 1rem; font-family: var(--mono); font-size: 0.45rem; color: var(--dim); }
+  .variant-label span { color: var(--fd); font-weight: 700; margin-right: 0.4rem; }
+  /* VARIANT A: Full dark banner */
+  .readme-banner-a { background: #0A0A0F; padding: 2.5rem 2rem; text-align: center; }
+  .banner-a-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+  .banner-a-mark { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 0.5rem; }
+  .banner-a-wordmark { font-size: 1.8rem; font-weight: 900; color: var(--fd); letter-spacing: -0.02em; }
+  .banner-a-tagline { font-size: 0.7rem; color: #8889A0; font-style: italic; }
+  .banner-a-agents { display: flex; gap: 0.4rem; justify-content: center; margin-top: 0.5rem; }
+  .agent-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .banner-a-badges { display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.75rem; flex-wrap: wrap; }
+  .badge { font-family: var(--mono); font-size: 0.45rem; padding: 0.2rem 0.5rem; border-radius: 3px; display: inline-block; }
+  /* VARIANT B: Compact horizontal */
+  .readme-banner-b { background: #0A0A0F; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 2rem; }
+  .banner-b-left { flex-shrink: 0; }
+  .banner-b-right { flex: 1; }
+  .banner-b-title { font-size: 1.2rem; font-weight: 900; color: var(--fd); }
+  .banner-b-sub { font-size: 0.6rem; color: #8889A0; margin-top: 0.25rem; }
+  .banner-b-meta { display: flex; gap: 0.75rem; margin-top: 0.75rem; }
+  .meta-stat { font-family: var(--mono); font-size: 0.5rem; }
+  .meta-num { color: var(--fd); font-weight: 700; }
+  .meta-label { color: #555568; }
+  /* VARIANT C: Minimal wordmark only */
+  .readme-banner-c { background: #0A0A0F; padding: 1.5rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .banner-c-left { display: flex; align-items: center; gap: 1rem; }
+  .banner-c-wordmark { font-size: 1.3rem; font-weight: 900; color: var(--fd); }
+  .banner-c-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fd); }
+  .banner-c-tagline { font-size: 0.55rem; color: #555568; }
+  .banner-c-right { font-family: var(--mono); font-size: 0.45rem; color: #555568; }
+  .spec-table { width: 100%; border-collapse: collapse; font-size: 0.58rem; }
+  .spec-table th { text-align: left; font-family: var(--mono); font-size: 0.45rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .spec-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid rgba(0,0,0,0.04); }
+  .spec-table tr:last-child td { border-bottom: none; }
+</style>
+</head>
+<body>
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-title">Forge GitHub README Header</div>
+        <div class="page-sub">3 variants: A (full banner), B (horizontal compact), C (minimal). Marcus picks one.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div class="section-label">Variant A: Full Dark Banner (recommended)</div>
+    <div class="variant-card">
+      <div class="variant-label"><span>VARIANT A</span>Full dark banner · Maize wordmark · All 13 agent dots · Badges</div>
+      <div class="readme-banner-a">
+        <div class="banner-a-mark">
+          <svg width="36" height="26" viewBox="0 0 60 40" fill="none">
+            <rect x="0" y="0" width="60" height="10" rx="2" fill="#FFCB05"/>
+            <rect x="0" y="15" width="38" height="10" rx="2" fill="#FFCB05"/>
+          </svg>
+          <div class="banner-a-wordmark">Forge</div>
+        </div>
+        <div class="banner-a-tagline">An AI-native software organization. 13 agents. Built for makers.</div>
+        <div class="banner-a-agents">
+          <div class="agent-dot" style="background:#FFCB05" title="FD"></div>
+          <div class="agent-dot" style="background:#4A90D9" title="FA"></div>
+          <div class="agent-dot" style="background:#22C55E" title="FF"></div>
+          <div class="agent-dot" style="background:#6D28D9" title="FI"></div>
+          <div class="agent-dot" style="background:#94A3B8" title="FO"></div>
+          <div class="agent-dot" style="background:#CE1126" title="FP"></div>
+          <div class="agent-dot" style="background:#F97316" title="FR"></div>
+          <div style="width:1px;height:10px;background:#333350;margin:0 0.25rem;align-self:center"></div>
+          <div class="agent-dot" style="background:#93AEFF" title="GA"></div>
+          <div class="agent-dot" style="background:#3D3D3D;border:1px solid #555" title="GD"></div>
+          <div class="agent-dot" style="background:#6EE7B7" title="GF"></div>
+          <div class="agent-dot" style="background:#A78BFA" title="GI"></div>
+          <div class="agent-dot" style="background:#EE2828" title="GP"></div>
+          <div class="agent-dot" style="background:#FB923C" title="GR"></div>
+        </div>
+        <div class="banner-a-badges">
+          <div class="badge" style="background:rgba(34,197,94,0.15);color:#22C55E;border:1px solid rgba(34,197,94,0.3)">2035 tests passing</div>
+          <div class="badge" style="background:rgba(74,144,217,0.15);color:#4A90D9;border:1px solid rgba(74,144,217,0.3)">13 agents</div>
+          <div class="badge" style="background:rgba(255,203,5,0.15);color:#FFCB05;border:1px solid rgba(255,203,5,0.3)">3 products</div>
+          <div class="badge" style="background:rgba(148,163,184,0.15);color:#94A3B8;border:1px solid rgba(148,163,184,0.3)">Autonomous</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Variant B: Horizontal Compact</div>
+    <div class="variant-card">
+      <div class="variant-label"><span>VARIANT B</span>Side-by-side · F mark left · Stats right · Fits narrow repos</div>
+      <div class="readme-banner-b">
+        <div class="banner-b-left">
+          <svg width="50" height="36" viewBox="0 0 60 40" fill="none">
+            <rect x="0" y="0" width="60" height="10" rx="2" fill="#FFCB05"/>
+            <rect x="0" y="15" width="38" height="10" rx="2" fill="#FFCB05"/>
+          </svg>
+        </div>
+        <div class="banner-b-right">
+          <div class="banner-b-title">Forge</div>
+          <div class="banner-b-sub">AI-native software organization · 13 agents · 3 products</div>
+          <div class="banner-b-meta">
+            <div class="meta-stat"><span class="meta-num">2,035</span> <span class="meta-label">tests</span></div>
+            <div class="meta-stat"><span class="meta-num">13</span> <span class="meta-label">agents</span></div>
+            <div class="meta-stat"><span class="meta-num">3</span> <span class="meta-label">products</span></div>
+            <div class="meta-stat"><span class="meta-num">1</span> <span class="meta-label">human</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Variant C: Minimal Wordmark</div>
+    <div class="variant-card">
+      <div class="variant-label"><span>VARIANT C</span>Minimal · Just the mark and tagline · For repos where content is primary</div>
+      <div class="readme-banner-c">
+        <div class="banner-c-left">
+          <svg width="28" height="20" viewBox="0 0 60 40" fill="none">
+            <rect x="0" y="0" width="60" height="10" rx="2" fill="#FFCB05"/>
+            <rect x="0" y="15" width="38" height="10" rx="2" fill="#FFCB05"/>
+          </svg>
+          <div style="display:flex;flex-direction:column;">
+            <div class="banner-c-wordmark">Forge</div>
+            <div class="banner-c-tagline">An AI-native software organization</div>
+          </div>
+        </div>
+        <div class="banner-c-right">Built by 13 agents. Managed by Marcus Ash.</div>
+      </div>
+    </div>
+
+    <!-- Spec table -->
+    <div class="section-label">Spec Notes for Implementation</div>
+    <div class="variant-card">
+      <table class="spec-table">
+        <thead>
+          <tr>
+            <th>Element</th>
+            <th>Value</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Background</td><td style="font-family:var(--mono)">#0A0A0F</td><td>Same dark bg as all Forge canvases</td></tr>
+          <tr><td>Wordmark color</td><td style="font-family:var(--mono)">#FFCB05</td><td>Exact Maize. Never approximate.</td></tr>
+          <tr><td>F mark</td><td>Two bars: full-width top, 60% width second, gap between</td><td>Use SVG rect elements, rx=2 for slight rounding</td></tr>
+          <tr><td>Agent dots</td><td>10px circles, 13 total, split by a 1px vertical line (Forge/Grind)</td><td>GD has a 1px border for visibility on dark bg</td></tr>
+          <tr><td>Badges</td><td>Font-family mono, 0.45rem, colored per agent</td><td>Background = agent color at 15% opacity + border at 30%</td></tr>
+          <tr><td>Tagline</td><td>"An AI-native software organization. 13 agents. Built for makers."</td><td>Italic, dim (#8889A0), under the wordmark</td></tr>
+          <tr><td>GitHub implementation</td><td>Export as SVG or use as HTML in README</td><td>GitHub renders HTML in README. SVG preferred for GitHub Pages.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</body>
+</html>

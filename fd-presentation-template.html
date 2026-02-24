@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forge Presentation Template</title>
+<style>
+  :root {
+    --bg: #0A0A0F; --fd: #FFCB05; --fa: #4A90D9;
+    --text: #E8E8F0; --dim: #555568; --card: #12121A;
+    --border: #1E1E2A; --secondary: #8889A0;
+    --mono: 'Cascadia Code', 'Consolas', monospace;
+    --sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100vw; min-height: 100vh; background: #1A1A2E; color: var(--text); font-family: var(--sans); overflow-x: hidden; }
+
+  /* Nav */
+  .nav { background: #08080E; border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .nav-left { display: flex; align-items: center; gap: 0.75rem; }
+  .nav-title { font-size: 0.75rem; font-weight: 700; color: var(--fd); }
+  .nav-sub { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); }
+  .nav-counter { font-family: var(--mono); font-size: 0.5rem; color: var(--dim); }
+
+  /* Slide container */
+  .slides { display: flex; flex-direction: column; gap: 2rem; padding: 2rem; max-width: 920px; margin: 0 auto; }
+  .slide-wrap { display: flex; gap: 1.5rem; align-items: flex-start; }
+  .slide-num { font-family: var(--mono); font-size: 0.5rem; color: var(--dim); width: 28px; flex-shrink: 0; padding-top: 1rem; text-align: right; }
+  .slide { flex: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .slide-label { background: #08080E; padding: 0.4rem 0.75rem; font-family: var(--mono); font-size: 0.45rem; color: var(--dim); border-bottom: 1px solid var(--border); }
+  .slide-label span { color: var(--fd); font-weight: 700; margin-right: 0.5rem; }
+  .slide-content { background: var(--bg); aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; position: relative; overflow: hidden; }
+
+  /* Slide types */
+  /* TITLE */
+  .slide-title .eyebrow { font-family: var(--mono); font-size: 0.6rem; color: var(--fd); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 1rem; }
+  .slide-title .h1 { font-size: 2.2rem; font-weight: 900; color: var(--text); line-height: 1.1; margin-bottom: 0.75rem; }
+  .slide-title .sub { font-size: 0.75rem; color: var(--secondary); max-width: 480px; line-height: 1.7; }
+  .slide-title .line { width: 40px; height: 3px; background: var(--fd); margin: 1.25rem auto; }
+
+  /* SECTION BREAK */
+  .slide-section { background: linear-gradient(135deg, #0D0D1A 0%, #12121A 100%); }
+  .slide-section .section-num { font-family: var(--mono); font-size: 4rem; font-weight: 900; color: rgba(255,203,5,0.08); position: absolute; top: 0.5rem; left: 1rem; line-height: 1; }
+  .slide-section .section-title { font-size: 1.8rem; font-weight: 800; color: var(--fd); z-index: 1; }
+  .slide-section .section-desc { font-size: 0.65rem; color: var(--secondary); max-width: 380px; line-height: 1.7; z-index: 1; margin-top: 0.5rem; }
+
+  /* TWO-COL */
+  .slide-twocol .slide-content { display: grid; grid-template-columns: 1fr 1fr; gap: 0; align-items: stretch; padding: 0; text-align: left; }
+  .slide-twocol .col { padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; }
+  .slide-twocol .col-left { border-right: 1px solid var(--border); }
+  .slide-twocol .col-eyebrow { font-family: var(--mono); font-size: 0.45rem; color: var(--fd); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+  .slide-twocol .col-h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .slide-twocol .col-body { font-size: 0.55rem; color: var(--secondary); line-height: 1.7; }
+
+  /* METRICS */
+  .slide-metrics .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; width: 100%; }
+  .slide-metrics .metric { text-align: center; }
+  .slide-metrics .metric-num { font-size: 2.2rem; font-weight: 900; color: var(--fd); }
+  .slide-metrics .metric-label { font-family: var(--mono); font-size: 0.45rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.3rem; }
+  .slide-metrics .slide-h { font-size: 0.9rem; font-weight: 700; margin-bottom: 1.5rem; width: 100%; text-align: left; }
+
+  /* BULLETS */
+  .slide-bullets .slide-content { align-items: flex-start; text-align: left; }
+  .slide-bullets .bullets-h { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; border-left: 3px solid var(--fd); padding-left: 0.75rem; }
+  .slide-bullets .bullet { font-size: 0.6rem; color: var(--secondary); padding: 0.4rem 0; border-bottom: 1px solid var(--border); display: flex; gap: 0.5rem; align-items: flex-start; }
+  .slide-bullets .bullet::before { content: "·"; color: var(--fd); font-weight: 900; flex-shrink: 0; }
+
+  /* QUOTE */
+  .slide-quote { background: linear-gradient(135deg, #0D0D1A 0%, #12121A 100%); }
+  .slide-quote .quote-mark { font-size: 4rem; color: rgba(255,203,5,0.2); line-height: 1; margin-bottom: 0.5rem; }
+  .slide-quote .quote-text { font-size: 0.85rem; font-style: italic; color: var(--text); max-width: 520px; line-height: 1.7; margin-bottom: 1rem; }
+  .slide-quote .quote-attr { font-family: var(--mono); font-size: 0.5rem; color: var(--fd); }
+
+  /* CLOSING */
+  .slide-closing .closing-h { font-size: 1.8rem; font-weight: 900; color: var(--fd); margin-bottom: 0.5rem; }
+  .slide-closing .closing-sub { font-size: 0.7rem; color: var(--secondary); }
+  .slide-closing .forge-mark { position: absolute; bottom: 1rem; right: 1.5rem; }
+
+  /* Grid bg element for some slides */
+  .grid-bg { position: absolute; inset: 0; opacity: 0.03; background-image: linear-gradient(#FFCB05 1px, transparent 1px), linear-gradient(90deg, #FFCB05 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; }
+</style>
+</head>
+<body>
+  <div class="nav">
+    <div class="nav-left">
+      <svg width="20" height="14" viewBox="0 0 60 40" fill="none">
+        <path d="M0 0h60v8H0zM0 16h36v8H0z" fill="#FFCB05"/>
+      </svg>
+      <div>
+        <div class="nav-title">Forge Presentation Template</div>
+        <div class="nav-sub">10 slide types · Dark TUI theme · System fonts only</div>
+      </div>
+    </div>
+    <div class="nav-counter">10 SLIDE TYPES</div>
+  </div>
+
+  <div class="slides">
+
+    <!-- 01 TITLE -->
+    <div class="slide-wrap">
+      <div class="slide-num">01</div>
+      <div class="slide slide-title">
+        <div class="slide-label"><span>TYPE 01</span>Title Slide : use for cover and major section openers</div>
+        <div class="slide-content">
+          <div class="grid-bg"></div>
+          <div class="eyebrow">Forge Co. · February 2026</div>
+          <div class="h1">Your Presentation<br>Title Goes Here</div>
+          <div class="line"></div>
+          <div class="sub">A short supporting description. One or two sentences. Do not exceed this. Brevity is the mark.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 SECTION BREAK -->
+    <div class="slide-wrap">
+      <div class="slide-num">02</div>
+      <div class="slide slide-section">
+        <div class="slide-label"><span>TYPE 02</span>Section Break : use to open each major chapter</div>
+        <div class="slide-content slide-section">
+          <div class="section-num">01</div>
+          <div class="section-title">Section Title</div>
+          <div class="section-desc">Brief section context. One sentence. Tell them what they are about to see.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 METRICS -->
+    <div class="slide-wrap">
+      <div class="slide-num">03</div>
+      <div class="slide slide-metrics">
+        <div class="slide-label"><span>TYPE 03</span>Metrics Slide : max 3 numbers, each with a label</div>
+        <div class="slide-content">
+          <div class="slide-h">The numbers that matter</div>
+          <div class="metrics">
+            <div class="metric"><div class="metric-num">2,035</div><div class="metric-label">Tests Passing</div></div>
+            <div class="metric"><div class="metric-num" style="color:#4A90D9">13</div><div class="metric-label">Active Agents</div></div>
+            <div class="metric"><div class="metric-num" style="color:#22C55E">3</div><div class="metric-label">Products Shipped</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 TWO-COL -->
+    <div class="slide-wrap">
+      <div class="slide-num">04</div>
+      <div class="slide slide-twocol">
+        <div class="slide-label"><span>TYPE 04</span>Two-Column : use for comparisons, before/after, or two ideas</div>
+        <div class="slide-content slide-twocol">
+          <div class="col col-left">
+            <div class="col-eyebrow">Left Column</div>
+            <div class="col-h2">First idea or point A</div>
+            <div class="col-body">Support text. Keep it to 2-3 short sentences. Do not over-explain. Trust the slide to communicate.</div>
+          </div>
+          <div class="col">
+            <div class="col-eyebrow">Right Column</div>
+            <div class="col-h2">Second idea or point B</div>
+            <div class="col-body">Support text. The contrast between left and right is the message. Make the headers do the work.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 BULLETS -->
+    <div class="slide-wrap">
+      <div class="slide-num">05</div>
+      <div class="slide slide-bullets">
+        <div class="slide-label"><span>TYPE 05</span>Bullets Slide : max 5 items, each one line</div>
+        <div class="slide-content">
+          <div class="bullets-h">What we shipped this sprint</div>
+          <div class="bullet">First bullet. One line. Subject-verb-object. Done.</div>
+          <div class="bullet">Second bullet. Same rules. Short declarative sentences only.</div>
+          <div class="bullet">Third bullet. If you need more than 5, you have too many ideas on one slide.</div>
+          <div class="bullet">Fourth bullet. Each bullet should be able to stand on its own.</div>
+          <div class="bullet">Fifth bullet. Stop here. No sixth bullet. Ever.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 QUOTE -->
+    <div class="slide-wrap">
+      <div class="slide-num">06</div>
+      <div class="slide slide-quote">
+        <div class="slide-label"><span>TYPE 06</span>Quote Slide : use for principles, Marcus voice moments, or mission anchors</div>
+        <div class="slide-content slide-quote">
+          <div class="quote-mark">"</div>
+          <div class="quote-text">The ramp-plateau-compound shape is the most honest visual description of what learning actually feels like. Steady progress. The wall. Then the compound payoff when you push through.</div>
+          <div class="quote-attr">Marcus Ash</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07 SINGLE STATEMENT -->
+    <div class="slide-wrap">
+      <div class="slide-num">07</div>
+      <div class="slide">
+        <div class="slide-label"><span>TYPE 07</span>Single Statement : one powerful sentence, nothing else</div>
+        <div class="slide-content" style="background:#0A0A0F">
+          <div class="grid-bg"></div>
+          <div style="font-size:1.4rem;font-weight:900;color:var(--text);max-width:500px;line-height:1.3">Thirteen agents. One human. <span style="color:var(--fd)">Shipped to production.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 PRODUCT CARD -->
+    <div class="slide-wrap">
+      <div class="slide-num">08</div>
+      <div class="slide">
+        <div class="slide-label"><span>TYPE 08</span>Product Card : use to introduce a single product or agent</div>
+        <div class="slide-content" style="background:#0A0A0F;flex-direction:row;gap:2rem;align-items:center;text-align:left;padding:2rem">
+          <div style="flex-shrink:0;width:60px;height:60px;border:2px solid var(--fd);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:var(--fd)">F</div>
+          <div>
+            <div style="font-family:var(--mono);font-size:0.45rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.5rem">PRODUCT</div>
+            <div style="font-size:1.2rem;font-weight:800;margin-bottom:0.5rem">Inkwell</div>
+            <div style="font-size:0.6rem;color:var(--secondary);max-width:380px;line-height:1.7">AI-powered journaling in the terminal. Voice-to-text, reflection prompts, private local storage. Built for Marcus. Shipped to production. 2,035 tests.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 09 TIMELINE -->
+    <div class="slide-wrap">
+      <div class="slide-num">09</div>
+      <div class="slide">
+        <div class="slide-label"><span>TYPE 09</span>Timeline Slide : use for roadmaps and sprint plans</div>
+        <div class="slide-content" style="background:#0A0A0F;flex-direction:column;align-items:flex-start;padding:1.5rem 2rem">
+          <div style="font-size:0.9rem;font-weight:700;margin-bottom:1.25rem">Forge Roadmap 2026</div>
+          <div style="width:100%;display:flex;flex-direction:column;gap:0.6rem">
+            <div style="display:flex;align-items:center;gap:1rem">
+              <div style="width:80px;font-family:var(--mono);font-size:0.45rem;color:var(--fd);flex-shrink:0">Q1 2026</div>
+              <div style="flex:1;height:4px;background:var(--fd);border-radius:2px;position:relative"></div>
+              <div style="font-size:0.55rem;color:var(--secondary);min-width:180px">Brand system locked. Deck shipped.</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <div style="width:80px;font-family:var(--mono);font-size:0.45rem;color:var(--secondary);flex-shrink:0">Q2 2026</div>
+              <div style="flex:1;height:4px;background:var(--border);border-radius:2px"></div>
+              <div style="font-size:0.55rem;color:var(--dim);min-width:180px">Public website. Inkwell beta.</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <div style="width:80px;font-family:var(--mono);font-size:0.45rem;color:var(--secondary);flex-shrink:0">Q3 2026</div>
+              <div style="flex:1;height:4px;background:var(--border);border-radius:2px"></div>
+              <div style="font-size:0.55rem;color:var(--dim);min-width:180px">MCM launch. Dispatch alpha.</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:1rem">
+              <div style="width:80px;font-family:var(--mono);font-size:0.45rem;color:var(--secondary);flex-shrink:0">Q4 2026</div>
+              <div style="flex:1;height:4px;background:var(--border);border-radius:2px"></div>
+              <div style="font-size:0.55rem;color:var(--dim);min-width:180px">Revenue. Scale. Next model.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 CLOSING -->
+    <div class="slide-wrap">
+      <div class="slide-num">10</div>
+      <div class="slide slide-closing">
+        <div class="slide-label"><span>TYPE 10</span>Closing Slide : one Maize line, Forge mark, nothing else</div>
+        <div class="slide-content" style="background:#0A0A0F">
+          <div class="grid-bg"></div>
+          <div class="closing-h">Make something.<br>Don't wait.</div>
+          <div class="closing-sub">forge.co</div>
+          <div class="forge-mark">
+            <svg width="28" height="20" viewBox="0 0 60 30" fill="none">
+              <rect x="0" y="0" width="60" height="8" rx="1" fill="#FFCB05"/>
+              <rect x="0" y="12" width="36" height="8" rx="1" fill="#FFCB05"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Color System — Forge + Grind Locked</title>
+<style>
+/* ================================================================
+   LOCKED DESIGN FILE - DO NOT MODIFY COLOR VALUES
+   Agent colors are locked. Change requires Marcus live session approval.
+   ================================================================ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: #0A0A0F; color: #E8E8ED; font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif; }
+.page { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; gap: 32px; padding: 40px; }
+
+.lock-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(206,17,38,.1); border: 1px solid rgba(206,17,38,.25); border-radius: 20px; padding: 3px 12px; font-family: 'Cascadia Code', monospace; font-size: 10px; color: #CE1126; letter-spacing: .1em; }
+
+.section-label { font-family: 'Cascadia Code', monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: #8888A0; margin-bottom: 14px; }
+
+.palette-row { display: flex; gap: 12px; }
+.agent { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.swatch { width: 72px; height: 64px; border-radius: 10px; }
+.agent-id { font-family: 'Cascadia Code', monospace; font-size: 12px; font-weight: 700; }
+.agent-hex { font-family: 'Cascadia Code', monospace; font-size: 9px; color: #8888A0; }
+.agent-name { font-size: 10px; color: #555570; }
+
+.divider-v { width: 1px; height: 64px; background: #2A2A3A; align-self: flex-end; margin-bottom: 38px; }
+
+.tab-wrap { display: flex; flex-direction: column; gap: 10px; }
+.tab-strip { display: flex; background: #111118; border: 1px solid #2A2A3A; border-radius: 7px; overflow: hidden; }
+.tab { display: flex; align-items: center; gap: 7px; padding: 10px 18px; font-family: 'Cascadia Code', monospace; font-size: 11px; font-weight: 600; border-right: 1px solid #2A2A3A; }
+.tab:last-child { border-right: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.pair-row { display: flex; gap: 24px; }
+.pair { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.pair-dots { display: flex; gap: 6px; align-items: center; }
+.pair-label { font-family: 'Cascadia Code', monospace; font-size: 9px; color: #555570; }
+.pair-arrow { font-size: 10px; color: #2A2A3A; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div style="text-align:center">
+    <div style="font-size:1.2rem;font-weight:700;margin-bottom:6px">Agent Color System</div>
+    <div style="font-family:'Cascadia Code',monospace;font-size:10px;color:#8888A0;margin-bottom:10px">Michigan Palette. 13 agents. Locked Feb 23 2026.</div>
+    <span class="lock-badge">LOCKED - No changes without Marcus approval</span>
+  </div>
+
+  <!-- PAIRED LAYOUT: Forge above Grind, side by side -->
+  <div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:18px">
+      <div class="section-label" style="margin-bottom:0">Forge</div>
+      <div style="font-family:'Cascadia Code',monospace;font-size:10px;color:#2A2A3A">|</div>
+      <div class="section-label" style="margin-bottom:0;color:#555570">Grind (paired by hue)</div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:flex-start">
+
+      <!-- PAIR: FD / GD -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="agent">
+          <div class="swatch" style="background:#FFCB05"></div>
+          <div class="agent-id" style="color:#FFCB05">FD</div>
+          <div class="agent-hex">#FFCB05</div>
+          <div class="agent-name">Maize</div>
+        </div>
+        <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">|</div>
+        <div class="agent">
+          <div class="swatch" style="background:#3D3D3D;border:1px solid #555"></div>
+          <div class="agent-id" style="color:#888888">GD</div>
+          <div class="agent-hex">#3D3D3D</div>
+          <div class="agent-name">Black*</div>
+        </div>
+      </div>
+
+      <div class="divider-v" style="height:180px;margin-bottom:0;align-self:center"></div>
+
+      <!-- PAIR: FA / GA -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="agent">
+          <div class="swatch" style="background:#4A90D9"></div>
+          <div class="agent-id" style="color:#4A90D9">FA</div>
+          <div class="agent-hex">#4A90D9</div>
+          <div class="agent-name">Mich. Blue</div>
+        </div>
+        <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">|</div>
+        <div class="agent">
+          <div class="swatch" style="background:#93AEFF"></div>
+          <div class="agent-id" style="color:#93AEFF">GA</div>
+          <div class="agent-hex">#93AEFF</div>
+          <div class="agent-name">Sky Blue</div>
+        </div>
+      </div>
+
+      <div class="divider-v" style="height:180px;margin-bottom:0;align-self:center"></div>
+
+      <!-- PAIR: FF / GF -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="agent">
+          <div class="swatch" style="background:#22C55E"></div>
+          <div class="agent-id" style="color:#22C55E">FF</div>
+          <div class="agent-hex">#22C55E</div>
+          <div class="agent-name">Emerald</div>
+        </div>
+        <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">|</div>
+        <div class="agent">
+          <div class="swatch" style="background:#6EE7B7"></div>
+          <div class="agent-id" style="color:#6EE7B7">GF</div>
+          <div class="agent-hex">#6EE7B7</div>
+          <div class="agent-name">Mint</div>
+        </div>
+      </div>
+
+      <div class="divider-v" style="height:180px;margin-bottom:0;align-self:center"></div>
+
+      <!-- PAIR: FI / GI -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="agent">
+          <div class="swatch" style="background:#6D28D9"></div>
+          <div class="agent-id" style="color:#6D28D9">FI</div>
+          <div class="agent-hex">#6D28D9</div>
+          <div class="agent-name">Indigo</div>
+        </div>
+        <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">|</div>
+        <div class="agent">
+          <div class="swatch" style="background:#A78BFA"></div>
+          <div class="agent-id" style="color:#A78BFA">GI</div>
+          <div class="agent-hex">#A78BFA</div>
+          <div class="agent-name">Violet</div>
+        </div>
+      </div>
+
+      <div class="divider-v" style="height:180px;margin-bottom:0;align-self:center"></div>
+
+      <!-- PAIR: FP / GP -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="agent">
+          <div class="swatch" style="background:#CE1126"></div>
+          <div class="agent-id" style="color:#CE1126">FP</div>
+          <div class="agent-hex">#CE1126</div>
+          <div class="agent-name">Red Wings Red</div>
+        </div>
+        <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">|</div>
+        <div class="agent">
+          <div class="swatch" style="background:#EE2828"></div>
+          <div class="agent-id" style="color:#EE2828">GP</div>
+          <div class="agent-hex">#EE2828</div>
+          <div class="agent-name">Red</div>
+        </div>
+      </div>
+
+      <div class="divider-v" style="height:180px;margin-bottom:0;align-self:center"></div>
+
+      <!-- PAIR: FR / GR -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="agent">
+          <div class="swatch" style="background:#F97316"></div>
+          <div class="agent-id" style="color:#F97316">FR</div>
+          <div class="agent-hex">#F97316</div>
+          <div class="agent-name">Tigers Orange</div>
+        </div>
+        <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">|</div>
+        <div class="agent">
+          <div class="swatch" style="background:#FB923C"></div>
+          <div class="agent-id" style="color:#FB923C">GR</div>
+          <div class="agent-hex">#FB923C</div>
+          <div class="agent-name">Orange</div>
+        </div>
+      </div>
+
+      <div class="divider-v" style="height:180px;margin-bottom:0;align-self:center"></div>
+
+      <!-- FO solo (no Grind counterpart) -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div class="agent">
+          <div class="swatch" style="background:#94A3B8"></div>
+          <div class="agent-id" style="color:#94A3B8">FO</div>
+          <div class="agent-hex">#94A3B8</div>
+          <div class="agent-name">Pist. Silver</div>
+        </div>
+        <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">|</div>
+        <div style="width:72px;height:64px;display:flex;align-items:center;justify-content:center">
+          <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#2A2A3A">no pair</div>
+        </div>
+      </div>
+
+    </div>
+    <div style="font-family:'Cascadia Code',monospace;font-size:9px;color:#555570;margin-top:10px">* GD = black by Marcus decision. Designers wear black. Personal story locked.</div>
+  </div>
+
+  <!-- TAB STRIPS -->
+  <div class="tab-wrap">
+    <div>
+      <div class="section-label" style="margin-bottom:6px">Forge tab strip</div>
+      <div class="tab-strip">
+        <div class="tab"><div class="dot" style="background:#FFCB05"></div><span style="color:#FFCB05">FD</span></div>
+        <div class="tab"><div class="dot" style="background:#4A90D9"></div><span style="color:#4A90D9">FA</span></div>
+        <div class="tab"><div class="dot" style="background:#22C55E"></div><span style="color:#22C55E">FF</span></div>
+        <div class="tab"><div class="dot" style="background:#6D28D9"></div><span style="color:#6D28D9">FI</span></div>
+        <div class="tab"><div class="dot" style="background:#94A3B8"></div><span style="color:#94A3B8">FO</span></div>
+        <div class="tab"><div class="dot" style="background:#CE1126"></div><span style="color:#CE1126">FP</span></div>
+        <div class="tab"><div class="dot" style="background:#F97316"></div><span style="color:#F97316">FR</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-label" style="margin-bottom:6px">Grind tab strip</div>
+      <div class="tab-strip">
+        <div class="tab"><div class="dot" style="background:#3D3D3D;border:1px solid #555"></div><span style="color:#888888">GD</span></div>
+        <div class="tab"><div class="dot" style="background:#93AEFF"></div><span style="color:#93AEFF">GA</span></div>
+        <div class="tab"><div class="dot" style="background:#6EE7B7"></div><span style="color:#6EE7B7">GF</span></div>
+        <div class="tab"><div class="dot" style="background:#A78BFA"></div><span style="color:#A78BFA">GI</span></div>
+        <div class="tab"><div class="dot" style="background:#EE2828"></div><span style="color:#EE2828">GP</span></div>
+        <div class="tab"><div class="dot" style="background:#FB923C"></div><span style="color:#FB923C">GR</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

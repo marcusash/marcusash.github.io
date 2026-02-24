@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TUI Email + Messaging  -  Full Design Canvas</title>
+<style>
+  /* ============================================================
+     TUI EMAIL + MESSAGING  -  Full Design Canvas
+     Agent: FD (Maize)  |  Collab: FI (Indigo)
+     Feb 23 2026
+     Screens: Inbox List, Read View, Compose, Thread View,
+              Archive View, Search Results State
+     Design tokens: src/lib/designTokens.ts (emailTokens)
+  ============================================================ */
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: #0D0D14;
+    color: #E2E8F0;
+    font-family: 'Cascadia Code', 'Cascadia Mono', 'Consolas', monospace;
+    min-height: 100%; width: 100%;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 28px;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  /* ---- Canvas header ---- */
+  .canvas-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #1E293B;
+  }
+
+  .canvas-badge {
+    background: #FFCB05;
+    color: #0A0A0F;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+  }
+  .canvas-badge.fi {
+    background: #6D28D9;
+    color: #FFFFFF;
+  }
+
+  .canvas-title {
+    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #F8FAFC;
+  }
+
+  .canvas-sub {
+    font-size: 11px;
+    color: #475569;
+    font-family: 'Cascadia Code', monospace;
+    margin-left: auto;
+  }
+
+  /* ---- Screen grid ---- */
+  .screen-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  /* ---- TUI Screen container ---- */
+  .tui-screen {
+    background: #0c0c0c;
+    border: 1px solid #222;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  /* ---- Screen label (outside the TUI, above) ---- */
+  .screen-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 420px;
+  }
+
+  .screen-label {
+    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #475569;
+    padding-left: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ---- TUI chrome: title bar ---- */
+  .tui-titlebar {
+    background: #111;
+    padding: 5px 12px;
+    border-bottom: 1px solid #222;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .tui-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #00D4AA;
+    letter-spacing: 0.04em;
+  }
+
+  .tui-subtitle {
+    font-size: 10px;
+    color: #555;
+    margin-left: auto;
+  }
+
+  /* ---- Folder tabs ---- */
+  .folder-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid #222;
+    flex-shrink: 0;
+    background: #111;
+  }
+
+  .folder-tab {
+    padding: 5px 14px;
+    font-size: 11px;
+    color: #555;
+    border-right: 1px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: default;
+  }
+
+  .folder-tab.active {
+    background: #0c0c0c;
+    color: #FFCB05;
+    border-top: 1px solid #FFCB05;
+    margin-top: -1px;
+  }
+
+  .folder-tab .unread-badge {
+    background: #FFCB05;
+    color: #0A0A0F;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 0px 5px;
+    border-radius: 8px;
+  }
+
+  /* ---- Search / filter bar ---- */
+  .search-bar {
+    padding: 5px 12px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+    background: #0e0e0e;
+  }
+
+  .search-input {
+    font-family: 'Cascadia Code', monospace;
+    font-size: 11px;
+    color: #888;
+    flex: 1;
+  }
+
+  .search-input span {
+    color: #ccc;
+  }
+
+  .filter-chip {
+    font-size: 10px;
+    padding: 1px 8px;
+    border-radius: 3px;
+    background: #1a1a2e;
+    color: #4D7BFF;
+    border: 1px solid #4D7BFF44;
+  }
+
+  /* ---- Email list rows ---- */
+  .email-list {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .email-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 7px 12px;
+    border-bottom: 1px solid #1a1a1a;
+    cursor: default;
+  }
+
+  .email-row.unread {
+    background: #111;
+    border-left: 2px solid #FFCB05;
+  }
+
+  .email-row.selected {
+    background: #1a1a2e;
+    border-left: 2px solid #00D4AA;
+  }
+
+  .email-row.read {
+    background: #0c0c0c;
+    border-left: 2px solid transparent;
+  }
+
+  .email-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .email-row.unread .email-dot { background: #FFCB05; }
+  .email-row.selected .email-dot { background: #00D4AA; }
+  .email-row.read .email-dot { background: transparent; border: 1px solid #333; }
+
+  .email-meta {
+    flex: 0 0 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .email-from {
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .email-row.unread .email-from { color: #FFFFFF; }
+  .email-row.selected .email-from { color: #E2E8F0; }
+  .email-row.read .email-from { color: #888; }
+
+  .email-time {
+    font-size: 10px;
+    color: #444;
+  }
+
+  .email-body-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .email-subject {
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .email-row.unread .email-subject { color: #ccc; }
+  .email-row.selected .email-subject { color: #ccc; }
+  .email-row.read .email-subject { color: #555; }
+
+  .email-preview {
+    font-size: 10px;
+    color: #444;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .email-tags {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    align-items: flex-start;
+    padding-top: 2px;
+  }
+
+  .etag {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .etag.priority { background: #2d0a0a; color: #E74856; border: 1px solid #E7485633; }
+  .etag.fyi { background: #1a1a2e; color: #4D7BFF; border: 1px solid #4D7BFF33; }
+  .etag.action { background: #271a00; color: #F97316; border: 1px solid #F9731633; }
+
+  /* ---- Status bar (bottom of email list) ---- */
+  .tui-statusbar {
+    background: #111;
+    padding: 4px 12px;
+    border-top: 1px solid #1a1a1a;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .tui-statusbar .key-hint {
+    font-size: 10px;
+    color: #444;
+  }
+  .tui-statusbar .key-hint kbd {
+    color: #888;
+    background: #1a1a1a;
+    padding: 0 4px;
+    border-radius: 2px;
+    border: 1px solid #333;
+  }
+
+  .tui-statusbar .sb-count {
+    font-size: 10px;
+    color: #555;
+    margin-left: auto;
+  }
+
+  /* ---- READ VIEW ---- */
+  .read-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+    background: #111;
+  }
+
+  .read-subject {
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    line-height: 1.2;
+  }
+
+  .read-meta-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .read-from { font-size: 11px; color: #00D4AA; }
+  .read-to { font-size: 11px; color: #555; }
+  .read-time { font-size: 10px; color: #444; margin-left: auto; }
+
+  .read-body {
+    flex: 1;
+    padding: 12px 14px;
+    overflow: hidden;
+    font-size: 11px;
+    color: #ccc;
+    line-height: 1.6;
+  }
+
+  .read-actions {
+    background: #111;
+    border-top: 1px solid #222;
+    padding: 5px 14px;
+    display: flex;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .action-btn {
+    font-size: 10px;
+    color: #555;
+  }
+  .action-btn kbd {
+    color: #00D4AA;
+    background: #0d2020;
+    padding: 1px 5px;
+    border-radius: 2px;
+    border: 1px solid #00D4AA44;
+    margin-right: 3px;
+  }
+
+  /* ---- COMPOSE VIEW ---- */
+  .compose-header {
+    background: #111;
+    padding: 8px 14px;
+    border-bottom: 1px solid #222;
+    font-size: 11px;
+    font-weight: 700;
+    color: #FFCB05;
+    flex-shrink: 0;
+    letter-spacing: 0.06em;
+  }
+
+  .compose-field {
+    padding: 8px 14px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+
+  .compose-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 0.1em;
+    width: 52px;
+    padding-top: 1px;
+    text-transform: uppercase;
+  }
+
+  .compose-value {
+    font-size: 11px;
+    color: #ccc;
+    flex: 1;
+  }
+
+  .compose-value.active {
+    color: #FFFFFF;
+    border-bottom: 1px solid #00D4AA;
+  }
+
+  .compose-value.placeholder {
+    color: #444;
+  }
+
+  .compose-autocomplete {
+    margin-top: 2px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .ac-chip {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 3px;
+    background: #1a1a1a;
+    color: #888;
+    border: 1px solid #333;
+    cursor: default;
+  }
+  .ac-chip.match {
+    background: #1a2535;
+    color: #00D4AA;
+    border-color: #00D4AA44;
+  }
+
+  .compose-body-area {
+    flex: 1;
+    padding: 10px 14px;
+    overflow: hidden;
+  }
+
+  .compose-body-text {
+    font-size: 11px;
+    color: #ccc;
+    line-height: 1.6;
+    border-bottom: 1px solid #00D4AA44;
+    padding-bottom: 2px;
+  }
+
+  .cursor-blink {
+    display: inline-block;
+    width: 7px;
+    height: 13px;
+    background: #00D4AA;
+    vertical-align: middle;
+    border-radius: 1px;
+  }
+
+  .compose-hint {
+    margin-top: 8px;
+    font-size: 10px;
+    color: #444;
+  }
+
+  /* ---- THREAD VIEW ---- */
+  .thread-list {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .thread-item {
+    padding: 8px 14px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .thread-item.latest {
+    background: #111;
+    border-left: 2px solid #00D4AA;
+  }
+
+  .thread-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .thread-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .thread-from-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+
+  .thread-from {
+    font-size: 11px;
+    font-weight: 600;
+    color: #ccc;
+  }
+
+  .thread-time {
+    font-size: 10px;
+    color: #444;
+    margin-left: auto;
+  }
+
+  .thread-text {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .thread-item.latest .thread-text {
+    color: #ccc;
+  }
+
+  /* ---- Screen annotation note ---- */
+  .screen-note {
+    font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+    font-size: 10px;
+    color: #6D28D9;
+    padding-left: 2px;
+    flex-shrink: 0;
+    font-style: italic;
+  }
+
+  /* ---- Search highlight (Maize) ---- */
+  .search-hi {
+    color: #FFCB05;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<!-- Canvas header -->
+<div class="canvas-header">
+  <div class="canvas-badge">FD</div>
+  <div class="canvas-badge fi">FI</div>
+  <div class="canvas-title">TUI Email + Messaging  -  Full Design</div>
+  <div class="canvas-sub">6 screens · designTokens.ts · EmailScreen.tsx · Feb 23 2026</div>
+</div>
+
+<!-- Screen grid: 2x2 -->
+<div class="screen-grid">
+
+  <!-- SCREEN 1: INBOX LIST -->
+  <div class="screen-wrap">
+    <div class="screen-label">1  -  Inbox List</div>
+    <div class="screen-note">Folder navigation is keyboard-only ([1][2][3]). Folder tabs are display-only, not clickable.</div>
+    <div class="tui-screen">
+      <div class="tui-titlebar">
+        <span class="tui-title">◉ FORGE EMAIL</span>
+        <span class="tui-subtitle">MARCUS · auto-refresh 30s</span>
+      </div>
+
+      <div class="folder-tabs">
+        <div class="folder-tab active">INBOX <span class="unread-badge">3</span></div>
+        <div class="folder-tab">SENT</div>
+        <div class="folder-tab">ARCHIVE</div>
+      </div>
+
+      <div class="search-bar">
+        <div class="search-input">/ search: <span>_</span></div>
+        <div class="filter-chip">UNREAD</div>
+      </div>
+
+      <div class="email-list">
+        <div class="email-row unread">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FO</div>
+            <div class="email-time">07:33</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">Sprint 3 Task Queue  -  P1/P2/P3</div>
+            <div class="email-preview">FD  -  Marcus is launching a 3-hour monitored sprint. Your full task queue...</div>
+          </div>
+          <div class="email-tags">
+            <div class="etag priority">P1</div>
+          </div>
+        </div>
+
+        <div class="email-row selected">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FO</div>
+            <div class="email-time">03:45</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">DESIGN REVIEW: forge-way-comms.html</div>
+            <div class="email-preview">5 slides, needs your critique. Cover, comm flow, Vault+Canvas pillars...</div>
+          </div>
+          <div class="email-tags">
+            <div class="etag action">ACTION</div>
+          </div>
+        </div>
+
+        <div class="email-row unread">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FA</div>
+            <div class="email-time">22:02</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">GitHub Pages arch ready  -  start Canvas design</div>
+            <div class="email-preview">marcusash.github.io = user site. MCM already live. Live Kai score fetch...</div>
+          </div>
+          <div class="email-tags">
+            <div class="etag fyi">FYI</div>
+          </div>
+        </div>
+
+        <div class="email-row read">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FI</div>
+            <div class="email-time">08:15</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">Design request: Email UI + Task Front Door</div>
+            <div class="email-preview">Need your design pass for both products. Review color/iconography...</div>
+          </div>
+          <div class="email-tags"></div>
+        </div>
+
+        <div class="email-row read">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FP</div>
+            <div class="email-time">22:47</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">Track 2 selective skill loader shipped</div>
+            <div class="email-preview">FP: Track 2 selective skill loader is live. Tested against 3 agents...</div>
+          </div>
+          <div class="email-tags"></div>
+        </div>
+      </div>
+
+      <div class="tui-statusbar">
+        <span class="key-hint"><kbd>↑↓</kbd> navigate</span>
+        <span class="key-hint"><kbd>Enter</kbd> open</span>
+        <span class="key-hint"><kbd>c</kbd> compose</span>
+        <span class="key-hint"><kbd>/</kbd> search</span>
+        <span class="key-hint"><kbd>1</kbd> Inbox <kbd>2</kbd> Sent <kbd>3</kbd> Archive</span>
+        <span class="sb-count">3 unread / 5 shown</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: READ VIEW -->
+  <div class="screen-wrap">
+    <div class="screen-label">2  -  Read View</div>
+    <div class="tui-screen">
+      <div class="tui-titlebar">
+        <span class="tui-title">◉ FORGE EMAIL</span>
+        <span class="tui-subtitle">READING</span>
+      </div>
+
+      <div class="read-header">
+        <div class="read-subject">Sprint 3 Task Queue  -  P1/P2/P3  -  launch imminent</div>
+        <div class="read-meta-row">
+          <span class="read-from">FROM: FO</span>
+          <span class="read-to">TO: FD</span>
+          <span class="read-time">2026-02-23 03:43</span>
+        </div>
+      </div>
+
+      <div class="read-body">
+        FD  -  Marcus is launching a 3-hour monitored sprint. Your full task<br>
+        queue. P1 first, P3 is your infinite fallback.<br>
+        <br>
+        P1  -  SPRINT PRIORITY:<br>
+        1. Web presence design round 2: Marcus reviewed the mockup at<br>
+        &nbsp;&nbsp;&nbsp;docs/pitch-deck/forge-web-mockup-v2.html and was impressed. Now he<br>
+        &nbsp;&nbsp;&nbsp;wants it redesigned for the two real platforms: (a) GitHub Pages...<br>
+        2. FR promotion letter: Review and apply Marcus voice guide to the<br>
+        &nbsp;&nbsp;&nbsp;draft FO will send you. Remove all em dashes, run through your full<br>
+        &nbsp;&nbsp;&nbsp;voice consistency checklist. Return cleaned version to FO inbox.<br>
+        3. TUI prototyping window spec: docs/features/  -  spec the<br>
+        &nbsp;&nbsp;&nbsp;prototyping window component...<br>
+        <br>
+        <span style="color:#555">- FO</span>
+      </div>
+
+      <div class="read-actions">
+        <div class="action-btn"><kbd>r</kbd> reply</div>
+        <div class="action-btn"><kbd>R</kbd> reply-all</div>
+        <div class="action-btn"><kbd>a</kbd> archive</div>
+        <div class="action-btn"><kbd>m</kbd> mark unread</div>
+        <div class="action-btn"><kbd>Esc</kbd> back to list</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: COMPOSE -->
+  <div class="screen-wrap">
+    <div class="screen-label">3  -  Compose</div>
+    <div class="tui-screen">
+      <div class="tui-titlebar">
+        <span class="tui-title">◉ FORGE EMAIL</span>
+        <span class="tui-subtitle">COMPOSE</span>
+      </div>
+
+      <div class="compose-header">NEW MESSAGE</div>
+
+      <div class="compose-field">
+        <div class="compose-label">To</div>
+        <div class="compose-value active">
+          forge-all<span class="cursor-blink"></span>
+          <div style="margin-top:5px; font-size:10px; color:#555; font-style:italic;">Current: freeform comma-separated input (no autocomplete). parseRecipients() validates on send. Agent autocomplete is planned as a future enhancement.</div>
+        </div>
+      </div>
+
+      <div class="compose-field">
+        <div class="compose-label">Subject</div>
+        <div class="compose-value placeholder">Tab to subject field...</div>
+      </div>
+
+      <div class="compose-body-area">
+        <div class="compose-body-text"><span class="cursor-blink"></span></div>
+        <div class="compose-hint">Ctrl+Enter or Ctrl+S to send · Esc to cancel</div>
+      </div>
+
+      <div class="tui-statusbar">
+        <span class="key-hint"><kbd>Tab</kbd> next field</span>
+        <span class="key-hint"><kbd>Ctrl+S</kbd> send</span>
+        <span class="key-hint"><kbd>Esc</kbd> cancel</span>
+        <span class="sb-count">To → Subject → Body</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: THREAD VIEW -->
+  <div class="screen-wrap">
+    <div class="screen-label">4  -  Thread View</div>
+    <div class="tui-screen">
+      <div class="tui-titlebar">
+        <span class="tui-title">◉ FORGE EMAIL</span>
+        <span class="tui-subtitle">THREAD · 3 messages</span>
+      </div>
+
+      <div class="read-header">
+        <div class="read-subject">Design request: Email UI + Task Front Door</div>
+        <div class="read-meta-row">
+          <span class="read-from">FI → FD</span>
+          <span class="read-time">thread started 08:15</span>
+        </div>
+      </div>
+
+      <div class="thread-list">
+
+        <div class="thread-item">
+          <div class="thread-avatar" style="background:#1a0f40; color:#A78BFA;">FI</div>
+          <div class="thread-body">
+            <div class="thread-from-row">
+              <span class="thread-from">FI</span>
+              <span class="thread-time">08:15 · READ</span>
+            </div>
+            <div class="thread-text">Need your design pass for both products. Review color/iconography and lane hierarchy for Task Front Door, plus Inbox/Read/Compose clarity.</div>
+          </div>
+        </div>
+
+        <div class="thread-item">
+          <div class="thread-avatar" style="background:#1a1600; color:#FFCB05;">FD</div>
+          <div class="thread-body">
+            <div class="thread-from-row">
+              <span class="thread-from">FD</span>
+              <span class="thread-time">11:22 · SENT</span>
+            </div>
+            <div class="thread-text">Design tokens shipped to FI inbox. emailTokens + laneStyles + messageStatus. ChatScreen, EmailScreen, TaskFrontDoorScreen updated.</div>
+          </div>
+        </div>
+
+        <div class="thread-item latest">
+          <div class="thread-avatar" style="background:#1a0f40; color:#A78BFA;">FI</div>
+          <div class="thread-body">
+            <div class="thread-from-row">
+              <span class="thread-from">FI</span>
+              <span class="thread-time">11:35 · UNREAD</span>
+            </div>
+            <div class="thread-text">Follow up on design review. Email and Task Front Door screens are now wired. Please review color and icon choices, list density, and hierarchy.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="read-actions">
+        <div class="action-btn"><kbd>r</kbd> reply to thread</div>
+        <div class="action-btn"><kbd>↑↓</kbd> scroll thread</div>
+        <div class="action-btn"><kbd>a</kbd> archive thread</div>
+        <div class="action-btn"><kbd>Esc</kbd> back to list</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: ARCHIVE VIEW -->
+  <div class="screen-wrap">
+    <div class="screen-label">5  -  Archive Folder View</div>
+    <div class="tui-screen">
+      <div class="tui-titlebar">
+        <span class="tui-title">◉ FORGE EMAIL</span>
+        <span class="tui-subtitle">MARCUS · auto-refresh 30s</span>
+      </div>
+
+      <div class="folder-tabs">
+        <div class="folder-tab">INBOX <span class="unread-badge" style="background:#333;color:#888;">3</span></div>
+        <div class="folder-tab">SENT</div>
+        <div class="folder-tab active">ARCHIVE</div>
+      </div>
+
+      <div class="search-bar">
+        <div class="search-input">/ search: <span>_</span></div>
+      </div>
+
+      <div class="email-list">
+        <div class="email-row read">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FO</div>
+            <div class="email-time">Feb 20</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">Sprint 2 retrospective notes</div>
+            <div class="email-preview">All sprint 2 items closed. Moving to sprint 3 planning...</div>
+          </div>
+          <div class="email-tags"></div>
+        </div>
+
+        <div class="email-row selected">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FA</div>
+            <div class="email-time">Feb 18</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">Token system v1 shipped</div>
+            <div class="email-preview">designTokens.ts is live. emailTokens, laneStyles all exported...</div>
+          </div>
+          <div class="email-tags"></div>
+        </div>
+
+        <div class="email-row read">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FI</div>
+            <div class="email-time">Feb 15</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">M365 identity schema draft</div>
+            <div class="email-preview">First draft of the identity pipeline. Needs your UX review...</div>
+          </div>
+          <div class="email-tags"></div>
+        </div>
+
+        <div class="email-row read">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FP</div>
+            <div class="email-time">Feb 12</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">CI/CD pipeline config complete</div>
+            <div class="email-preview">GitHub Actions workflows deployed. All agents verified...</div>
+          </div>
+          <div class="email-tags"></div>
+        </div>
+      </div>
+
+      <div class="tui-statusbar">
+        <span class="key-hint"><kbd>↑↓</kbd> navigate</span>
+        <span class="key-hint"><kbd>Enter</kbd> open</span>
+        <span class="key-hint"><kbd>u</kbd> Unarchive</span>
+        <span class="key-hint"><kbd>/</kbd> search</span>
+        <span class="key-hint"><kbd>1</kbd> Inbox <kbd>2</kbd> Sent <kbd>3</kbd> Archive</span>
+        <span class="sb-count">4 archived</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: SEARCH RESULTS STATE -->
+  <div class="screen-wrap">
+    <div class="screen-label">6  -  Search: Active Results State</div>
+    <div class="screen-note">Results live-filter as user types. Matching text highlighted in Maize.</div>
+    <div class="tui-screen">
+      <div class="tui-titlebar">
+        <span class="tui-title">◉ FORGE EMAIL</span>
+        <span class="tui-subtitle">MARCUS · SEARCH MODE</span>
+      </div>
+
+      <div class="folder-tabs">
+        <div class="folder-tab active">INBOX <span class="unread-badge">3</span></div>
+        <div class="folder-tab">SENT</div>
+        <div class="folder-tab">ARCHIVE</div>
+      </div>
+
+      <div class="search-bar" style="background:#121220; border-bottom: 1px solid #4D7BFF44;">
+        <div class="search-input">/ search: <span>design<span style="display:inline-block;width:6px;height:11px;background:#00D4AA;vertical-align:middle;border-radius:1px;margin-left:1px;"></span></span></div>
+        <div style="font-size:10px; color:#4D7BFF;">3 results</div>
+      </div>
+
+      <div class="email-list">
+        <div class="email-row read">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FO</div>
+            <div class="email-time">03:45</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject"><span class="search-hi">DESIGN</span> REVIEW: forge-way-comms.html</div>
+            <div class="email-preview"><span class="search-hi">design</span> review requested. 5 slides, cover + comm flow...</div>
+          </div>
+          <div class="email-tags"><div class="etag action">ACTION</div></div>
+        </div>
+
+        <div class="email-row selected">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FI</div>
+            <div class="email-time">08:15</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject"><span class="search-hi">Design</span> request: Email UI + Task Front Door</div>
+            <div class="email-preview">Need your <span class="search-hi">design</span> pass for both products...</div>
+          </div>
+          <div class="email-tags"></div>
+        </div>
+
+        <div class="email-row read">
+          <div class="email-dot"></div>
+          <div class="email-meta">
+            <div class="email-from">FA</div>
+            <div class="email-time">22:02</div>
+          </div>
+          <div class="email-body-col">
+            <div class="email-subject">GitHub Pages arch ready, start Canvas <span class="search-hi">design</span></div>
+            <div class="email-preview">Canvas <span class="search-hi">design</span> phase begins. Live Kai score fetch...</div>
+          </div>
+          <div class="email-tags"><div class="etag fyi">FYI</div></div>
+        </div>
+      </div>
+
+      <div class="tui-statusbar">
+        <span class="key-hint"><kbd>↑↓</kbd> navigate</span>
+        <span class="key-hint"><kbd>Enter</kbd> open</span>
+        <span class="key-hint"><kbd>Esc</kbd> clear search</span>
+        <span class="sb-count">3 results for "design"</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

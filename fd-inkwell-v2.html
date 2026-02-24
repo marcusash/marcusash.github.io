@@ -1,0 +1,1176 @@
+<!-- Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inkwell v2 Screen Explorations: FD</title>
+<style>
+  :root {
+    --bg: #0A0A0F;
+    --surface: #161622;
+    --elevated: #1E1E2E;
+    --text: #E8E8F0;
+    --muted: #808099;
+    --border: #2A2A3E;
+    --maize: #FFCB05;
+    --white: #FFFFFF;
+    --success: #22C55E;
+    --error: #CE1126;
+    --info: #4A90D9;
+    --cyan: #06B6D4;
+    --purple: #A855F7;
+    --font-sans: 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Cascadia Code', 'Consolas', monospace;
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px 32px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+
+  .page-header .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--maize);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .page-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .page-header p {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* 3-column grid */
+  .screens-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    max-width: 1320px;
+    margin: 0 auto 80px;
+  }
+
+  .screen-card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen-number {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--maize);
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  /* The 400x300 TUI preview canvas */
+  .screen-preview {
+    width: 400px;
+    height: 300px;
+    max-width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+
+  .screen-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 14px 0 6px;
+  }
+
+  .screen-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* TUI chrome: title bar */
+  .tui-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10px;
+  }
+
+  .tui-bar-left {
+    color: var(--maize);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .tui-bar-right {
+    color: var(--muted);
+  }
+
+  /* TUI search bar */
+  .tui-search {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .tui-search-prompt {
+    color: var(--maize);
+  }
+
+  .tui-search-input {
+    color: var(--text);
+    flex: 1;
+  }
+
+  .tui-cursor {
+    display: inline-block;
+    width: 6px;
+    height: 11px;
+    background: var(--maize);
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* TUI content area */
+  .tui-content {
+    padding: 6px 0;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  /* Date header row */
+  .tui-date-header {
+    padding: 4px 10px 2px;
+    font-size: 9px;
+    color: var(--maize);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2px;
+  }
+
+  /* Entry row */
+  .tui-entry-row {
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
+    gap: 8px;
+    border-left: 2px solid transparent;
+  }
+
+  .tui-entry-row.active {
+    background: var(--surface);
+    border-left-color: var(--maize);
+  }
+
+  .tui-entry-time {
+    color: var(--muted);
+    font-size: 9px;
+    width: 70px;
+    flex-shrink: 0;
+  }
+
+  .tui-entry-preview {
+    color: var(--text);
+    font-size: 10px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tui-wc-badge {
+    background: var(--elevated);
+    color: var(--muted);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+
+  .tui-mood {
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  /* Keybind bar at bottom */
+  .tui-keybinds {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 4px 10px;
+    display: flex;
+    gap: 12px;
+    font-size: 9px;
+    color: var(--muted);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .tui-kb-key {
+    color: var(--maize);
+    font-weight: 700;
+  }
+
+  /* Editor screen */
+  .tui-editor-title {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .tui-editor-area {
+    flex: 1;
+    padding: 8px 12px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .tui-editor-line {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.7;
+    border-left: 1px solid var(--border);
+    padding-left: 8px;
+    margin-bottom: 2px;
+  }
+
+  .tui-editor-line.empty {
+    color: var(--border);
+  }
+
+  .tui-editor-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 4px 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .tui-mood-row {
+    background: var(--elevated);
+    border-top: 1px solid var(--border);
+    padding: 5px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 10px;
+  }
+
+  .tui-mood-label {
+    color: var(--muted);
+    font-size: 9px;
+  }
+
+  .tui-mood-opt {
+    font-size: 13px;
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .tui-mood-opt.selected {
+    opacity: 1;
+    filter: drop-shadow(0 0 4px rgba(255,203,5,0.6));
+  }
+
+  /* Search screen */
+  .tui-filter-row {
+    padding: 5px 10px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tui-chip {
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 9px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .tui-chip.active {
+    background: var(--maize);
+    color: #000;
+    border-color: var(--maize);
+    font-weight: 700;
+  }
+
+  .tui-result-row {
+    padding: 5px 10px;
+    border-bottom: 1px solid rgba(42,42,62,0.5);
+  }
+
+  .tui-result-match {
+    font-size: 10px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tui-highlight {
+    color: var(--maize);
+    font-weight: 700;
+  }
+
+  .tui-result-meta {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .tui-count {
+    padding: 4px 10px;
+    font-size: 9px;
+    color: var(--success);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Insights panel */
+  .tui-sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 180px;
+    height: 100%;
+    background: var(--elevated);
+    border-left: 1px solid var(--border);
+    padding: 10px;
+    overflow: hidden;
+  }
+
+  .tui-sidebar-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--maize);
+    margin-bottom: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tui-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .tui-stat-label {
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .tui-stat-value {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .tui-sparkline {
+    font-size: 13px;
+    color: var(--maize);
+    letter-spacing: 2px;
+    margin: 8px 0 4px;
+    font-family: var(--font-mono);
+  }
+
+  .tui-sparkline-label {
+    font-size: 8px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .tui-theme-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+  }
+
+  .tui-theme-name {
+    font-size: 9px;
+    color: var(--text);
+    width: 56px;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tui-theme-bar-wrap {
+    flex: 1;
+    background: var(--border);
+    border-radius: 2px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .tui-theme-bar {
+    height: 100%;
+    background: var(--cyan);
+    border-radius: 2px;
+  }
+
+  .tui-theme-count {
+    font-size: 8px;
+    color: var(--muted);
+    width: 14px;
+    text-align: right;
+  }
+
+  .tui-vs-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+    font-size: 8px;
+  }
+
+  .tui-vs-label { color: var(--muted); }
+  .tui-vs-up { color: var(--success); }
+  .tui-vs-down { color: var(--error); }
+
+  /* Dimmed overlay for main when sidebar open */
+  .tui-main-dimmed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 180px;
+    height: 100%;
+    overflow: hidden;
+    padding: 8px 0;
+  }
+
+  /* Memory lane */
+  .tui-memory-section {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tui-memory-header {
+    font-size: 9px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  .tui-memory-text {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.5;
+    opacity: 0.65;
+    font-style: italic;
+  }
+
+  .tui-current-section {
+    padding: 8px 10px;
+  }
+
+  .tui-current-header {
+    font-size: 9px;
+    color: var(--maize);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+
+  .tui-current-text {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Export screen */
+  .tui-export-section {
+    padding: 8px 12px;
+  }
+
+  .tui-export-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--maize);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .tui-format-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  .tui-format-btn {
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .tui-format-btn.selected {
+    background: var(--maize);
+    color: #000;
+    border-color: var(--maize);
+    font-weight: 700;
+  }
+
+  .tui-option-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 5px;
+  }
+
+  .tui-checkbox {
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: var(--maize);
+    flex-shrink: 0;
+  }
+
+  .tui-checkbox.checked {
+    background: var(--maize);
+    border-color: var(--maize);
+    color: #000;
+  }
+
+  .tui-option-label {
+    font-size: 10px;
+    color: var(--text);
+  }
+
+  .tui-progress-wrap {
+    margin-top: 10px;
+    background: var(--border);
+    border-radius: 2px;
+    height: 6px;
+    overflow: hidden;
+  }
+
+  .tui-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--maize), var(--success));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 1s linear;
+  }
+
+  .tui-progress-label {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* GA Handoff section */
+  .handoff-section {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 40px;
+  }
+
+  .handoff-section h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .handoff-section .handoff-sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 28px;
+  }
+
+  .handoff-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .handoff-list li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .handoff-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--maize);
+    background: rgba(255,203,5,0.1);
+    border: 1px solid rgba(255,203,5,0.25);
+    border-radius: var(--radius-sm);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .handoff-body {
+    flex: 1;
+  }
+
+  .handoff-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .handoff-detail {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .handoff-detail code {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--elevated);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--cyan);
+  }
+
+  /* Section header for the page */
+  .section-divider {
+    max-width: 900px;
+    margin: 0 auto 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-divider h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Responsive: collapse to 2 col on narrower */
+  @media (max-width: 1300px) {
+    .screens-grid {
+      grid-template-columns: repeat(2, 400px);
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 880px) {
+    .screens-grid {
+      grid-template-columns: 1fr;
+    }
+    .screen-preview { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="eyebrow">FD Design Exploration / Inkwell v2</div>
+  <h1>Inkwell v2 Screen Concepts</h1>
+  <p>Six new screen ideas beyond the current implementation. All designs follow the dark TUI token system. For GA review and implementation planning.</p>
+</div>
+
+<div class="screens-grid">
+
+  <!-- Screen 1: Home -->
+  <div class="screen-card">
+    <div class="screen-number">SCREEN 01 / 06</div>
+    <div class="screen-preview">
+      <div class="tui-bar">
+        <span class="tui-bar-left">INKWELL</span>
+        <span class="tui-bar-right">47 entries</span>
+      </div>
+      <div class="tui-search">
+        <span class="tui-search-prompt">/</span>
+        <span class="tui-search-input">Search entries...<span class="tui-cursor"></span></span>
+      </div>
+
+      <div class="tui-content">
+        <div class="tui-date-header">Today</div>
+        <div class="tui-entry-row active">
+          <span class="tui-entry-time">09:14 Mon 06</span>
+          <span class="tui-entry-preview">Started the morning with coffee and a quiet...</span>
+          <span class="tui-wc-badge">312w</span>
+          <span class="tui-mood">🙂</span>
+        </div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">06:42 Mon 06</span>
+          <span class="tui-entry-preview">Woke up early again. Dreams about the project...</span>
+          <span class="tui-wc-badge">88w</span>
+          <span class="tui-mood">😐</span>
+        </div>
+
+        <div class="tui-date-header">Yesterday</div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">21:33 Sun 05</span>
+          <span class="tui-entry-preview">Long walk. Thinking about what matters most...</span>
+          <span class="tui-wc-badge">544w</span>
+          <span class="tui-mood">😊</span>
+        </div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">14:10 Sun 05</span>
+          <span class="tui-entry-preview">Read for two hours. Notes on the book felt...</span>
+          <span class="tui-wc-badge">201w</span>
+          <span class="tui-mood">🤩</span>
+        </div>
+
+        <div class="tui-date-header">This Week</div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">18:05 Sat 04</span>
+          <span class="tui-entry-preview">Productive session. Wrapped up the design doc...</span>
+          <span class="tui-wc-badge">421w</span>
+          <span class="tui-mood">🙂</span>
+        </div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">09:20 Fri 03</span>
+          <span class="tui-entry-preview">Meeting ran long. Frustrating but clarifying...</span>
+          <span class="tui-wc-badge">156w</span>
+          <span class="tui-mood">😔</span>
+        </div>
+      </div>
+
+      <div class="tui-keybinds">
+        <span><span class="tui-kb-key">[N]</span> New</span>
+        <span><span class="tui-kb-key">[/]</span> Search</span>
+        <span><span class="tui-kb-key">[?]</span> Help</span>
+        <span><span class="tui-kb-key">[Q]</span> Quit</span>
+      </div>
+    </div>
+    <div class="screen-title">Home Screen</div>
+    <div class="screen-desc">Entry list grouped by date with inline metadata: timestamp, 60-char preview, word count badge, and mood indicator. Pinned search bar activates inline. GA: use a virtual list renderer so the list handles thousands of entries without layout jank.</div>
+  </div>
+
+  <!-- Screen 2: Full-screen editor -->
+  <div class="screen-card">
+    <div class="screen-number">SCREEN 02 / 06</div>
+    <div class="screen-preview" style="display:flex;flex-direction:column;">
+      <div class="tui-bar">
+        <span class="tui-bar-left">EDITOR</span>
+        <span class="tui-bar-right">Mon Jan 06 09:14</span>
+      </div>
+      <div class="tui-editor-title">Morning session<span style="color:var(--maize);">_</span></div>
+
+      <div style="flex:1;padding:8px 14px;overflow:hidden;position:relative;">
+        <div class="tui-editor-line">Started the morning with coffee and a quiet house.</div>
+        <div class="tui-editor-line">The dog was still asleep. Good time to think.</div>
+        <div class="tui-editor-line">I keep coming back to the same question about</div>
+        <div class="tui-editor-line">what I actually want from this project. Not the</div>
+        <div class="tui-editor-line">tactical stuff, the deeper why.<span class="tui-cursor"></span></div>
+        <div class="tui-editor-line empty">~</div>
+        <div class="tui-editor-line empty">~</div>
+        <div class="tui-editor-line empty">~</div>
+        <div class="tui-editor-line empty">~</div>
+
+        <div class="tui-editor-status">
+          <span>312 words  |  4:32 in editor</span>
+          <span style="color:var(--success);">saved</span>
+        </div>
+      </div>
+
+      <div class="tui-mood-row">
+        <span class="tui-mood-label">MOOD F1-F5:</span>
+        <span class="tui-mood-opt">😔</span>
+        <span class="tui-mood-opt">😐</span>
+        <span class="tui-mood-opt selected">🙂</span>
+        <span class="tui-mood-opt">😊</span>
+        <span class="tui-mood-opt">🤩</span>
+      </div>
+
+      <div class="tui-keybinds">
+        <span><span class="tui-kb-key">[Ctrl+S]</span> Save</span>
+        <span><span class="tui-kb-key">[Esc]</span> Exit to list</span>
+      </div>
+    </div>
+    <div class="screen-title">Entry Editor (Full-Screen)</div>
+    <div class="screen-desc">Full-screen composition mode with editable title, line-guided text area, live word count plus time-in-editor, and keyboard-driven mood picker (F1-F5). GA: autosave on a 10s idle timer so [Ctrl+S] is a manual override, not the only save path.</div>
+  </div>
+
+  <!-- Screen 3: Search / Filter -->
+  <div class="screen-card">
+    <div class="screen-number">SCREEN 03 / 06</div>
+    <div class="screen-preview" style="display:flex;flex-direction:column;">
+      <div class="tui-bar">
+        <span class="tui-bar-left">SEARCH</span>
+        <span class="tui-bar-right">47 entries indexed</span>
+      </div>
+      <div class="tui-search">
+        <span class="tui-search-prompt">&gt;</span>
+        <span class="tui-search-input">quiet<span class="tui-cursor"></span></span>
+      </div>
+      <div class="tui-filter-row">
+        <span class="tui-chip active">#morning</span>
+        <span class="tui-chip">#work</span>
+        <span class="tui-chip">This month</span>
+        <span class="tui-chip">Last 7d</span>
+        <span class="tui-chip">200-500w</span>
+        <span class="tui-chip">😊 😊</span>
+      </div>
+      <div class="tui-count">23 entries match</div>
+
+      <div style="flex:1;overflow:hidden;">
+        <div class="tui-result-row">
+          <div class="tui-result-match">Started the morning with coffee and a <span class="tui-highlight">quiet</span> house...</div>
+          <div class="tui-result-meta">Mon Jan 06 09:14 / 312w / 🙂</div>
+        </div>
+        <div class="tui-result-row">
+          <div class="tui-result-match">The <span class="tui-highlight">quiet</span> before everyone wakes up is the best part...</div>
+          <div class="tui-result-meta">Sat Jan 04 07:02 / 88w / 😊</div>
+        </div>
+        <div class="tui-result-row">
+          <div class="tui-result-match">Found a <span class="tui-highlight">quiet</span> corner at the coffee shop to write...</div>
+          <div class="tui-result-meta">Thu Jan 02 14:30 / 421w / 🙂</div>
+        </div>
+        <div class="tui-result-row">
+          <div class="tui-result-match">Needed something <span class="tui-highlight">quiet</span> after that conversation...</div>
+          <div class="tui-result-meta">Tue Dec 31 20:11 / 201w / 😐</div>
+        </div>
+        <div class="tui-result-row">
+          <div class="tui-result-match">Long walks are my <span class="tui-highlight">quiet</span> time. Non-negotiable...</div>
+          <div class="tui-result-meta">Mon Dec 30 18:45 / 544w / 😊</div>
+        </div>
+      </div>
+
+      <div class="tui-keybinds">
+        <span><span class="tui-kb-key">[Enter]</span> Open</span>
+        <span><span class="tui-kb-key">[Tab]</span> Filter chips</span>
+        <span><span class="tui-kb-key">[Esc]</span> Clear</span>
+      </div>
+    </div>
+    <div class="screen-title">Search / Filter</div>
+    <div class="screen-desc">Full-text search with filter chips for tags, date ranges, moods, and word count. Match text highlighted inline. GA: implement search with a local index (lunr.js or native SQLite FTS) so results are instant. No network required.</div>
+  </div>
+
+  <!-- Screen 4: Insights panel -->
+  <div class="screen-card">
+    <div class="screen-number">SCREEN 04 / 06</div>
+    <div class="screen-preview" style="position:relative;">
+      <div class="tui-bar">
+        <span class="tui-bar-left">INKWELL</span>
+        <span class="tui-bar-right" style="color:var(--cyan);">INSIGHTS</span>
+      </div>
+
+      <!-- Dimmed main list -->
+      <div class="tui-main-dimmed" style="opacity:0.35;">
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">09:14 Mon 06</span>
+          <span class="tui-entry-preview">Started the morning with coffee...</span>
+          <span class="tui-wc-badge">312w</span>
+        </div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">21:33 Sun 05</span>
+          <span class="tui-entry-preview">Long walk. Thinking about what matters...</span>
+          <span class="tui-wc-badge">544w</span>
+        </div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">14:10 Sun 05</span>
+          <span class="tui-entry-preview">Read for two hours. Notes on...</span>
+          <span class="tui-wc-badge">201w</span>
+        </div>
+        <div class="tui-entry-row">
+          <span class="tui-entry-time">18:05 Sat 04</span>
+          <span class="tui-entry-preview">Productive session. Wrapped up...</span>
+          <span class="tui-wc-badge">421w</span>
+        </div>
+      </div>
+
+      <!-- Sidebar overlay -->
+      <div class="tui-sidebar">
+        <div class="tui-sidebar-title">Insights</div>
+
+        <div class="tui-stat-row">
+          <span class="tui-stat-label">This week</span>
+          <span class="tui-stat-value" style="color:var(--maize);">2,841w</span>
+        </div>
+        <div class="tui-stat-row">
+          <span class="tui-stat-label">Streak</span>
+          <span class="tui-stat-value">14 days</span>
+        </div>
+        <div class="tui-stat-row">
+          <span class="tui-stat-label">Avg/day</span>
+          <span class="tui-stat-value">406w</span>
+        </div>
+        <div class="tui-stat-row">
+          <span class="tui-stat-label">Mood trend</span>
+          <span class="tui-stat-value" style="color:var(--success);">+0.4</span>
+        </div>
+
+        <div class="tui-sparkline">▁▃▅▄▇▆▅█</div>
+        <div class="tui-sparkline-label">daily words, Mon-Mon</div>
+
+        <div style="font-size:9px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;">Top themes</div>
+        <div class="tui-theme-row">
+          <span class="tui-theme-name">#morning</span>
+          <div class="tui-theme-bar-wrap"><div class="tui-theme-bar" style="width:90%;"></div></div>
+          <span class="tui-theme-count">18</span>
+        </div>
+        <div class="tui-theme-row">
+          <span class="tui-theme-name">#work</span>
+          <div class="tui-theme-bar-wrap"><div class="tui-theme-bar" style="width:65%;background:var(--purple);"></div></div>
+          <span class="tui-theme-count">13</span>
+        </div>
+        <div class="tui-theme-row">
+          <span class="tui-theme-name">#walks</span>
+          <div class="tui-theme-bar-wrap"><div class="tui-theme-bar" style="width:50%;background:var(--success);"></div></div>
+          <span class="tui-theme-count">10</span>
+        </div>
+        <div class="tui-theme-row">
+          <span class="tui-theme-name">#reading</span>
+          <div class="tui-theme-bar-wrap"><div class="tui-theme-bar" style="width:35%;background:var(--info);"></div></div>
+          <span class="tui-theme-count">7</span>
+        </div>
+        <div class="tui-theme-row">
+          <span class="tui-theme-name">#family</span>
+          <div class="tui-theme-bar-wrap"><div class="tui-theme-bar" style="width:20%;background:var(--maize);"></div></div>
+          <span class="tui-theme-count">4</span>
+        </div>
+
+        <div class="tui-vs-row">
+          <span class="tui-vs-label">vs last week</span>
+          <span class="tui-vs-up">+22% words</span>
+        </div>
+      </div>
+
+      <div class="tui-keybinds">
+        <span><span class="tui-kb-key">[I]</span> Insights</span>
+        <span><span class="tui-kb-key">[Esc]</span> Close</span>
+      </div>
+    </div>
+    <div class="screen-title">Insights Panel (New Feature)</div>
+    <div class="screen-desc">Slide-in overlay showing writing stats, a unicode sparkline for daily word counts, top 5 tag frequencies with inline bars, and a week-over-week comparison. GA: compute stats at write time and cache in SQLite so the panel opens instantly without scanning entries.</div>
+  </div>
+
+  <!-- Screen 5: Memory Lane -->
+  <div class="screen-card">
+    <div class="screen-number">SCREEN 05 / 06</div>
+    <div class="screen-preview" style="display:flex;flex-direction:column;">
+      <div class="tui-bar">
+        <span class="tui-bar-left">MEMORY LANE</span>
+        <span class="tui-bar-right" style="color:var(--cyan);">Jan 06</span>
+      </div>
+
+      <div class="tui-memory-section">
+        <div class="tui-memory-header">This day last year (Jan 06, 2024)</div>
+        <div class="tui-memory-text">"Meeting with the team went sideways. I kept thinking there has to be a better way to coordinate across time zones. Everyone was tired. I was tired. Ended up walking home..."</div>
+      </div>
+
+      <div class="tui-memory-section">
+        <div class="tui-memory-header">This day last month (Dec 06, 2024)</div>
+        <div class="tui-memory-text">"Finished wrapping all the presents early for once. The kids have no idea. Sat with a cup of tea and realized this is what I want more of. Stillness..."</div>
+      </div>
+
+      <div style="padding:4px 10px;border-bottom:1px solid var(--border);">
+        <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+        <div style="font-size:9px;color:var(--muted);text-align:center;">---- current entry ----</div>
+      </div>
+
+      <div class="tui-current-section" style="flex:1;">
+        <div class="tui-current-header">Today (Jan 06, 2025)</div>
+        <div class="tui-current-text">"Started the morning with coffee and a quiet house. The dog was still asleep. Good time to think..."<span class="tui-cursor"></span></div>
+      </div>
+
+      <div class="tui-keybinds">
+        <span><span class="tui-kb-key">[M]</span> Memory Lane</span>
+        <span><span class="tui-kb-key">[Esc]</span> Close</span>
+        <span><span class="tui-kb-key">[Enter]</span> Open entry</span>
+      </div>
+    </div>
+    <div class="screen-title">Memory Lane (Reflection Mode)</div>
+    <div class="screen-desc">Surfaces entries from exactly one year ago and one month ago alongside the current entry. Past entries render dimmed and italic to signal read-only. GA: this is a date query on the entries table, no ML required. First-entry date guard prevents empty states from crashing the view.</div>
+  </div>
+
+  <!-- Screen 6: Export -->
+  <div class="screen-card">
+    <div class="screen-number">SCREEN 06 / 06</div>
+    <div class="screen-preview" style="display:flex;flex-direction:column;">
+      <div class="tui-bar">
+        <span class="tui-bar-left">EXPORT</span>
+        <span class="tui-bar-right">47 entries</span>
+      </div>
+
+      <div class="tui-export-section" style="flex:1;overflow:hidden;">
+        <div class="tui-export-title">Format</div>
+        <div class="tui-format-row">
+          <div class="tui-format-btn selected">Markdown (.md)</div>
+          <div class="tui-format-btn">PDF</div>
+          <div class="tui-format-btn">Email to Marcus</div>
+        </div>
+
+        <div class="tui-export-title">Date Range</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:10px;color:var(--text);">
+          <span style="color:var(--muted);">From:</span>
+          <span style="font-family:var(--font-mono);background:var(--elevated);padding:2px 8px;border-radius:3px;border:1px solid var(--border);">2025-01-01</span>
+          <span style="color:var(--muted);">To:</span>
+          <span style="font-family:var(--font-mono);background:var(--elevated);padding:2px 8px;border-radius:3px;border:1px solid var(--maize);">2025-01-06<span class="tui-cursor"></span></span>
+        </div>
+
+        <div class="tui-export-title">Options</div>
+        <div class="tui-option-row">
+          <div class="tui-checkbox checked">x</div>
+          <span class="tui-option-label">Include tags</span>
+        </div>
+        <div class="tui-option-row">
+          <div class="tui-checkbox checked">x</div>
+          <span class="tui-option-label">Include mood</span>
+        </div>
+        <div class="tui-option-row">
+          <div class="tui-checkbox">&#160;</div>
+          <span class="tui-option-label">Include timestamps</span>
+        </div>
+        <div class="tui-option-row">
+          <div class="tui-checkbox checked">x</div>
+          <span class="tui-option-label">Include word counts</span>
+        </div>
+
+        <div style="margin-top:10px;padding:6px 0;border-top:1px solid var(--border);">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">6 entries selected / Est. 1,892 words</div>
+          <div style="font-family:var(--font-mono);font-size:10px;background:var(--maize);color:#000;padding:4px 14px;border-radius:3px;display:inline-block;font-weight:700;cursor:default;">[ Export ]</div>
+        </div>
+
+        <div class="tui-progress-wrap" style="margin-top:8px;">
+          <div class="tui-progress-bar" style="width:60%;"></div>
+        </div>
+        <div class="tui-progress-label">Exporting... 4 of 6 entries</div>
+      </div>
+
+      <div class="tui-keybinds">
+        <span><span class="tui-kb-key">[Tab]</span> Navigate</span>
+        <span><span class="tui-kb-key">[Space]</span> Toggle</span>
+        <span><span class="tui-kb-key">[Enter]</span> Export</span>
+        <span><span class="tui-kb-key">[Esc]</span> Cancel</span>
+      </div>
+    </div>
+    <div class="screen-title">Export Screen</div>
+    <div class="screen-desc">Three export targets: Markdown file, PDF, and direct email to Marcus. Date range picker for scoping. Checkboxes for metadata options. Progress bar during export. GA: start with Markdown only, wire PDF as a shell-out to a system renderer, email as a mailto: URI.</div>
+  </div>
+
+</div><!-- /screens-grid -->
+
+<!-- GA Handoff Notes -->
+<div class="section-divider">
+  <h2>GA Handoff Notes</h2>
+</div>
+
+<div class="handoff-section">
+  <div class="handoff-sub">FD implementation priorities for GA. Ordered by user impact vs complexity. Start from the top.</div>
+  <ul class="handoff-list">
+    <li>
+      <div class="handoff-num">1</div>
+      <div class="handoff-body">
+        <div class="handoff-label">Home screen date grouping and word count badges</div>
+        <div class="handoff-detail">This is the highest-impact change to the current list view. Group entries under "Today / Yesterday / This Week / Earlier" headers. Add word count and mood to each row. Use the existing entries data model, no schema changes needed. Target: render 200 entries without scroll jank using a virtual list or windowed rendering approach in Ink.</div>
+      </div>
+    </li>
+    <li>
+      <div class="handoff-num">2</div>
+      <div class="handoff-body">
+        <div class="handoff-label">Autosave and time-in-editor counter in the editor</div>
+        <div class="handoff-detail">The current editor requires manual save. Add a 10-second idle autosave (debounced). Display <code>X words | Y:ZZ in editor</code> at the bottom left. The time counter starts when the editor opens and pauses when the process loses focus. This removes the biggest anxiety point for new users who forget to save.</div>
+      </div>
+    </li>
+    <li>
+      <div class="handoff-num">3</div>
+      <div class="handoff-body">
+        <div class="handoff-label">Mood picker with F1-F5 keyboard shortcuts</div>
+        <div class="handoff-detail">A five-emoji mood row at the bottom of the editor, navigable by F1-F5. Persists the mood value to the entry record. Show the selected mood on the home list rows. Schema needs a <code>mood</code> column (integer 1-5 or null). Keep the display as emoji rather than labels to save horizontal space in the list.</div>
+      </div>
+    </li>
+    <li>
+      <div class="handoff-num">4</div>
+      <div class="handoff-body">
+        <div class="handoff-label">Full-text search with filter chips</div>
+        <div class="handoff-detail">Wire SQLite FTS5 on the entries table (<code>content</code> and <code>title</code> columns). The search bar on the home screen should activate with <code>/</code> and show results inline, no separate screen required. Filter chips for date range and mood can be a second iteration. Highlight matched substrings in the result preview using a different color (<code>--maize</code>). No network. No external index.</div>
+      </div>
+    </li>
+    <li>
+      <div class="handoff-num">5</div>
+      <div class="handoff-body">
+        <div class="handoff-label">Memory Lane reflection mode</div>
+        <div class="handoff-detail">Query the entries table for records where <code>date</code> matches today's month and day, filtered to prior years and prior months. Display the two most relevant matches above the current entry in a dimmed style. This feature requires no new data, only a date-based query. Add a guard: if no entries exist for that historical date, show a placeholder message rather than an empty section.</div>
+      </div>
+    </li>
+    <li>
+      <div class="handoff-num">6</div>
+      <div class="handoff-body">
+        <div class="handoff-label">Insights panel and Markdown export</div>
+        <div class="handoff-detail">Implement the Insights panel as a slide-in overlay (<code>[I]</code> key). Compute stats (word totals, streak, top tags, mood average) at write time and store in a <code>stats</code> table to avoid scanning all entries on open. For export, start with Markdown only: serialize entries in the selected date range to a single <code>.md</code> file with frontmatter. PDF and email targets are follow-on. Do not block the Insights panel on export completion.</div>
+      </div>
+    </li>
+  </ul>
+</div>
+
+</body>
+</html>
