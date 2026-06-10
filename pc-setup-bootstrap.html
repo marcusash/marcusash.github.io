@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New PC Setup</title>
+<style>
+  :root {
+    --accent: #0078D4;
+    --accent-light: #50a0e0;
+    --bg-deep: #080c12;
+    --bg-card: rgba(20, 26, 36, 0.75);
+    --bg-terminal: #090d13;
+    --border: rgba(44, 52, 64, 0.7);
+    --border-hover: rgba(0, 120, 212, 0.35);
+    --text-primary: #eef2f7;
+    --text-secondary: #96a6b8;
+    --text-muted: #5e6e80;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    line-height: 1.7;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(0, 120, 212, 0.05) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 100%, rgba(0, 120, 212, 0.025) 0%, transparent 60%);
+  }
+
+  .page-wrapper {
+    padding: 3rem 1.5rem 4rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  /* Windows logo SVG icon */
+  .header-icon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+  .header-icon svg {
+    width: 40px;
+    height: 40px;
+    opacity: 0.85;
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    font-size: 0.925rem;
+  }
+  .subtitle kbd {
+    background: rgba(0, 120, 212, 0.1);
+    border: 1px solid rgba(0, 120, 212, 0.25);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    color: var(--accent-light);
+  }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .step {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .step:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 4px 24px rgba(0, 120, 212, 0.07);
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 120, 212, 0.35);
+  }
+  .step-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+  .step-desc {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.875rem;
+    padding-left: calc(28px + 0.875rem);
+  }
+
+  /* Terminal bar - Windows style */
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(16, 22, 32, 0.9);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid rgba(0, 120, 212, 0.15);
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+  .terminal-ps-icon {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  .terminal-title {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-family: 'Segoe UI', sans-serif;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Code block */
+  .code-wrapper { position: relative; }
+
+  pre {
+    background: var(--bg-terminal);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    padding: 1rem 4.5rem 1rem 1.25rem;
+    font-family: 'Cascadia Code', 'Cascadia Mono', 'Consolas', monospace;
+    font-size: 0.825rem;
+    line-height: 1.65;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  code {
+    color: #c9d8e8;
+    font-family: inherit;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  /* Copy button */
+  .copy-btn {
+    position: absolute;
+    top: 0.625rem;
+    right: 0.625rem;
+    background: rgba(48, 54, 61, 0.9);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+  .copy-btn:hover {
+    background: rgba(0, 120, 212, 0.15);
+    border-color: var(--border-hover);
+    color: var(--accent-light);
+  }
+  .copy-btn.copied {
+    background: rgba(63, 185, 80, 0.15);
+    border-color: rgba(63, 185, 80, 0.3);
+    color: #3fb950;
+  }
+
+  /* Notes */
+  .notes-section {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+  .note {
+    background: rgba(20, 26, 36, 0.6);
+    border: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .note strong {
+    color: var(--accent-light);
+    font-weight: 600;
+  }
+  .note code {
+    background: rgba(0, 120, 212, 0.1);
+    border: 1px solid rgba(0, 120, 212, 0.2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 0.8rem;
+    color: var(--accent-light);
+    white-space: nowrap;
+    word-break: normal;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-align: center;
+    letter-spacing: 0.03em;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .page-wrapper { padding: 2rem 1rem 3rem; }
+    h1 { font-size: 1.6rem; }
+    .step { padding: 1.25rem; }
+    .step-desc { padding-left: 0; }
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .step {
+    animation: fadeUp 0.45s ease both;
+  }
+  .step:nth-child(1) { animation-delay: 0.05s; }
+  .step:nth-child(2) { animation-delay: 0.12s; }
+  .step:nth-child(3) { animation-delay: 0.19s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .step { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <div class="header">
+    <div class="header-icon">
+      <!-- Windows logo SVG -->
+      <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="4" y="4" width="37" height="37" rx="2" fill="#0078D4"/>
+        <rect x="47" y="4" width="37" height="37" rx="2" fill="#0078D4" opacity="0.75"/>
+        <rect x="4" y="47" width="37" height="37" rx="2" fill="#0078D4" opacity="0.75"/>
+        <rect x="47" y="47" width="37" height="37" rx="2" fill="#0078D4" opacity="0.55"/>
+      </svg>
+    </div>
+    <h1>New PC Setup</h1>
+    <p class="subtitle">Open PowerShell (<kbd>Win+X</kbd> &rarr; Terminal) and run these steps in order.</p>
+  </div>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <span class="step-title">Install Git and GitHub CLI</span>
+      </div>
+      <div class="code-wrapper">
+        <div class="terminal-bar">
+          <span class="terminal-ps-icon">PS</span>
+          <span class="terminal-title">PowerShell</span>
+        </div>
+        <pre><code>winget install Microsoft.Git --accept-source-agreements --accept-package-agreements
+winget install GitHub.cli --accept-source-agreements --accept-package-agreements
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <span class="step-title">Authenticate to GitHub</span>
+      </div>
+      <p class="step-desc">Follow the browser prompts when they open.</p>
+      <div class="code-wrapper">
+        <div class="terminal-bar">
+          <span class="terminal-ps-icon">PS</span>
+          <span class="terminal-title">PowerShell</span>
+        </div>
+        <pre><code>gh auth login</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <span class="step-title">Clone and run installer</span>
+      </div>
+      <p class="step-desc">This pulls down pc-setup and runs the full installer. Takes ~10 minutes.</p>
+      <div class="code-wrapper">
+        <div class="terminal-bar">
+          <span class="terminal-ps-icon">PS</span>
+          <span class="terminal-title">PowerShell</span>
+        </div>
+        <pre><code>gh repo clone marcusash_microsoft/pc-setup C:\GitHub\pc-setup
+cd C:\GitHub\pc-setup
+powershell -ExecutionPolicy Bypass -File .\install.ps1</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></pre>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="notes-section">
+    <div class="note">
+      <strong>What the installer does:</strong> Git, VS Code, PowerShell 7, Node.js, Oh My Posh, GitHub Copilot app, shell profiles, themes, repo cloning, Forge identity, Inkwell, MCP servers.
+    </div>
+    <div class="note">
+      <strong>Re-run safe:</strong> If something fails, just run <code>.\install.ps1</code> again. Already-installed items are detected and skipped. Use <code>-SkipApps</code>, <code>-SkipGit</code>, <code>-SkipThemes</code>, <code>-SkipRepos</code> to skip sections.
+    </div>
+  </div>
+
+  <p class="footer">Last updated: May 23, 2026</p>
+
+</div>
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('pre');
+    const codeEl = pre.querySelector('code');
+    const code = codeEl.innerText || codeEl.textContent;
+    navigator.clipboard.writeText(code.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      // Fallback for non-secure contexts
+      const ta = document.createElement('textarea');
+      ta.value = code.trim();
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
